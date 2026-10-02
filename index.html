@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>BAID X</title>
+  <meta name="description" content="BAID X connects companies, professionals, project managers and suppliers across Ghana." />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+  <!-- Splash -->
+  <div class="splash" id="splash" aria-label="BAID X">
+    <img class="splash-logo" src="assets/favicon.png" alt="BAID X" />
+    <div class="splash-by"><small>By</small><strong>Baiden Creatives</strong></div>
+  </div>
+
+  <!-- Home (guest) -->
+  <main class="screen" id="screen-home">
+    <div class="wrap">
+      <header class="topbar">
+        <div class="topbar-row">
+          <img class="brand-logo" src="assets/logo-white.png" alt="BAID X" />
+          <button class="btn-pro" data-action="join">Join as a Pro</button>
+        </div>
+        <label class="search">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Search" autocomplete="off" />
+        </label>
+        <div class="chips" id="chips"></div>
+      </header>
+      <section class="grid" id="feed" aria-live="polite"></section>
+    </div>
+  </main>
+
+  <!-- Chats (guest) -->
+  <main class="screen" id="screen-chats">
+    <div class="wrap">
+      <h1 class="page-title">Chats</h1>
+      <div class="empty">
+        <svg width="150" height="150" viewBox="0 0 150 150" fill="none" aria-hidden="true">
+          <path d="M30 70 75 50l45 20v42L75 132 30 112z" fill="#2b2b2b"/>
+          <path d="M30 70 75 90l45-20" stroke="#ffd600" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M75 90v42" stroke="#ffd600" stroke-width="3"/>
+          <path d="M30 70 45 52l30 10M120 70 105 52 75 62" stroke="#ffd600" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M60 28c6-8 20-8 24 2" stroke="#7a7a7a" stroke-width="2.5" stroke-dasharray="3 6" stroke-linecap="round"/>
+          <circle cx="86" cy="32" r="4" fill="#ffd600"/><circle cx="26" cy="46" r="2.5" fill="#7a7a7a"/><circle cx="124" cy="96" r="2.5" fill="#7a7a7a"/>
+        </svg>
+        <h2>Sign in to view chats</h2>
+        <p>Your conversations will appear here after you sign in.</p>
+        <button class="btn-light" data-action="signin">Sign in</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Profile (guest) -->
+  <main class="screen" id="screen-profile">
+    <div class="wrap">
+      <h1 class="page-title center">Profile</h1>
+      <div class="profile-wrap">
+        <div class="guest-avatar">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 18.5c1.6-2.6 3.6-3.7 6.2-3.7s4.6 1.1 6.2 3.7" stroke-linecap="round"/></svg>
+        </div>
+        <button class="opt" data-action="signin" data-role="pro" style="margin-top:24px">
+          <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></span>
+          <span><b>Sign in as a Pro</b><small>For workers, companies, project managers and suppliers</small></span>
+          <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+        <button class="opt" data-action="signin" data-role="employer">
+          <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg></span>
+          <span><b>Sign in as a client</b><small>For individuals hiring for their own home</small></span>
+          <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
+        <p class="legal">By continuing you agree to the BAID X Terms and Privacy Policy.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom nav -->
+  <nav class="nav" aria-label="Main">
+    <div class="nav-in">
+      <button data-tab="home" aria-label="Home">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5 4 8.5v10a1.5 1.5 0 0 0 1.5 1.5h13a1.5 1.5 0 0 0 1.5-1.5v-10z"/><circle cx="12" cy="13" r="2.2"/></svg>Home</button>
+      <button data-tab="chats" aria-label="Chats">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 19 16h-7l-4.5 4v-4H5a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 5 4z"/><path d="M8 8.5h8M8 11.5h5" stroke-linecap="round"/></svg>Chats</button>
+      <button data-tab="profile" aria-label="Profile">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.500 2 7.500 6"/></svg>Profile</button>
+    </div>
+  </nav>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/vendor/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
