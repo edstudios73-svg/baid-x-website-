@@ -109,6 +109,16 @@
   }
 
   /* ---------- Overview ---------- */
+  // Owner only: attach the project to one of your organizations so its finance, project and
+  // director roles can act for the company. Everything else stays as the owner set it.
+  async function orgCard(c, pid) {
+    const { data: row } = await c.sb.from("projects").select("org_id,company_id").eq("id", pid).maybeSingle();
+    if (!row || row.company_id !== c.uid) return "";
+    const orgs = (await rpc(c, "my_orgs").catch(() => [])) || [];
+    const mine = orgs.filter((o) => o.status === "ACTIVE");
+    if (!mine.length && !row.org_id) return "";
+    return `<div class="dcard"><h4><span>Organization</span></h4><div class="inline-f"><select class="in" id="projOrg"><option value="">None (just me)</option>${mine.map((o) => `<option value="${esc(o.org_id)}" ${o.org_id === row.org_id ? "selected" : ""}>${esc(o.name)}</option>`).join("")}</select><button class="btn-light sm" data-act="set-org">Save</button></div><div class="cap2">Members with a project director, finance manager or owner role can then act for the company on this project. Removing someone from the organization removes their access at once.</div></div>`;
+  }
   async function overviewTab({ c, ov, role, pid }) {
     const { stats, card, bar, sec, empty } = U();
     const pct = ov.progress_pct || 0;
@@ -133,6 +143,7 @@
         <div class="cap2">${m === "automatic" ? "Workers your project manager invites within the plan join as soon as they accept. Anything outside the plan still needs your approval." : "Every worker your project manager invites needs your approval before they join."}</div>
         <div class="cap2 lock">${icon("key", 13)} Expenses, materials, equipment and payments always need your approval.</div></div>`;
     }
+    if (role === "company") html += await orgCard(c, pid);
     html += await completionPanel({ c, ov, role, pid });
     if (ov.status === "completed") html += await reviewsPanel({ c, ov, role, pid });
     return html;
@@ -438,6 +449,7 @@
      ====================================================================== */
   const ACT = {
     "copy-code": async (c, el) => { try { await navigator.clipboard.writeText(el.dataset.code); c.toast("Project ID copied"); } catch { c.toast(el.dataset.code); } },
+    "set-org": async (c) => { const r = await act(c, "link_project_org", { p_project: c.state.projectId, p_org: document.getElementById("projOrg").value || null }, "Organization saved"); if (r.ok) refresh(); },
     "set-mode": async (c, el) => { const r = await act(c, "set_worker_addition_mode", { p_project: c.state.projectId, p_mode: el.dataset.mode }, "Approval setting saved"); if (r.ok) refresh(); },
     "invite": (c, el) => openInvite(c, { kind: el.dataset.kind }),
     "pick-person": async (c, el) => { c.state.invite.person = c.state.invite.pool.find((p) => p.id === el.dataset.id); inviteForm(c); },
