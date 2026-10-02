@@ -406,3 +406,19 @@ body.sx-open { overflow: hidden; }
 .ws-tabs .segs { gap: 6px; } .ws-tabs .segs button { padding: 7px 11px; font-size: 12.5px; }
 @media (max-width: 420px) { .ws-tabs .segs button { padding: 7px 9px; } }
 .done-t { display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-size: 13px; font-weight: 600; }
+
+/* ---------- Phase 2: organizations ---------- */
+.org-card { width: 100%; text-align: left; display: block; } .org-card .who { margin: 0; }
+.org-sw { margin: 0 0 10px; }
+.sec-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 8px; } .sec-row .sec { margin: 0; }
+.inline-f { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; } .inline-f .in { flex: 1; min-width: 0; }
+.acc-line { display: flex; flex-direction: column; gap: 6px; padding: 9px 0; border-top: 1px solid #262626; } .acc-line:first-child { border-top: 0; }
+.acc-line b { font-size: 13px; font-weight: 600; } .acc-line small { display: block; color: var(--muted); font-size: 11.5px; margin-top: 1px; }
+.acs { display: flex; flex-wrap: wrap; gap: 5px; }
+.ac { font-size: 10.5px; font-weight: 700; letter-spacing: .02em; padding: 3px 8px; border-radius: 99px; background: #262626; color: #ddd; text-transform: lowercase; }
+.rl summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; } .rl summary::-webkit-details-marker { display: none; }
+.rl summary > span:first-child { flex: 1; min-width: 0; } .rl summary b { display: block; font-size: 14px; } .rl summary small { display: block; color: var(--muted); font-size: 12px; }
+.rl[open] summary { margin-bottom: 8px; }
+.pill.bad { background: rgba(255,255,255,.08); color: #9a9a9a; text-decoration: line-through; }
+.btn-dark.danger { border-color: #4a2a2a; color: #e6a3a3; }
+.qr { display: grid; place-items: center; background: #fff; border-radius: 12px; padding: 10px; margin: 10px auto; width: 190px; } .qr img { width: 170px; height: 170px; }

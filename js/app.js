@@ -95,7 +95,7 @@
     const cfg = NAV[R() || "guest"];
     const tab = cfg.parent[name] || name;
     $$("#navIn [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
-    $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}`));
+    $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}` || (name === "org" && b.dataset.tab === "orgs")));
     $("#nav").hidden = SUBS.includes(name);
     document.body.classList.toggle("hide-nav", SUBS.includes(name));
 
@@ -131,7 +131,7 @@
   }
   const route_highlight = () => { const { name, arg } = state.route; const cfg = NAV[R() || "guest"]; const tab = cfg.parent[name] || name;
     $$("#navIn [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
-    $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}`)); };
+    $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}` || (name === "org" && b.dataset.tab === "orgs"))); };
 
   /* ---------- Directory ---------- */
   function renderChips() {
@@ -195,6 +195,7 @@
     $("#filterDot").hidden = !(state.f.type !== "all" || state.f.cat || state.f.region);
 
     const row = (t, d, to) => `<button class="acc-row" ${to ? `data-go="${to}"` : "data-soon"}><span class="tx"><b>${esc(t)}</b><small>${esc(d)}</small></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>`;
+    const orgRow = ["Organizations", "Teams, people, roles and access.", "orgs"];
     const menus = {
       worker: [["Edit profile", "Update profile details."], ["Wallet", "Earnings, balance and withdrawals.", "wallet"], ["Career growth", "Experience, level and certifications.", "growth"], ["Portfolio", "Add completed works with images and descriptions."], ["Verification documents", "Verify your identity."]],
       company: [["Edit company profile", "Update company details."], ["Payments", "Worker payments and records.", "payments"], ["Equipment", "Find and request equipment.", "equipment"], ["Materials", "Find and compare materials.", "materials"], ["Team & join code", "Link a project manager to your company."], ["Verification documents", "Verify your company."]],
@@ -202,7 +203,7 @@
       business: [["Edit business profile", "Update business details."], ["Catalog", "Manage products and equipment.", "catalog"], ["Portfolio", "Show your products and past supply."], ["Verification documents", "Verify your business."]],
       "individual-employer": [["Edit profile", "Update profile details."], ["My hires", "Keep a record of people you have hired.", "hires"]],
     };
-    $("#accMenu").innerHTML = menus[me.role].map(([t, d, to]) => row(t, d, to)).join("");
+    $("#accMenu").innerHTML = [orgRow, ...menus[me.role]].map(([t, d, to]) => row(t, d, to)).join("");
     $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account."), row("Change phone", "Update the mobile number linked to this account."), row("Change password", "Set a new password for sign-in.")].join("");
     $("#accInfo").innerHTML = [row("Help center", "Guides and support articles."), row("Terms of service", "Read our service terms."), row("Privacy policy", "Read how we handle your information."), row("About BAID X", "Product and company information.")].join("");
   }

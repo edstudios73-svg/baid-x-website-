@@ -229,6 +229,7 @@
     star: '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1 6.200L12 17.200 6.500 20.200l1-6.200L3 9.600l6.200-.9z"/>',
     box: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
     key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3"/>',
   };
   const icon = (k, s = 24) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ""}</svg>`;
@@ -240,32 +241,32 @@
     guest: { tabs: [["home", "Home", "home"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]], side: [], parent: {} },
     worker: {
       tabs: [["home", "Home", "home"], ["jobs", "Jobs", "disc"], ["work", "Work", "work"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { wallet: "home", growth: "home", projects: "work", ws: "work", invites: "work" },
+      side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { orgs: "profile", org: "profile", join: "profile", wallet: "home", growth: "home", projects: "work", ws: "work", invites: "work" },
     },
     company: {
       tabs: [["home", "Home", "home"], ["discover", "Workforce", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Overview", "home"], ["discover", "Workforce Marketplace", "disc"], ["projects", "Project Management", "proj"], ["approvals", "Approvals", "task"], ["payments", "Payments", "pay"], ["equipment", "Equipment", "equip"], ["materials", "Materials", "mat"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { payments: "home", equipment: "home", materials: "home", ws: "projects", approvals: "projects", "new-project": "projects" },
+      side: [["home", "Overview", "home"], ["discover", "Workforce Marketplace", "disc"], ["projects", "Project Management", "proj"], ["approvals", "Approvals", "task"], ["payments", "Payments", "pay"], ["equipment", "Equipment", "equip"], ["materials", "Materials", "mat"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { orgs: "profile", org: "profile", join: "profile", payments: "home", equipment: "home", materials: "home", ws: "projects", approvals: "projects", "new-project": "projects" },
     },
     "project-manager": {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], "--", ["ws/overview", "Project Overview", "site"], ["ws/team", "Team", "team"], ["ws/tasks", "Tasks", "task"], ["ws/reports", "Reports", "rep"], ["ws/finance", "Finance", "pay"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { ws: "projects", invites: "projects" },
+      side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], "--", ["ws/overview", "Project Overview", "site"], ["ws/team", "Team", "team"], ["ws/tasks", "Tasks", "task"], ["ws/reports", "Reports", "rep"], ["ws/finance", "Finance", "pay"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { orgs: "profile", org: "profile", join: "profile", ws: "projects", invites: "projects" },
     },
     business: {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["catalog", "Catalog", "box"], ["inquiries", "Inquiries", "mail"], ["profile", "Profile", "user"]],
       side: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["catalog", "Catalog", "box"], ["inquiries", "Inquiries", "mail"], ["chats", "Chats", "chat"], "--", ["profile", "Profile", "user"]],
-      parent: { chats: "inquiries" },
+      parent: { orgs: "profile", org: "profile", join: "profile", chats: "inquiries" },
     },
     "individual-employer": {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
       side: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: {},
+      parent: { orgs: "profile", org: "profile", join: "profile" },
     },
   };
   // Routes each role may open (anything else falls back to Home).
-  const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker"];
+  const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker", "orgs", "org", "join"];
   const ROLE_ROUTES = {
     worker: ["jobs", "work", "wallet", "growth", "projects", "ws", "invites"],
     company: ["discover", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials"],
