@@ -1,7 +1,7 @@
 {
-  "name": "BAID X",
+  "name": "BAID X · Ghana's work network",
   "short_name": "BAID X",
-  "description": "Ghana's work network. Find verified professionals, companies, project managers and suppliers.",
+  "description": "Hire verified professionals, run projects and build trust across Ghana. Professionals, companies, project managers and suppliers in one network.",
   "id": "/",
   "start_url": "/index.html#/home",
   "scope": "/",
@@ -10,10 +10,83 @@
   "lang": "en-GH",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "categories": ["business", "productivity"],
+  "categories": [
+    "business",
+    "productivity",
+    "social"
+  ],
   "icons": [
-    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Discover",
+      "short_name": "Discover",
+      "description": "Find professionals, companies and suppliers",
+      "url": "/index.html#/discover",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "short_name": "Projects",
+      "description": "Open your projects",
+      "url": "/index.html#/projects",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Plans & billing",
+      "short_name": "Billing",
+      "description": "Your plan and payments",
+      "url": "/index.html#/billing",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Sign in",
+      "short_name": "Sign in",
+      "url": "/auth.html?mode=signin",
+      "icons": [
+        {
+          "src": "assets/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

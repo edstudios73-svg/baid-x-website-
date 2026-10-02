@@ -33,7 +33,7 @@
 
   async function render() {
     const me = state.me, can = (k) => me.can.includes(k);
-    const tabs = [["overview", "Overview"], ["orgs", "Organizations"], ...(can("audit:VIEW") ? [["audit", "Activity"]] : []), ["access", "Roles"]];
+    const tabs = [["overview", "Overview"], ["orgs", "Organizations"], ...(can("finance:VIEW") ? [["finance", "Finance"]] : []), ...(can("audit:VIEW") ? [["audit", "Activity"]] : []), ["access", "Roles"]];
     let body = "";
     try {
       if (state.tab === "overview") {
@@ -42,6 +42,8 @@
       } else if (state.tab === "orgs") {
         const list = await rpc("platform_orgs");
         body = list.length ? list.map((o) => `<div class="row org-row"><span class="tx"><b>${esc(o.name)}</b><small><span class="code">${esc(o.public_code)}</span> ${esc(o.owner)} · ${o.members} people · ${esc(pretty(o.org_type))}</small></span>${pill(o.status)}${can("organizations:EDIT") ? `<button class="btn-dark sm" data-org="${esc(o.org_id)}" data-s="${o.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE"}">${o.status === "ACTIVE" ? "Suspend" : "Restore"}</button>` : ""}</div>`).join("") : `<div class="d-empty"><h3>No organizations yet</h3></div>`;
+      } else if (state.tab === "finance") {
+        body = await financeTab(can("finance:ADMINISTER"));
       } else if (state.tab === "audit") {
         const rows = await rpc("platform_audit");
         body = rows.map((a) => `<div class="tl"><b>${esc(pretty(a.action.replace(".", " · ")))}</b><small>${esc(a.actor)} · ${esc(pretty(a.entity))} · ${esc(ago(a.at))}</small></div>`).join("") || `<div class="d-empty"><h3>No activity yet</h3></div>`;
@@ -54,7 +56,30 @@
     root.innerHTML = top(me) + `<div class="segs">${tabs.map(([k, l]) => `<button class="${k === state.tab ? "on" : ""}" data-t="${k}">${esc(l)}</button>`).join("")}</div>` + body;
   }
 
+  const cedi = (m) => `GH₵${(m / 100).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  async function api(action) {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch("/api/paystack-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action }) });
+    return { ok: r.ok, json: await r.json().catch(() => ({})) };
+  }
+  async function financeTab(admin) {
+    const f = await rpc("platform_finance");
+    const conn = admin ? await api("status") : null, c = conn?.json || {};
+    const modeP = c.mode === "test" ? `<span class="pill warn">Test mode</span>` : c.mode === "live" ? `<span class="pill ok">Live</span>` : `<span class="pill bad">Not connected</span>`;
+    const tiles = [[cedi(f.revenue_minor), "Revenue (net)"], [cedi(f.refunded_minor), "Refunded"], [f.pending, "Pending"], [f.failed, "Failed"], [f.flagged, "Needs review"], [Object.values(f.subs_by_status).reduce((a, b) => a + b, 0), "Subscriptions"]];
+    let html = `<div class="stats">${tiles.map(([n, l]) => `<div class="stat"><b>${esc(n)}</b><small>${esc(l)}</small></div>`).join("")}</div>`;
+    if (admin) html += `<div class="dcard"><h4><span>Paystack connection</span>${modeP}</h4>
+      <div class="kv"><span>Plans linked</span><b>${c.plans_with_code ?? 0} of ${c.plans ?? 0}</b></div>
+      <div class="kv"><span>Webhook URL</span><b style="word-break:break-all;font-size:12px">${esc(c.webhook_url || "")}</b></div>
+      <p class="cap2">Paste the webhook URL into Paystack → Settings → API Keys &amp; Webhooks. The secret key stays in Vercel and is never shown here.</p>
+      ${c.mode && c.mode !== "none" && c.plans_with_code < c.plans ? `<button class="btn-light sm" id="mkPlans">Create Paystack plans</button>` : ""}</div>`;
+    html += `<div class="sec">Founding program</div>` + f.founding.map((x) => `<div class="row"><span class="tx"><b>${esc(pretty(x.role))}</b><small>${x.started ? "Started " + esc(ago(x.started)) : "Not started"}</small></span><span class="amt">${x.claimed}/${x.total}</span></div>`).join("");
+    html += `<div class="sec">Recent payments</div>` + (f.recent.length ? f.recent.map((p) => `<div class="row"><span class="tx"><b>${esc(pretty(p.purpose))} · ${cedi(p.amount_minor)}</b><small>${esc(p.provider_reference)} · ${esc(ago(p.created_at))}${p.discrepancy ? " · " + esc(p.discrepancy) : ""}</small></span><span class="pill ${p.discrepancy ? "warn" : p.status === "successful" ? "ok" : ""}">${esc(pretty(p.status))}</span></div>`).join("") : `<div class="cap2">No payments yet. Nothing here is sample data.</div>`);
+    return html;
+  }
+
   root.addEventListener("click", async (e) => {
+    if (e.target.closest("#mkPlans")) { const b = e.target.closest("#mkPlans"); b.disabled = true; b.textContent = "Creating…"; const r = await api("create_plans"); toast(r.ok ? `Created ${r.json.created} plans${r.json.failed ? `, ${r.json.failed} failed` : ""}` : r.json.error || "Failed"); return render(); }
     const t = e.target.closest("[data-t]"); if (t) { state.tab = t.dataset.t; return render(); }
     if (e.target.closest("#out")) { await sb.auth.signOut(); return login(); }
     const b = e.target.closest("[data-org]");

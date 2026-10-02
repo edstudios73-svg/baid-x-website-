@@ -3,7 +3,7 @@ const crypto = require("crypto");
 
 const env = () => ({
   secret: process.env.PAYSTACK_SECRET_KEY,
-  supaUrl: process.env.SUPABASE_URL,
+  supaUrl: process.env.SUPABASE_URL || "https://igfmmprlrybxsdzehwid.supabase.co", // the project URL is public, not a secret
   serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
 });
 const configured = () => { const e = env(); return !!(e.secret && e.supaUrl && e.serviceKey); };
@@ -44,4 +44,6 @@ function dedupeKey(ev) {
   return `${ev.event}:${id || crypto.createHash("sha256").update(JSON.stringify(d)).digest("hex").slice(0, 24)}`;
 }
 
-module.exports = { env, configured, validSignature, readRaw, supa, rpc, paystack, dedupeKey };
+const mode = () => { const k = process.env.PAYSTACK_SECRET_KEY || ""; return k.startsWith("sk_test_") ? "test" : k.startsWith("sk_live_") ? "live" : k ? "unknown" : "none"; };
+
+module.exports = { mode, env, configured, validSignature, readRaw, supa, rpc, paystack, dedupeKey };
