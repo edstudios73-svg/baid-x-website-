@@ -205,5 +205,81 @@
   }
   const statusLabel = (v) => ({ verified: "Verified", rejected: "Rejected", resubmit_required: "Resubmit" }[v] || "Unverified");
 
-  window.BX = { sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
+
+  /* ---------- Icons (24px line set) ---------- */
+  const ICONS = {
+    home: '<path d="M12 3.500 4 8.500v10a1.500 1.500 0 0 0 1.500 1.500h13a1.500 1.500 0 0 0 1.500-1.500v-10z"/><circle cx="12" cy="13" r="2.200"/>',
+    disc: '<circle cx="12" cy="12" r="9"/><path d="m15.500 8.500-2 5-5 2 2-5z"/>',
+    work: '<rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7M3 13h18"/>',
+    proj: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    chat: '<path d="M5 4h14a1.500 1.500 0 0 1 1.500 1.500v9A1.500 1.500 0 0 1 19 16h-7l-4.500 4v-4H5a1.500 1.500 0 0 1-1.500-1.500v-9A1.500 1.500 0 0 1 5 4z"/><path d="M8 8.500h8M8 11.500h5"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4.500 20.500c1-4 4-6 7.500-6s6.500 2 7.500 6"/>',
+    wallet: '<path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H5a2 2 0 0 1-2-1z"/><circle cx="16" cy="14" r="1.200"/>',
+    grow: '<path d="M3 17 9 11l4 4 8-8"/><path d="M15 7h6v6"/>',
+    pay: '<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.500"/>',
+    equip: '<path d="M3 17h13l3-6h-5l-2-5H7l-1 5"/><circle cx="7" cy="18" r="2"/><circle cx="15" cy="18" r="2"/>',
+    mat: '<path d="m12 3 8 4.500v9L12 21l-8-4.500v-9z"/><path d="M12 12 4 7.500M12 12l8-4.500M12 12v9"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    hire: '<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20c.7-3.500 3.200-5 6.500-5s5.800 1.500 6.500 5M16 11l2 2 4-4"/>',
+    task: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/>',
+    site: '<path d="M12 21s7-6.200 7-11.500A7 7 0 0 0 5 9.500C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/>',
+    team: '<circle cx="9" cy="8" r="3.500"/><path d="M2.500 20c.7-3.500 3.200-5 6.500-5s5.800 1.500 6.500 5M16 5.500a3.500 3.500 0 0 1 0 6.500M18 15c2 .6 3.200 2 3.500 5"/>',
+    rep: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/>',
+    prog: '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+    star: '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1 6.200L12 17.200 6.500 20.200l1-6.200L3 9.600l6.200-.9z"/>',
+    box: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3"/>',
+  };
+  const icon = (k, s = 24) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ""}</svg>`;
+
+  /* ---------- Navigation ----------
+     tabs = mobile bottom bar (max 5). side = desktop sidebar (every function). '--' = divider.
+     parent maps a deeper route to the tab that stays highlighted. */
+  const NAV = {
+    guest: { tabs: [["home", "Home", "home"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]], side: [], parent: {} },
+    worker: {
+      tabs: [["home", "Home", "home"], ["jobs", "Jobs", "disc"], ["work", "Work", "work"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { wallet: "home", growth: "home" },
+    },
+    company: {
+      tabs: [["home", "Home", "home"], ["discover", "Workforce", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      side: [["home", "Overview", "home"], ["discover", "Workforce Marketplace", "disc"], ["projects", "Project Management", "proj"], ["payments", "Payments", "pay"], ["equipment", "Equipment", "equip"], ["materials", "Materials", "mat"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { payments: "home", equipment: "home", materials: "home", ws: "projects" },
+    },
+    "project-manager": {
+      tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], "--", ["ws/site", "Site Management", "site"], ["ws/tasks", "Task Management", "task"], ["ws/progress", "Progress Monitoring", "prog"], ["ws/team", "Team Management", "team"], ["ws/reports", "Reports", "rep"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { ws: "projects" },
+    },
+    business: {
+      tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["catalog", "Catalog", "box"], ["inquiries", "Inquiries", "mail"], ["profile", "Profile", "user"]],
+      side: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["catalog", "Catalog", "box"], ["inquiries", "Inquiries", "mail"], ["chats", "Chats", "chat"], "--", ["profile", "Profile", "user"]],
+      parent: { chats: "inquiries" },
+    },
+    "individual-employer": {
+      tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      side: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: {},
+    },
+  };
+  // Routes each role may open (anything else falls back to Home).
+  const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker"];
+  const ROLE_ROUTES = {
+    worker: ["jobs", "work", "wallet", "growth"],
+    company: ["discover", "projects", "ws", "payments", "equipment", "materials"],
+    "project-manager": ["discover", "projects", "ws"],
+    business: ["discover", "catalog", "inquiries"],
+    "individual-employer": ["discover", "hires"],
+  };
+  const money = (n) => { const v = Number(n) || 0; return `${v < 0 ? "-" : ""}GH₵${Math.abs(v).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
+  const ago = (iso) => {
+    const s = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+    if (s < 60) return "just now"; if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`; if (s < 2592000) return `${Math.floor(s / 86400)}d ago`;
+    return new Date(iso).toLocaleDateString("en-GH", { day: "numeric", month: "short" });
+  };
+
+  window.BX = { ICONS, icon, NAV, COMMON_ROUTES, ROLE_ROUTES, money, ago, sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
 })();

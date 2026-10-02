@@ -44,8 +44,8 @@
     <div class="splash-by"><small>By</small><strong>Baiden Creatives</strong></div>
   </div>
 
-  <!-- Home (guest + member) -->
-  <main class="screen" id="screen-home">
+  <!-- Directory: guest Home, member Discover -->
+  <main class="screen" id="screen-directory">
     <div class="wrap">
       <header class="topbar">
         <div class="topbar-row">
@@ -62,15 +62,17 @@
         </label>
         <div class="chips" id="chips"></div>
       </header>
-      <div class="banner" id="setupBanner" hidden>
-        <span class="b-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.500v.5"/></svg></span>
-        <div class="b-txt">
-          <p>Your profile isn't public yet. Complete the required items to be approved.</p>
-          <b id="bannerCount">0/0 complete</b>
-        </div>
-        <button class="b-btn" data-go="checklist">Continue setup</button>
-      </div>
       <section class="grid" id="feed" aria-live="polite"></section>
+    </div>
+  </main>
+
+  <!-- Desktop sidebar (members, wide screens) -->
+  <aside class="sidebar" id="sidebar" aria-label="Main" hidden></aside>
+
+  <!-- Role dashboards: Home, Jobs, Work, Wallet, Projects, Catalog... rendered by js/dash.js -->
+  <main class="screen" id="screen-dash">
+    <div class="wrap">
+      <div id="dashBody"></div>
     </div>
   </main>
 
@@ -91,12 +93,7 @@
         <p>Your conversations will appear here after you sign in.</p>
         <button class="btn-light" data-action="signin">Sign in</button>
       </div>
-      <div class="empty" id="chatsMember" hidden>
-        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#d9d9d9" stroke-width="1.200" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a1.500 1.500 0 0 1 1.500 1.500v9A1.500 1.500 0 0 1 19 16h-7l-4.500 4v-4H5a1.500 1.500 0 0 1-1.500-1.500v-9A1.500 1.500 0 0 1 5 4z"/><path d="M8 8.500h8M8 11.500h5" stroke-linecap="round"/></svg>
-        <h2>No conversations yet</h2>
-        <p>When you message a company, professional or supplier, it will show up here.</p>
-        <button class="btn-light" data-tab="home">Browse BAID X</button>
-      </div>
+      <div id="chatsMember" hidden></div>
     </div>
   </main>
 
@@ -182,14 +179,7 @@
 
   <!-- Bottom nav -->
   <nav class="nav" id="nav" aria-label="Main">
-    <div class="nav-in">
-      <button data-tab="home" aria-label="Home">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 3.500 4 8.500v10a1.500 1.500 0 0 0 1.500 1.500h13a1.500 1.500 0 0 0 1.500-1.500v-10z"/><circle cx="12" cy="13" r="2.200"/></svg>Home</button>
-      <button data-tab="chats" aria-label="Chats">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M5 4h14a1.500 1.500 0 0 1 1.500 1.500v9A1.500 1.500 0 0 1 19 16h-7l-4.500 4v-4H5a1.500 1.500 0 0 1-1.500-1.500v-9A1.500 1.500 0 0 1 5 4z"/><path d="M8 8.500h8M8 11.500h5" stroke-linecap="round"/></svg>Chats</button>
-      <button data-tab="profile" aria-label="Profile">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.500 20.500c1-4 4-6 7.500-6s6.500 2 7.500 6"/></svg>Profile</button>
-    </div>
+    <div class="nav-in" id="navIn"></div>
   </nav>
 
   <div class="toast" id="toast" role="status"></div>
@@ -198,5 +188,6 @@
   <script src="js/config.js"></script>
   <script src="js/common.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/dash.js"></script>
 </body>
 </html>
