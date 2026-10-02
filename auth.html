@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#121212" />
+  <title>Join BAID X</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body class="auth">
+  <div class="auth-shell">
+
+    <!-- Header: back + progress (hidden on the first screen) -->
+    <header class="auth-head hide" id="head">
+      <button class="icon-btn" id="back" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
+      <div class="progress" id="progress" aria-hidden="true"><i id="bar"></i></div>
+      <span class="step-label" id="stepLabel"></span>
+    </header>
+
+    <!-- 0. Choose type -->
+    <section class="view active" id="v-type">
+      <a class="browse" href="index.html">Browse professionals</a>
+      <h1 class="h1">Choose type</h1>
+      <p class="sub">Pick the account that fits how you use BAID X.</p>
+      <div class="types" id="types" role="radiogroup" aria-label="Account type"></div>
+      <p class="type-blurb" id="typeBlurb"></p>
+      <div class="foot">
+        <button class="btn-light wide" id="goSignin">Sign in</button>
+        <button class="btn-text" id="goSignup">Create an account</button>
+      </div>
+    </section>
+
+    <!-- Sign in -->
+    <section class="view" id="v-signin">
+      <h1 class="h1">Welcome back</h1>
+      <p class="sub" id="signinSub">Sign in to your BAID X account.</p>
+      <div class="seg" id="seg">
+        <button class="on" data-m="phone">Phone</button>
+        <button data-m="email">Email</button>
+      </div>
+      <div class="field-row" id="siPhoneRow">
+        <button class="cc" type="button" data-cc>🇬🇭 <span>+233</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <input id="siPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="0201234567" />
+      </div>
+      <input class="field" id="siEmail" type="email" autocomplete="email" placeholder="Email address" hidden />
+      <div class="pw">
+        <input class="field" id="siPass" type="password" autocomplete="current-password" placeholder="Password" />
+        <button type="button" class="eye" data-eye aria-label="Show password"></button>
+      </div>
+      <button class="btn-text left" id="forgot">Forgot password?</button>
+      <p class="err" id="siErr" role="alert"></p>
+      <div class="or"><span>or</span></div>
+      <button class="btn-ghost wide" id="google">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.600 20.100H42V20H24v8h11.300A12 12 0 1 1 24 12c3.100 0 5.800 1.100 8 3l5.700-5.700A20 20 0 1 0 44 24c0-1.300-.1-2.700-.4-3.900z"/><path fill="#FF3D00" d="m6.300 14.700 6.600 4.800A12 12 0 0 1 24 12c3.100 0 5.800 1.100 8 3l5.700-5.700A20 20 0 0 0 6.300 14.700z"/><path fill="#4CAF50" d="M24 44c5.200 0 9.900-2 13.400-5.200l-6.200-5.200A12 12 0 0 1 12.700 28l-6.500 5C9.500 39.600 16.200 44 24 44z"/><path fill="#1976D2" d="M43.600 20.100H42V20H24v8h11.300a12 12 0 0 1-4.100 5.600l6.200 5.200C37 39.200 44 34 44 24c0-1.300-.1-2.700-.4-3.900z"/></svg>
+        Continue with Google
+      </button>
+      <div class="foot">
+        <button class="btn-primary wide" id="doSignin">Sign in</button>
+      </div>
+    </section>
+
+    <!-- 1. Phone -->
+    <section class="view" id="v-phone">
+      <h1 class="h1" id="phoneTitle">Phone number</h1>
+      <p class="sub" id="phoneSub">A verification code will be sent to this number.</p>
+      <div class="field-row">
+        <button class="cc" type="button" data-cc>🇬🇭 <span>+233</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <input id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="0201234567" />
+      </div>
+      <p class="err" id="phoneErr" role="alert"></p>
+      <div class="foot"><button class="btn-primary wide" id="phoneNext" disabled>Continue</button></div>
+    </section>
+
+    <!-- 2. Confirm code -->
+    <section class="view" id="v-code">
+      <h1 class="h1">Confirm phone number</h1>
+      <p class="sub" id="codeSub">Enter the confirmation code sent to your phone.</p>
+      <div class="otp" id="otp"></div>
+      <p class="err center" id="codeErr" role="alert"></p>
+      <button class="btn-text" id="resend">Resend code</button>
+      <div class="foot"><button class="btn-primary wide" id="codeNext" disabled>Continue</button></div>
+    </section>
+
+    <!-- 3. Name -->
+    <section class="view" id="v-name">
+      <h1 class="h1" id="nameTitle">Your name</h1>
+      <p class="sub" id="nameSub"></p>
+      <input class="field" id="name" type="text" autocomplete="name" maxlength="80" />
+      <div class="foot"><button class="btn-primary wide" id="nameNext" disabled>Continue</button></div>
+    </section>
+
+    <!-- 4. Category (per role) -->
+    <section class="view" id="v-cat">
+      <h1 class="h1 small" id="catTitle">Category</h1>
+      <p class="sub" id="catSub"></p>
+      <label class="search slim" id="catSearchWrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/></svg>
+        <input id="catQ" type="search" placeholder="Search" autocomplete="off" />
+      </label>
+      <div class="cats" id="cats"></div>
+    </section>
+
+    <!-- 5. Password -->
+    <section class="view" id="v-pass">
+      <h1 class="h1" id="passTitle">Create a password</h1>
+      <p class="sub" id="passSub">Use a secure password for sign-in. Your account will still be tied to mobile authentication.</p>
+      <div class="pw">
+        <input class="field" id="pass" type="password" autocomplete="new-password" placeholder="Create your password" />
+        <button type="button" class="eye" data-eye aria-label="Show password"></button>
+      </div>
+      <ul class="rules" id="rules">
+        <li data-r="len">At least 8 characters</li>
+        <li data-r="num">A number</li>
+        <li data-r="let">A letter</li>
+      </ul>
+      <p class="err" id="passErr" role="alert"></p>
+      <div class="foot">
+        <button class="btn-primary wide" id="passNext" disabled>Create account</button>
+        <p class="legal" id="passLegal">BAID X has no tolerance for objectionable content or abusive users. By continuing, you agree to the <a href="#" data-legal>Terms of Service</a> and <a href="#" data-legal>Privacy Policy</a>.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Country sheet -->
+  <div class="sheet-bg" id="sheetBg" hidden></div>
+  <div class="sheet" id="sheet" hidden>
+    <h3>Country code</h3>
+    <div id="ccList"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/vendor/supabase.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
