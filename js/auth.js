@@ -60,7 +60,12 @@
     if (S.mode === "onboard") { prepName(); show("name"); return; }
     S.mode = "signup"; resetPhoneView(); show("phone");
   });
-  $("#goSignin").addEventListener("click", () => { S.mode = "signin"; show("signin"); });
+  $("#goSignin").addEventListener("click", () => {
+    S.mode = "signin";
+    $("#signinSub").textContent = S.intent ? `Signing in as ${ROLES[S.role].label}.` : "Sign in to your BAID X account.";
+    $("#siErr").textContent = "";
+    show("signin");
+  });
 
   /* ---------- country sheet ---------- */
   let ccTarget = null;
@@ -262,6 +267,12 @@
     setBusy($("#doSignin"), false, "Sign in");
     if (error) { $("#siErr").textContent = friendly(error); return; }
     const me = await loadMe();
+    // they chose an account type first, so make sure the account really is that type
+    if (S.intent && me?.role && me.role !== S.role) {
+      await sb.auth.signOut();
+      $("#siErr").textContent = `That account is a ${ROLES[me.role].label} account. Go back and choose ${ROLES[me.role].label}.`;
+      return;
+    }
     if (me?.role) location.href = HOME; else startOnboard();
   });
   $("#siPass").addEventListener("keydown", (e) => e.key === "Enter" && $("#doSignin").click());
@@ -281,6 +292,17 @@
   /* ---------- onboarding for signed-in users with no role (e.g. Google) ---------- */
   function startOnboard() { S.mode = "onboard"; S.history = ["type"]; S.view = "type"; renderTypes(); $("#goSignin").hidden = true; $("#goSignup").textContent = "Continue"; show("type", { push: false }); }
 
+  // Sign in from the guest page: pick the account type first, then the credentials step follows.
+  function signinIntent() {
+    S.mode = "signin"; S.intent = true;
+    $("#typeTitle").textContent = GROUP ? (params.get("group") === "pro" ? "Sign in as a Pro" : "Sign in as a client") : "Sign in";
+    $("#typeSub").textContent = "Choose your account type to continue.";
+    $("#goSignin").textContent = "Continue";
+    $("#goSignup").textContent = "New here? Create an account";
+    $("#goSignup").onclick = null;
+    show("type", { push: false });
+  }
+
   /* ---------- boot ---------- */
   if (GROUP) { $("#typeTitle").textContent = GROUP.title; $("#typeSub").textContent = GROUP.sub; }
   renderTypes();
@@ -290,6 +312,6 @@
     if (window.BX_RECOVERY) return; // the PASSWORD_RECOVERY event below opens the "set a new password" step
     if (me?.role && S.mode !== "reset") { location.replace(HOME); return; }
     if (me && !me.role) { startOnboard(); return; }
-    if (params.get("mode") === "signin") { S.mode = "signin"; show("signin"); }
+    if (params.get("mode") === "signin") signinIntent();
   })();
 })();
