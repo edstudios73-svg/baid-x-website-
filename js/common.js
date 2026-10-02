@@ -244,31 +244,31 @@
     worker: {
       tabs: [["home", "Home", "home"], ["jobs", "Jobs", "disc"], ["work", "Work", "work"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
       side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { orgs: "profile", org: "profile", join: "profile", wallet: "home", growth: "home", projects: "work", ws: "work", invites: "work" },
+      parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile", wallet: "home", growth: "home", projects: "work", ws: "work", invites: "work" },
     },
     company: {
       tabs: [["home", "Home", "home"], ["discover", "Workforce", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
       side: [["home", "Overview", "home"], ["discover", "Workforce Marketplace", "disc"], ["projects", "Project Management", "proj"], ["approvals", "Approvals", "task"], ["payments", "Payments", "pay"], ["equipment", "Equipment", "equip"], ["materials", "Materials", "mat"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { orgs: "profile", org: "profile", join: "profile", payments: "home", equipment: "home", materials: "home", ws: "projects", approvals: "projects", "new-project": "projects" },
+      parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile", payments: "home", equipment: "home", materials: "home", ws: "projects", approvals: "projects", "new-project": "projects" },
     },
     "project-manager": {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
       side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], "--", ["ws/overview", "Project Overview", "site"], ["ws/team", "Team", "team"], ["ws/tasks", "Tasks", "task"], ["ws/reports", "Reports", "rep"], ["ws/finance", "Finance", "pay"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { orgs: "profile", org: "profile", join: "profile", ws: "projects", invites: "projects" },
+      parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile", ws: "projects", invites: "projects" },
     },
     business: {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["catalog", "Catalog", "box"], ["inquiries", "Inquiries", "mail"], ["profile", "Profile", "user"]],
       side: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["catalog", "Catalog", "box"], ["inquiries", "Inquiries", "mail"], ["chats", "Chats", "chat"], "--", ["profile", "Profile", "user"]],
-      parent: { orgs: "profile", org: "profile", join: "profile", chats: "inquiries" },
+      parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile", chats: "inquiries" },
     },
     "individual-employer": {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
       side: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { orgs: "profile", org: "profile", join: "profile" },
+      parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile" },
     },
   };
   // Routes each role may open (anything else falls back to Home).
-  const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker", "orgs", "org", "join"];
+  const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker", "orgs", "org", "join", "billing"];
   const ROLE_ROUTES = {
     worker: ["jobs", "work", "wallet", "growth", "projects", "ws", "invites"],
     company: ["discover", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials"],
