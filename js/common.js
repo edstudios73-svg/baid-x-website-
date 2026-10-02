@@ -240,18 +240,18 @@
     guest: { tabs: [["home", "Home", "home"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]], side: [], parent: {} },
     worker: {
       tabs: [["home", "Home", "home"], ["jobs", "Jobs", "disc"], ["work", "Work", "work"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { wallet: "home", growth: "home" },
+      side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { wallet: "home", growth: "home", projects: "work", ws: "work", invites: "work" },
     },
     company: {
       tabs: [["home", "Home", "home"], ["discover", "Workforce", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Overview", "home"], ["discover", "Workforce Marketplace", "disc"], ["projects", "Project Management", "proj"], ["payments", "Payments", "pay"], ["equipment", "Equipment", "equip"], ["materials", "Materials", "mat"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { payments: "home", equipment: "home", materials: "home", ws: "projects" },
+      side: [["home", "Overview", "home"], ["discover", "Workforce Marketplace", "disc"], ["projects", "Project Management", "proj"], ["approvals", "Approvals", "task"], ["payments", "Payments", "pay"], ["equipment", "Equipment", "equip"], ["materials", "Materials", "mat"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { payments: "home", equipment: "home", materials: "home", ws: "projects", approvals: "projects", "new-project": "projects" },
     },
     "project-manager": {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], "--", ["ws/site", "Site Management", "site"], ["ws/tasks", "Task Management", "task"], ["ws/progress", "Progress Monitoring", "prog"], ["ws/team", "Team Management", "team"], ["ws/reports", "Reports", "rep"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { ws: "projects" },
+      side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], "--", ["ws/overview", "Project Overview", "site"], ["ws/team", "Team", "team"], ["ws/tasks", "Tasks", "task"], ["ws/reports", "Reports", "rep"], ["ws/finance", "Finance", "pay"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { ws: "projects", invites: "projects" },
     },
     business: {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["catalog", "Catalog", "box"], ["inquiries", "Inquiries", "mail"], ["profile", "Profile", "user"]],
@@ -267,9 +267,9 @@
   // Routes each role may open (anything else falls back to Home).
   const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker"];
   const ROLE_ROUTES = {
-    worker: ["jobs", "work", "wallet", "growth"],
-    company: ["discover", "projects", "ws", "payments", "equipment", "materials"],
-    "project-manager": ["discover", "projects", "ws"],
+    worker: ["jobs", "work", "wallet", "growth", "projects", "ws", "invites"],
+    company: ["discover", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials"],
+    "project-manager": ["discover", "projects", "ws", "invites"],
     business: ["discover", "catalog", "inquiries"],
     "individual-employer": ["discover", "hires"],
   };

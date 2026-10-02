@@ -72,7 +72,7 @@
         + banner(c) + stats([[projects.length, "Projects"], [nz(openTasks), "Open tasks"], [`${avg}%`, "Avg progress"]])
         + (p0 ? card(p0.name, pretty(p0.status), `${bar(p0.progress_pct)}<div class="cap2">${esc(p0.city_town || "")} ${p0.progress_pct || 0}% complete</div>`)
                : card("No project yet", "", `<div class="cap2" style="margin:0">Ask your company for a join code. Once they approve the link, their projects appear here.</div>`))
-        + sec("On site") + tiles([["site", "Check-ins", "Attendance", "ws/site"], ["task", "Tasks", `${nz(openTasks)} open`, "ws/tasks"], ["rep", "Reports", "Daily and weekly", "ws/reports"], ["prog", "Progress", "Photos and milestones", "ws/progress"]]);
+        + sec("Your projects") + tiles([["task", "Tasks", `${nz(openTasks)} open`, "ws/tasks"], ["team", "Team", "Build your crew", "ws/team"], ["rep", "Reports", "Daily and weekly", "ws/reports"], ["pay", "Finance", "Requests and records", "ws/finance"]]);
     },
     async business(c) {
       const [products, equip, inq, latest] = await Promise.all([
@@ -127,7 +127,7 @@
     const f = { applications: (a) => !["accepted", "completed"].includes(a.status), active: (a) => a.status === "accepted", completed: (a) => a.status === "completed" }[seg];
     const list = apps.filter(f);
     const msgs = { applications: ["No applications yet", "Browse the Job Marketplace and apply to jobs that match your trade.", `<button class="btn-light sm" data-go="jobs">Browse jobs</button>`], active: ["No active work", "Jobs you have been accepted for will show here.", ""], completed: ["Nothing completed yet", "Finished jobs, reviews and earned XP will show here.", ""] }[seg];
-    return head("Work") + segs([["applications", "Applications", "work/applications"], ["active", "Active", "work/active"], ["completed", "Completed", "work/completed"], ["wallet", "Wallet", "wallet"]], seg)
+    return head("Work") + segs([["applications", "Applications", "work/applications"], ["active", "Active", "work/active"], ["projects", "Projects", "projects"], ["completed", "Completed", "work/completed"], ["wallet", "Wallet", "wallet"]], seg)
       + (list.length ? list.map((a) => row("work", J[a.job_id]?.title || "Job", `${J[a.job_id]?.city_town || "Ghana"} · applied ${ago(a.created_at)}${a.proposed_rate_ghs ? ` · you asked ${money(a.proposed_rate_ghs)}` : ""}`, pill(pretty(a.status), statusKind(a.status)))).join("") : empty("work", ...msgs));
   }
 
@@ -151,52 +151,6 @@
       ${sec("How to earn XP")}${[["Verify your identity", "+100 XP"], ["Get accepted for a job", "+80 XP"], ["Complete a job", "+120 XP"], ["Complete your profile", "+50 XP"]].map(([t, v]) => row("star", t, "", `<span class="amt">${v}</span>`)).join("")}
       ${sec("Certifications")}${empty("rep", "No certifications yet", "Upload trade certificates and licences to build trust.", soonBtn("Add certification"))}
       ${sec("Recent XP")}${ev.length ? ev.map((e) => row("grow", pretty(e.kind), ago(e.created_at), `<span class="amt">+${e.points} XP</span>`)).join("") : empty("grow", "No XP yet", "Complete your profile and apply for jobs to start earning.")}`;
-  }
-
-  /* ---------- Projects (company + PM) and the PM workspace ---------- */
-  const projectCol = (c) => (c.role === "company" ? "company_id" : "pm_id");
-  async function myProjects(c) { return rows(c, "projects", "id,name,description,status,progress_pct,city_town,region,starts_on,ends_on,pm_id,company_id", (x) => x.eq(projectCol(c), c.uid).order("created_at", { ascending: false }), 50); }
-
-  async function projectsView(c, arg) {
-    const seg = ["active", "completed"].includes(arg) ? arg : "all";
-    const all = await myProjects(c);
-    c.state.projCache = all;
-    const list = all.filter((p) => seg === "all" || (seg === "completed" ? String(p.status).toLowerCase() === "completed" : String(p.status).toLowerCase() !== "completed"));
-    const isCo = c.role === "company";
-    return head("Projects", isCo ? soonBtn("New project") : "") + segs([["all", "All", "projects"], ["active", "Active", "projects/active"], ["completed", "Completed", "projects/completed"]], seg)
-      + (list.length ? list.map((p) => `<button class="row proj" data-open-project="${esc(p.id)}"><span class="ic">${icon("proj", 17)}</span><span class="tx"><b>${esc(p.name)}</b><small>${esc([p.city_town, p.region].filter(Boolean).join(", ") || "Ghana")} · ${p.progress_pct || 0}% complete</small>${bar(p.progress_pct)}</span>${pill(pretty(p.status), statusKind(p.status))}</button>`).join("")
-        : isCo ? empty("proj", "No projects yet", "Create a project to list the workers, project manager, equipment and materials you need.", soonBtn("Create a project"))
-               : empty("proj", "No projects assigned", "Ask your company for a join code. After they approve the link, their projects appear here."));
-  }
-
-  const WS_TABS = [["site", "Site"], ["tasks", "Tasks"], ["progress", "Progress"], ["team", "Team"], ["reports", "Reports"]];
-  async function wsView(c, arg) {
-    const tab = WS_TABS.some(([k]) => k === arg) ? arg : "site";
-    const list = c.state.projCache || (c.state.projCache = await myProjects(c));
-    if (!list.length) return head("Workspace") + empty("proj", "No project selected", c.role === "company" ? "Create a project first, then its workspace opens here." : "Once your company links you to a project, its workspace opens here.");
-    const p = list.find((x) => x.id === c.state.projectId) || list[0]; c.state.projectId = p.id;
-    const switcher = list.length > 1 ? `<select class="proj-pick" id="projPick">${list.map((x) => `<option value="${esc(x.id)}" ${x.id === p.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>` : "";
-    let inner = "";
-    if (tab === "site") {
-      const [parts, tasks] = await Promise.all([count(c, "project_participants", (x) => x.eq("project_id", p.id)), count(c, "project_tasks", (x) => x.eq("project_id", p.id))]);
-      inner = stats([[nz(parts), "People"], [nz(tasks), "Tasks"], [`${p.progress_pct || 0}%`, "Progress"]])
-        + card("Site details", pretty(p.status), `<div class="cap2" style="margin:0">${esc([p.city_town, p.region].filter(Boolean).join(", ") || "Location not set")}${p.starts_on ? ` · starts ${esc(p.starts_on)}` : ""}${p.ends_on ? ` · ends ${esc(p.ends_on)}` : ""}</div>`)
-        + empty("site", "Check-ins and inspections", "Daily attendance, site inspections and field notes arrive in the next stage.");
-    } else if (tab === "tasks") {
-      const tasks = await rows(c, "project_tasks", "id,title,status,due_on", (x) => x.eq("project_id", p.id).order("sort_order", { ascending: true }), 100);
-      inner = `<form class="add-task" id="addTask"><input id="taskTitle" placeholder="Add a task" maxlength="120" autocomplete="off" /><button class="btn-light sm" type="submit">Add</button></form>`
-        + (tasks.length ? tasks.map((t) => row("task", t.title, t.due_on ? `Due ${t.due_on}` : "No due date", pill(pretty(t.status) || "To do", statusKind(t.status)), "")).join("") : empty("task", "No tasks yet", "Add the first task above, then assign it to a worker."));
-    } else if (tab === "progress") {
-      const [total, done] = await Promise.all([count(c, "project_tasks", (x) => x.eq("project_id", p.id)), count(c, "project_tasks", (x) => x.eq("project_id", p.id).eq("status", "done"))]);
-      inner = card("Overall progress", `${p.progress_pct || 0}%`, `${bar(p.progress_pct)}<div class="cap2">${nz(done)} of ${nz(total)} tasks done</div>`) + empty("prog", "Photos and milestones", "Progress photos and milestone tracking arrive in the next stage.");
-    } else if (tab === "team") {
-      const parts = await rows(c, "project_participants", "id,role_type,status", (x) => x.eq("project_id", p.id), 100);
-      inner = parts.length ? parts.map((x) => row("team", pretty(x.role_type) || "Member", "Project participant", pill(pretty(x.status), statusKind(x.status)))).join("") : empty("team", "No team yet", "Invite workers and suppliers to this project in the next stage.");
-    } else {
-      inner = empty("rep", "Daily and weekly reports", "File site reports with photos, attendance and materials. The company approves them. Arrives in the next stage.");
-    }
-    return `<div class="d-head"><div><h1>${esc(p.name)}</h1><p class="sub">${pill(pretty(p.status), statusKind(p.status))} ${esc(p.city_town || "")}</p></div></div>${switcher}`
-      + segs(WS_TABS.map(([k, l]) => [k, l, `ws/${k}`]), tab) + inner;
   }
 
   /* ---------- Company resource pages ---------- */
@@ -229,14 +183,33 @@
       : empty("hire", "No hires yet", "Find a trade in Discover, message them and keep a record of everyone you hire here.", `<button class="btn-light sm" data-go="discover">Find a trade</button>`));
   }
 
+  /* ---------- Inbox: invitations, approvals, notifications (shown on every Home) ---------- */
+  async function inbox(c) {
+    let html = "";
+    if (c.role === "worker" || c.role === "project-manager") {
+      const r = await run(c.sb.rpc("my_invitations"));
+      const n = (r.data || []).length;
+      if (n) html += `<button class="inv-card" data-go="invites"><span class="ic">${icon("mail", 20)}</span><span class="tx"><b>${n} project invitation${n > 1 ? "s" : ""}</b><small>Review and reply</small></span><span class="pill">${n}</span></button>`;
+    }
+    if (c.role === "company") {
+      const r = await run(c.sb.rpc("company_approvals"));
+      const a = r.data || {};
+      const n = ["workers", "requests", "payments", "reports", "completions"].reduce((t, k) => t + (a[k] || []).length, 0);
+      if (n) html += `<button class="inv-card warn" data-go="approvals"><span class="ic">${icon("task", 20)}</span><span class="tx"><b>${n} item${n > 1 ? "s" : ""} need your approval</b><small>Workers, requests, payments, reports and completions</small></span><span class="pill warn">${n}</span></button>`;
+    }
+    const notes = await rows(c, "notifications", "id,title,body,href,meta,created_at,read_at", (x) => x.is("read_at", null).order("created_at", { ascending: false }), 5);
+    if (notes.length) html += sec("Updates") + notes.map((n) => `<button class="row note" data-note="${esc(n.id)}" data-href="${esc(n.href || "")}" data-pid="${esc(n.meta?.project_id || "")}"><span class="dot-u"></span><span class="tx"><b>${esc(n.title)}</b><small>${esc(n.body || "")}</small></span><span class="meta2">${esc(ago(n.created_at))}</span></button>`).join("");
+    return html;
+  }
+
   /* ---------- Render + events ---------- */
-  const VIEWS = { jobs: jobsView, work: workView, wallet: walletView, growth: growthView, projects: projectsView, ws: wsView, catalog: catalogView, inquiries: inquiriesView, hires: hiresView, payments: () => resView("payments"), equipment: () => resView("equipment"), materials: () => resView("materials") };
+  const VIEWS = { jobs: jobsView, work: workView, wallet: walletView, growth: growthView, catalog: catalogView, inquiries: inquiriesView, hires: hiresView, payments: () => resView("payments"), equipment: () => resView("equipment"), materials: () => resView("materials") };
   let token = 0;
   async function render(name, arg, c) {
     const my = ++token, el = body();
     el.innerHTML = '<div class="skel" style="height:90px;margin-top:16px"></div><div class="skel" style="height:140px;margin-top:12px"></div><div class="skel" style="height:140px;margin-top:12px"></div>';
     let html;
-    try { html = name === "home" ? await HOME[c.role](c) : await VIEWS[name](c, arg); }
+    try { html = name === "home" ? (await HOME[c.role](c)) + (await inbox(c)) : await VIEWS[name](c, arg); }
     catch (e) { console.error(e); html = '<div class="state"><b>Something went wrong</b>Please refresh and try again.</div>'; }
     if (my === token) el.innerHTML = html;
   }
@@ -246,8 +219,16 @@
     const c = app.dashCtx();
     const tr = t.closest("[data-trade]");
     if (tr) { const item = categoriesFor("worker").items.find((i) => i.name.toLowerCase().startsWith(tr.dataset.trade.toLowerCase())); return c.openDiscover("professionals", item); }
+    const nt = t.closest("[data-note]");
+    if (nt) {
+      c.sb.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", nt.dataset.note).then(() => {});
+      const href = nt.dataset.href || "";
+      if (nt.dataset.pid) c.state.projectId = nt.dataset.pid;
+      if (href.startsWith("#/")) return c.go(href.slice(2));
+      return;
+    }
     const op = t.closest("[data-open-project]");
-    if (op) { c.state.projectId = op.dataset.openProject; return c.go("ws/site"); }
+    if (op) { c.state.projectId = op.dataset.openProject; return c.go("ws/overview"); }
     const ap = t.closest("[data-apply]");
     if (ap) {
       if (!canApply(c.profile)) { c.toast("Complete your profile before you apply."); return c.go("checklist"); }
@@ -268,5 +249,8 @@
     window.APP.route();
   });
 
-  window.DASH = { render };
+  window.DASH = {
+    render, register: (name, fn) => { VIEWS[name] = fn; },
+    ui: { run, rows, count, nz, greet, first, hero, pill, stats, sec, tile, tiles, row, card, bar, empty, segs, head, banner, soonBtn, statusKind, trade, canApply },
+  };
 })();

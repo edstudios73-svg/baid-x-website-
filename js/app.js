@@ -142,7 +142,7 @@
   function cardHTML(it) {
     const cover = it.cover ? `<div class="cover" style="background-image:url('${esc(it.cover)}')"></div>` : '<div class="cover ph"><img src="assets/favicon.png" alt="" /></div>';
     const avatar = it.image ? `<div class="avatar" style="background-image:url('${esc(it.image)}')"></div>` : `<div class="avatar initials">${esc(initials(it.name))}</div>`;
-    return `<article class="card" data-id="${esc(it.id)}">${cover}${avatar}
+    return `<article class="card" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">${cover}${avatar}
       <div class="card-body"><h3>${esc(it.name)}</h3><p class="desc">${esc(it.desc)}</p>
         <div class="meta">${BAG}<span>${esc(it.tag)}</span></div><div class="meta loc">${PIN}<span>${esc(it.place)}</span></div></div>
       <div class="stats">${it.stats.map(([v, l]) => `<div class="stat"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div></article>`;
@@ -299,7 +299,13 @@
     if (t.closest("[data-soon]")) return toast("This screen is built in the next stage.");
     const sign = t.closest("[data-action='join'],[data-action='signin']");
     if (sign) { const gr = sign.dataset.group; const mode = sign.dataset.action === "signin" ? "signin" : "signup"; return void (location.href = `auth.html?mode=${mode}${gr ? `&group=${gr}` : ""}`); }
-    if (t.closest(".card")) return toast("Public profile pages are built in a later stage.");
+    const card = t.closest(".card");
+    if (card) {
+      const role = R(), kind = card.dataset.kind;
+      if (role === "company" && ["worker", "pm"].includes(kind)) return window.PROJ?.openInvite(kind, card.dataset.id);
+      if (role === "project-manager" && kind === "worker") return window.PROJ?.openInvite("worker", card.dataset.id);
+      return toast("Public profile pages are built in a later stage.");
+    }
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });
   window.addEventListener("hashchange", route);
