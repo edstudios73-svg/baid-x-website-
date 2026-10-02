@@ -215,7 +215,7 @@
     if (t.closest("#logout")) { await sb.auth.signOut(); location.hash = "#/home"; location.reload(); return; }
     if (t.closest("[data-soon]")) return toast("This screen is built in the next stage.");
     const sign = t.closest("[data-action='join'],[data-action='signin']");
-    if (sign) { const role = sign.dataset.role; const mode = sign.dataset.action === "signin" ? "signin" : "signup"; return void (location.href = `auth.html?mode=${mode}${ROLES[role] ? `&role=${role}` : ""}`); }
+    if (sign) { const g = sign.dataset.group; const mode = sign.dataset.action === "signin" ? "signin" : "signup"; return void (location.href = `auth.html?mode=${mode}${g ? `&group=${g}` : ""}`); }
     if (t.closest(".card")) return toast("Public profile pages are built in a later stage.");
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });

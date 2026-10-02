@@ -11,9 +11,16 @@
   const OTP_LEN = 6;
   const HOME = "index.html#/home";
 
-  const S = { role: "worker", mode: "signup", country: COUNTRIES[0], phone: "", name: "", cat: null, user: null, siMode: "phone", history: ["type"], view: "type" };
+  // "Pro" paths (workers, project managers, suppliers) and "Client" paths (home clients, companies) are different joins.
+  const GROUPS = {
+    pro: { roles: ["worker", "project-manager", "business"], title: "Join as a Pro", sub: "Pick how you work on BAID X." },
+    client: { roles: ["individual-employer", "company"], title: "Join as a client", sub: "Hiring for your home, or for your company?" },
+  };
   const params = new URLSearchParams(location.search);
-  if (ROLES[params.get("role")]) S.role = params.get("role");
+  const GROUP = GROUPS[params.get("group")] || null;
+  const ROLE_KEYS = GROUP ? GROUP.roles : Object.keys(ROLES);
+  const S = { role: ROLE_KEYS[0], mode: "signup", country: COUNTRIES[0], phone: "", name: "", cat: null, user: null, siMode: "phone", history: ["type"], view: "type" };
+  if (ROLE_KEYS.includes(params.get("role"))) S.role = params.get("role");
 
   /* ---------- navigation ---------- */
   function show(view, { push = true } = {}) {
@@ -41,7 +48,7 @@
 
   /* ---------- 0. choose type ---------- */
   function renderTypes() {
-    $("#types").innerHTML = Object.entries(ROLES).map(([k, r]) =>
+    $("#types").innerHTML = ROLE_KEYS.map((k) => [k, ROLES[k]]).map(([k, r]) =>
       `<button class="type ${S.role === k ? "on" : ""}" role="radio" aria-checked="${S.role === k}" data-role="${k}">${r.icon}<span>${esc(r.label)}</span></button>`).join("");
     $("#typeBlurb").textContent = ROLES[S.role].blurb;
   }
@@ -275,6 +282,7 @@
   function startOnboard() { S.mode = "onboard"; S.history = ["type"]; S.view = "type"; renderTypes(); $("#goSignin").hidden = true; $("#goSignup").textContent = "Continue"; show("type", { push: false }); }
 
   /* ---------- boot ---------- */
+  if (GROUP) { $("#typeTitle").textContent = GROUP.title; $("#typeSub").textContent = GROUP.sub; }
   renderTypes();
   sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { S.mode = "reset"; prepPass(); show("pass"); } });
   (async () => {
