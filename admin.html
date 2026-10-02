@@ -3,31 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>BAID X · Staff console</title>
+  <title>BAID X · Super Admin</title>
   <meta name="robots" content="noindex, nofollow" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#173a63" />
   <link rel="icon" href="assets/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/app.css" />
-  <style>
-    .adm { max-width: 760px; margin: 0 auto; padding: 18px 16px 60px; }
-    .adm-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; } .adm-top img { width: 34px; height: 34px; border-radius: 9px; }
-    .adm-top .tx { flex: 1; min-width: 0; } .adm-top b { display: block; font-size: 15px; } .adm-top small { color: var(--muted); font-size: 12px; }
-    .adm-login { max-width: 380px; margin: 14vh auto 0; }
-    .adm-login h1 { font-size: 22px; margin: 14px 0 4px; } .adm-login p { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; }
-    .adm-login .in { margin-bottom: 10px; width: 100%; }
-    .adm-login .btn-light { width: 100%; }
-    .org-row { flex-wrap: wrap; } .org-row .tx { flex: 1 1 100%; } .org-row .btn-dark { margin-left: auto; }
-  </style>
+  <link rel="stylesheet" href="css/admin.css" />
 </head>
 <body>
-  <main class="adm" id="adm"></main>
+  <div id="app"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="js/vendor/supabase.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/common.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>
