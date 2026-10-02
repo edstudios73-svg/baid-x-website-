@@ -33,7 +33,7 @@
 
   async function render() {
     const me = state.me, can = (k) => me.can.includes(k);
-    const tabs = [["overview", "Overview"], ["orgs", "Organizations"], ...(can("finance:VIEW") ? [["finance", "Finance"]] : []), ...(can("audit:VIEW") ? [["audit", "Activity"]] : []), ["access", "Roles"]];
+    const tabs = [["overview", "Overview"], ["verify", "Verification"], ["money", "Money"], ["orgs", "Organizations"], ...(can("finance:VIEW") ? [["finance", "Finance"]] : []), ...(can("audit:VIEW") ? [["audit", "Activity"]] : []), ["access", "Roles"]];
     let body = "";
     try {
       if (state.tab === "overview") {
@@ -42,6 +42,10 @@
       } else if (state.tab === "orgs") {
         const list = await rpc("platform_orgs");
         body = list.length ? list.map((o) => `<div class="row org-row"><span class="tx"><b>${esc(o.name)}</b><small><span class="code">${esc(o.public_code)}</span> ${esc(o.owner)} · ${o.members} people · ${esc(pretty(o.org_type))}</small></span>${pill(o.status)}${can("organizations:EDIT") ? `<button class="btn-dark sm" data-org="${esc(o.org_id)}" data-s="${o.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE"}">${o.status === "ACTIVE" ? "Suspend" : "Restore"}</button>` : ""}</div>`).join("") : `<div class="d-empty"><h3>No organizations yet</h3></div>`;
+      } else if (state.tab === "verify") {
+        body = await verifyTab();
+      } else if (state.tab === "money") {
+        body = await moneyTab();
       } else if (state.tab === "finance") {
         body = await financeTab(can("finance:ADMINISTER"));
       } else if (state.tab === "audit") {
@@ -54,6 +58,44 @@
       }
     } catch (e) { body = `<div class="state"><b>Not available</b>${esc(e.message || "Your role does not include this view.")}</div>`; }
     root.innerHTML = top(me) + `<div class="segs">${tabs.map(([k, l]) => `<button class="${k === state.tab ? "on" : ""}" data-t="${k}">${esc(l)}</button>`).join("")}</div>` + body;
+  }
+
+  /* ---------- verification review ---------- */
+  const BUCKET = { ghana_card_front_url: "ghana-cards", ghana_card_back_url: "ghana-cards", contact_ghana_card_url: "ghana-cards", business_registration_doc_url: "business-docs", trade_license_url: "trade-licenses", qualification_doc_url: "trade-licenses", certification_doc_url: "trade-licenses", application_letter_url: "application-letters", ghana_card_front: "ghana-cards", ghana_card_back: "ghana-cards" };
+  const LABEL = (k) => pretty(k.replace(/_url$/, "").replace(/_/g, " "));
+  const ROLE_NAME = { worker: "Professional", "project-manager": "Project manager", company: "Company", business: "Supplier", "individual-employer": "Client" };
+  async function verifyTab() {
+    const f = state.vf || "pending_verification";
+    const list = await rpc("admin_verification_queue", { p_status: f });
+    const chips = [["pending_verification", "Waiting"], ["resubmit_required", "Needs action"], ["rejected", "Rejected"], ["verified", "Verified"]];
+    let html = `<div class="segs">${chips.map(([k, l]) => `<button class="${k === f ? "on" : ""}" data-vf="${k}">${l}</button>`).join("")}</div>`;
+    if (!list.length) return html + `<div class="d-empty"><h3>Nothing here</h3><p>${f === "pending_verification" ? "No profiles are waiting for review." : "No profiles with this status."}</p></div>`;
+    state.vq = list;
+    return html + list.map((x, i) => {
+      const docs = Object.entries(x.docs || {}).flatMap(([k, v]) => {
+        if (k === "profile_sections" && v && typeof v === "object") return Object.entries(v).filter(([kk]) => kk.startsWith("ghana_card")).map(([kk, vv]) => [kk, vv]);
+        return [[k, v]];
+      }).filter(([, v]) => v && typeof v === "string");
+      return `<div class="dcard"><h4><span>${esc(x.name || "Unnamed")}</span><span class="pill warn">${esc(ROLE_NAME[x.role] || x.role)}</span></h4><p class="cap2">${esc(x.phone || "")} ${x.region ? "· " + esc(x.region) : ""} · updated ${esc(ago(x.updated_at))}</p>
+        ${docs.map(([k, v]) => (BUCKET[k] || /^https?:/.test(v)) ? `<div class="kv"><span>${esc(LABEL(k))}</span><b><button class="btn-dark sm" data-doc="${esc(BUCKET[k] || "")}" data-path="${esc(v)}">View</button></b></div>` : `<div class="kv"><span>${esc(LABEL(k))}</span><b>${esc(v)}</b></div>`).join("") || `<p class="cap2">No documents on file.</p>`}
+        ${x.rejection_reason ? `<div class="req"><small>Last note</small><p>${esc(x.rejection_reason)}</p></div>` : ""}
+        <div class="btn-row">${f !== "verified" ? `<button class="btn-light sm" data-vd="verified" data-i="${i}">Approve</button>` : ""}<button class="btn-dark sm" data-vd="resubmit_required" data-i="${i}">Ask to resubmit</button>${f !== "rejected" ? `<button class="btn-dark sm" data-vd="rejected" data-i="${i}">Reject</button>` : ""}${f === "verified" ? `<button class="btn-dark sm" data-vd="pending_verification" data-i="${i}">Reset to review</button>` : ""}</div></div>`;
+    }).join("");
+  }
+  async function moneyTab() {
+    const q = await rpc("admin_money_queue");
+    const dep = q.deposits.map((d) => `<div class="dcard"><h4><span>Deposit · ${esc(cediW(d.amount))}</span><span class="pill warn">${esc(pretty(d.status))}</span></h4><p class="cap2">${esc(d.owner_name)} · ${esc(pretty(d.role))} · ${esc(d.ref)} · ${esc(ago(d.created_at))}${d.note ? " · " + esc(d.note) : ""}</p>
+      <div class="btn-row">${d.proof ? `<button class="btn-dark sm" data-doc="payment-proofs" data-path="${esc(d.proof)}">View proof</button>` : ""}<button class="btn-light sm" data-dd="1" data-id="${esc(d.id)}">Confirm received</button><button class="btn-dark sm" data-dd="0" data-id="${esc(d.id)}">Reject</button></div></div>`).join("");
+    const wd = q.withdrawals.map((w) => `<div class="dcard"><h4><span>Withdrawal · ${esc(cediW(w.amount))}</span><span class="pill warn">${esc(pretty(w.status))}</span></h4><p class="cap2">${esc(w.owner_name)} · ${esc(pretty(w.role))} · ${esc(w.ref)} · ${esc(ago(w.created_at))}</p><div class="kv"><span>Pay to</span><b>${esc(w.name || "")} · ${esc(w.network || "")} ${esc(w.account || "")}</b></div>
+      <div class="btn-row"><button class="btn-light sm" data-wd="completed" data-id="${esc(w.id)}">Mark as paid</button><button class="btn-dark sm" data-wd="rejected" data-id="${esc(w.id)}">Return to wallet</button></div></div>`).join("");
+    return `<div class="sec">Deposits waiting</div>${dep || `<div class="cap2">None waiting.</div>`}<div class="sec">Withdrawals waiting</div>${wd || `<div class="cap2">None waiting.</div>`}`;
+  }
+  const cediW = (n) => `GH₵${Number(n).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  async function openDoc(bucket, path) {
+    if (/^https?:/.test(path)) return window.open(path, "_blank", "noopener");
+    const { data, error } = await sb.storage.from(bucket).createSignedUrl(path, 600);
+    if (error || !data?.signedUrl) return toast("Couldn't open that file.");
+    window.open(data.signedUrl, "_blank", "noopener");
   }
 
   const cedi = (m) => `GH₵${(m / 100).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -79,6 +121,19 @@
   }
 
   root.addEventListener("click", async (e) => {
+    const vf = e.target.closest("[data-vf]"); if (vf) { state.vf = vf.dataset.vf; return render(); }
+    const dc = e.target.closest("[data-doc]"); if (dc) return openDoc(dc.dataset.doc, dc.dataset.path);
+    const vd = e.target.closest("[data-vd]");
+    if (vd) {
+      const x = state.vq[+vd.dataset.i], st = vd.dataset.vd; let reason = null;
+      if (st === "rejected" || st === "resubmit_required") { reason = window.prompt(st === "rejected" ? "Why is this not approved? The member will see this." : "What should they fix? The member will see this.", ""); if (reason === null) return; }
+      try { await rpc("admin_decide_verification", { p_role: x.role, p_id: x.id, p_status: st, p_reason: reason || null }); toast("Decision saved. The member was notified."); render(); } catch (err) { toast(err.message || "Failed"); }
+      return;
+    }
+    const dd = e.target.closest("[data-dd]");
+    if (dd) { try { await rpc("admin_decide_deposit", { p_id: dd.dataset.id, p_approve: dd.dataset.dd === "1", p_note: null }); toast(dd.dataset.dd === "1" ? "Deposit credited to the wallet" : "Deposit rejected"); render(); } catch (err) { toast(err.message || "Failed"); } return; }
+    const wdb = e.target.closest("[data-wd]");
+    if (wdb) { try { await rpc("admin_decide_withdrawal", { p_id: wdb.dataset.id, p_status: wdb.dataset.wd, p_note: null }); toast(wdb.dataset.wd === "completed" ? "Marked as paid" : "Returned to the wallet"); render(); } catch (err) { toast(err.message || "Failed"); } return; }
     if (e.target.closest("#mkPlans")) { const b = e.target.closest("#mkPlans"); b.disabled = true; b.textContent = "Creating…"; const r = await api("create_plans"); toast(r.ok ? `Created ${r.json.created} plans${r.json.failed ? `, ${r.json.failed} failed` : ""}` : r.json.error || "Failed"); return render(); }
     const t = e.target.closest("[data-t]"); if (t) { state.tab = t.dataset.t; return render(); }
     if (e.target.closest("#out")) { await sb.auth.signOut(); return login(); }

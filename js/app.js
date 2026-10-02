@@ -199,18 +199,18 @@
     $("#accCount").textContent = `${cl.done}/${cl.total}`;
     $("#filterDot").hidden = !(state.f.type !== "all" || state.f.cat || state.f.region);
 
-    const row = (t, d, to) => `<button class="acc-row" ${to ? `data-go="${to}"` : "data-soon"}><span class="tx"><b>${esc(t)}</b><small>${esc(d)}</small></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>`;
+    const row = (t, d, to, fx) => `<button class="acc-row" ${fx ? `data-fx="${fx}"` : to ? `data-go="${to}"` : "data-soon"}><span class="tx"><b>${esc(t)}</b><small>${esc(d)}</small></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>`;
     const orgRow = ["Organizations", "Teams, people, roles and access.", "orgs"], billRow = ["Plans & billing", "Your plan, payments and receipts.", "billing"];
     const menus = {
-      worker: [["Edit profile", "Update profile details."], ["Wallet", "Earnings, balance and withdrawals.", "wallet"], ["Career growth", "Experience, level and certifications.", "growth"], ["Portfolio", "Add completed works with images and descriptions."], ["Verification documents", "Verify your identity."]],
-      company: [["Edit company profile", "Update company details."], ["Payments", "Worker payments and records.", "payments"], ["Equipment", "Find and request equipment.", "equipment"], ["Materials", "Find and compare materials.", "materials"], ["Team & join code", "Link a project manager to your company."], ["Verification documents", "Verify your company."]],
-      "project-manager": [["Edit profile", "Update profile details."], ["Past projects", "Show projects you have delivered."], ["Certifications", "Add your project management certificates."], ["Verification documents", "Verify your identity."]],
-      business: [["Edit business profile", "Update business details."], ["Catalog", "Manage products and equipment.", "catalog"], ["Portfolio", "Show your products and past supply."], ["Verification documents", "Verify your business."]],
-      "individual-employer": [["Edit profile", "Update profile details."], ["My hires", "Keep a record of people you have hired.", "hires"]],
+      worker: [["Edit profile", "Update profile details.", "edit-profile"], ["Wallet", "Earnings, balance and withdrawals.", "wallet"], ["Career growth", "Experience, level and certifications.", "growth"], ["Portfolio", "Add completed works with images and descriptions.", "portfolio"], ["Certifications", "Upload trade certificates and licences.", "certs"], ["Verification documents", "Verify your identity.", "verification"]],
+      company: [["Edit company profile", "Update company details.", "edit-profile"], ["Payments", "Worker payments and records.", "payments"], ["Equipment", "Find and request equipment.", "equipment"], ["Materials", "Find and compare materials.", "materials"], ["Job posts", "Post jobs and manage applicants.", "hires"], ["Team & join code", "Link a project manager to your company.", "team-link"], ["Verification documents", "Verify your company.", "verification"]],
+      "project-manager": [["Edit profile", "Update profile details.", "edit-profile"], ["Wallet", "Earnings, balance and withdrawals.", "wallet"], ["Past projects", "Show projects you have delivered.", "portfolio"], ["Certifications", "Add your project management certificates.", "certs"], ["Link a company", "Join a company with its code.", "team-link"], ["Verification documents", "Verify your identity.", "verification"]],
+      business: [["Edit business profile", "Update business details.", "edit-profile"], ["Wallet", "Earnings, balance and withdrawals.", "wallet"], ["Catalog", "Manage products and equipment.", "catalog"], ["Portfolio", "Show your products and past supply.", "portfolio"], ["Verification documents", "Verify your business.", "verification"]],
+      "individual-employer": [["Edit profile", "Update profile details.", "edit-profile"], ["Post a job", "Hire a professional for your home.", "post-job"], ["My hires", "Keep a record of people you have hired.", "hires"], ["Verification documents", "Verify your identity.", "verification"]],
     };
     $("#accMenu").innerHTML = [billRow, orgRow, ...menus[me.role]].map(([t, d, to]) => row(t, d, to)).join("");
-    $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account."), row("Change phone", "Update the mobile number linked to this account."), row("Change password", "Set a new password for sign-in.")].join("");
-    $("#accInfo").innerHTML = [row("Help center", "Guides and support articles."), row("Terms of service", "Read our service terms."), row("Privacy policy", "Read how we handle your information."), row("About BAID X", "Product and company information.")].join("");
+    $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account.", null, "add-email"), row("Change phone", "Update the mobile number linked to this account.", null, "change-phone"), row("Change password", "Set a new password for sign-in.", null, "change-password")].join("");
+    $("#accInfo").innerHTML = [row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", "info/terms"), row("Privacy policy", "Read how we handle your information.", "info/privacy"), row("About BAID X", "Product and company information.", "info/about")].join("");
   }
 
   const HOURGLASS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 5 5 5 9s-5 4-5 9M17 3c0 5-5 5-5 9s5 4 5 9"/></svg>';
@@ -220,31 +220,13 @@
     const cl = checklistState(me.role, me.profile), pct = Math.round((cl.done / cl.total) * 100);
     $("#ckStatus").textContent = statusLabel(me.profile?.verification_status);
     $("#ckDone").textContent = `${cl.done} of ${cl.total} completed`; $("#ckPct").textContent = `${pct}%`; $("#ckBar").style.width = `${pct}%`;
-    $("#ckList").innerHTML = cl.items.map((i) => `<button class="ck-item" data-soon><span class="ic ${i.done ? "ok" : "warn"}">${i.done ? CHECK : HOURGLASS}</span>
+    $("#ckList").innerHTML = cl.items.map((i) => `<button class="ck-item" data-go="${/card|document|licen|registr|certif|tin|verif|identity|insurance|id\b/i.test(i.title) ? "verification" : "edit-profile"}"><span class="ic ${i.done ? "ok" : "warn"}">${i.done ? CHECK : HOURGLASS}</span>
       <span class="tx"><b>${esc(i.title)}</b><small>${esc(i.desc)}</small></span><span class="st ${i.done ? "ok" : "warn"}">${i.done ? "Done" : "Pending"}</span>
       <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>`).join("");
   }
 
   async function renderChats() {
-    const box = $("#chatsMember"), uid = state.me.session.user.id;
-    box.innerHTML = '<div class="skel" style="height:72px;margin-top:14px"></div>'.repeat(3);
-    try {
-      const { data: parts, error } = await sb.from("conversation_participants").select("conversation_id,unread_count").eq("user_id", uid);
-      if (error) throw error;
-      const ids = (parts || []).map((p) => p.conversation_id);
-      let convs = [];
-      if (ids.length) {
-        const r = await sb.from("conversations").select("id,subject,last_message_at,last_message_preview").in("id", ids).order("last_message_at", { ascending: false });
-        if (r.error) throw r.error; convs = r.data || [];
-      }
-      const unread = Object.fromEntries((parts || []).map((p) => [p.conversation_id, p.unread_count || 0]));
-      box.innerHTML = convs.length
-        ? `<div class="list">${convs.map((c) => `<button class="row chat" data-soon><span class="av">${esc(initials(c.subject || "C"))}</span><span class="tx"><b>${esc(c.subject || "Conversation")}</b><small>${esc(c.last_message_preview || "No messages yet")}</small></span><span class="meta2">${c.last_message_at ? esc(ago(c.last_message_at)) : ""}${unread[c.id] ? `<i class="nbadge st">${unread[c.id]}</i>` : ""}</span></button>`).join("")}</div>`
-        : `<div class="empty">${icon("chat", 56)}<h2>No conversations yet</h2><p>When you message a company, professional or supplier, it will show up here.</p><button class="btn-light" data-tab="${R() === "worker" ? "jobs" : "discover"}">${R() === "worker" ? "Browse jobs" : "Find people"}</button></div>`;
-    } catch (e) {
-      console.error(e);
-      box.innerHTML = '<div class="state"><b>Couldn\'t load chats</b>Check your connection and try again.</div>';
-    }
+    return window.MARKET.chatsList($("#chatsMember"), dashCtx());
   }
 
   /* ---------- Filters ---------- */
@@ -310,12 +292,12 @@
       const role = R(), kind = card.dataset.kind;
       if (role === "company" && ["worker", "pm"].includes(kind)) return window.PROJ?.openInvite(kind, card.dataset.id);
       if (role === "project-manager" && kind === "worker") return window.PROJ?.openInvite("worker", card.dataset.id);
-      return toast("Public profile pages are built in a later stage.");
+      return window.FEAT.openCard(kind, card.dataset.id);
     }
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });
   window.addEventListener("hashchange", route);
-  window.APP = { state, go, route, dashCtx, refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
+  window.APP = { state, go, route, dashCtx, sources: SOURCES, refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
 
   /* ---------- Boot ---------- */
   renderChips(); renderNav(); runSplash();

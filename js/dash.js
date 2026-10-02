@@ -19,7 +19,7 @@
   const sec = (t) => `<div class="sec">${esc(t)}</div>`;
   const tile = ([ic, t, s, to]) => `<button class="tile" ${to ? (to.startsWith("trade:") ? `data-trade="${esc(to.slice(6))}"` : `data-go="${to}"`) : "data-soon"}><span class="ic">${icon(ic, 18)}</span><span><b>${esc(t)}</b><small>${esc(s)}</small></span></button>`;
   const tiles = (a) => `<div class="tiles">${a.map(tile).join("")}</div>`;
-  const row = (ic, t, s, right = "", attrs = "data-soon") => `<button class="row" ${attrs}><span class="ic">${icon(ic, 17)}</span><span class="tx"><b>${esc(t)}</b><small>${esc(s)}</small></span>${right}</button>`;
+  const row = (ic, t, s, right = "", attrs = "") => `<button class="row" ${attrs}><span class="ic">${icon(ic, 17)}</span><span class="tx"><b>${esc(t)}</b><small>${esc(s)}</small></span>${right}</button>`;
   const card = (title, right, inner) => `<div class="dcard"><h4><span>${esc(title)}</span>${right ? `<span class="amb">${esc(right)}</span>` : ""}</h4>${inner}</div>`;
   const bar = (pct) => `<div class="bar"><i style="width:${Math.max(0, Math.min(100, Number(pct) || 0))}%"></i></div>`;
   const empty = (ic, title, text, cta = "") => `<div class="d-empty">${icon(ic, 44)}<h3>${esc(title)}</h3><p>${esc(text)}</p>${cta}</div>`;
@@ -58,8 +58,8 @@
       return hero(`${greet()}`, `${esc(p.company_name || "Your company")}`)
         + banner(c) + stats([[active, "Active projects"], [jobs.filter((j) => j.status === "open").length, "Open jobs"], [applicants, "Applicants"]])
         + (p0 ? card(p0.name, `${p0.progress_pct || 0}%`, `${bar(p0.progress_pct)}<div class="cap2">${pill(pretty(p0.status), statusKind(p0.status))} ${esc(p0.city_town || "")}</div>`)
-               : card("Start your first project", "", `<div class="cap2" style="margin:0 0 10px">Define the workers, project manager, equipment and materials you need, then invite people in.</div>${soonBtn("Create a project")}`))
-        + sec("Run the business") + tiles([["pay", "Payments", "Records and invoices", "payments"], ["equip", "Equipment", "Find and request", "equipment"], ["mat", "Materials", "Compare supply", "materials"], ["key", "Join code", "Link a project manager"]]);
+               : card("Start your first project", "", `<div class="cap2" style="margin:0 0 10px">Define the workers, project manager, equipment and materials you need, then invite people in.</div><button class="btn-light sm" data-go="new-project">Create a project</button>`))
+        + sec("Run the business") + tiles([["pay", "Payments", "Records and invoices", "payments"], ["equip", "Equipment", "Find and request", "equipment"], ["mat", "Materials", "Compare supply", "materials"], ["key", "Join code", "Link a project manager", "team-link"]]);
     },
     async "project-manager"(c) {
       const p = c.profile;
@@ -85,7 +85,7 @@
         + banner(c) + stats([[nz(products), "Products"], [nz(equip), "Equipment"], [nz(inq), "Inquiries"]])
         + (l ? card(`Inquiry from ${l.inquirer_name || "a customer"}`, ago(l.created_at), `<div class="cap2" style="margin:0">${esc(l.message || "")}</div>`)
               : card("No inquiries yet", "", `<div class="cap2" style="margin:0">When a customer or company asks about your listings, it shows up here.</div>`))
-        + sec("Quick access") + tiles([["plus", "Add product", "Catalog", "catalog"], ["mail", "Inquiries", `${nz(inq)} total`, "inquiries"], ["equip", "Equipment", `${nz(equip)} listed`, "catalog/equipment"], ["pay", "Quotes", "Project supply quotes"]]);
+        + sec("Quick access") + tiles([["plus", "Add product", "Catalog", "catalog"], ["mail", "Inquiries", `${nz(inq)} total`, "inquiries"], ["equip", "Equipment", `${nz(equip)} listed`, "catalog/equipment"], ["wallet", "Wallet", "Balance and payouts", "wallet"]]);
     },
     async "individual-employer"(c) {
       const jobs = await rows(c, "jobs", "id,status", (x) => x.eq("employer_id", c.uid), 200);
@@ -149,7 +149,7 @@
     const ev = await rows(c, "worker_xp_events", "id,kind,points,created_at", (x) => x.eq("worker_id", c.uid).order("created_at", { ascending: false }), 20);
     return head("Career Growth") + `<div class="wallet"><small>${esc(pretty(p.rank_tier) || "New worker")}</small><b>${xp.toLocaleString()} XP</b>${bar(Math.min(100, (xp / 2000) * 100))}<div class="w-sub"><span>Trust score <b>${Number(p.trust_score || 0).toFixed(1)}</b></span><span>Keep going, levels rise with real work</span></div></div>
       ${sec("How to earn XP")}${[["Verify your identity", "+100 XP"], ["Get accepted for a job", "+80 XP"], ["Complete a job", "+120 XP"], ["Complete your profile", "+50 XP"]].map(([t, v]) => row("star", t, "", `<span class="amt">${v}</span>`)).join("")}
-      ${sec("Certifications")}${empty("rep", "No certifications yet", "Upload trade certificates and licences to build trust.", soonBtn("Add certification"))}
+      ${sec("Certifications")}${empty("rep", "No certifications yet", "Upload trade certificates and licences to build trust.", `<button class="btn-light sm" data-go="certs">Add certification</button>`)}
       ${sec("Recent XP")}${ev.length ? ev.map((e) => row("grow", pretty(e.kind), ago(e.created_at), `<span class="amt">+${e.points} XP</span>`)).join("") : empty("grow", "No XP yet", "Complete your profile and apply for jobs to start earning.")}`;
   }
 
