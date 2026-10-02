@@ -196,7 +196,9 @@
     const { data: ar } = await sb.from("account_roles").select("role,account_status").eq("user_id", session.user.id).maybeSingle();
     const role = ar && ROLES[ar.role] ? ar.role : null;
     if (!role) return { session, role: null, profile: null };
-    const { data: profile } = await sb.from(ROLES[role].table).select("*").eq("id", session.user.id).maybeSingle();
+    // own full row via a server function (so other members' private columns can be locked down later); falls back to a direct read
+    let { data: profile } = await sb.rpc("my_profile");
+    if (!profile) ({ data: profile } = await sb.from(ROLES[role].table).select("*").eq("id", session.user.id).maybeSingle());
     return { session, role, profile: profile || {} };
   }
   function checklistState(role, profile) {
