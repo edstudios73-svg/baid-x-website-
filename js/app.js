@@ -82,6 +82,11 @@
   }
   function route() {
     let { name, arg } = parseHash();
+    // keep an invitation link through sign-in: remember it as a guest, open it once signed in
+    try {
+      if (name === "join" && arg && !R()) sessionStorage.setItem("baidx_join", arg);
+      else if (R() && sessionStorage.getItem("baidx_join")) { const t = sessionStorage.getItem("baidx_join"); sessionStorage.removeItem("baidx_join"); name = "join"; arg = t; location.replace(`#/join/${t}`); }
+    } catch { /* private mode */ }
     if (!allowed(name)) name = "home";
     state.route = { name, arg };
     const member = !!R();
