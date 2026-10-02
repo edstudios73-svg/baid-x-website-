@@ -3,13 +3,37 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BAID X · Ghana's work network</title>
+  <meta name="description" content="Find verified professionals, companies, project managers and suppliers across Ghana. Hire, run projects and build trust, all in one place." />
+  <meta name="application-name" content="BAID X" />
+  <meta name="author" content="Baiden Creatives" />
   <meta name="theme-color" content="#000000" />
-  <title>BAID X</title>
-  <meta name="description" content="BAID X connects companies, professionals, project managers and suppliers across Ghana." />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://baid-x-website.vercel.app/" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="BAID X" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="BAID X" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:title" content="BAID X · Ghana's work network" />
+  <meta property="og:description" content="Find verified professionals, companies, project managers and suppliers across Ghana. Hire, run projects and build trust, all in one place." />
+  <meta property="og:url" content="https://baid-x-website.vercel.app/" />
+  <meta property="og:image" content="https://baid-x-website.vercel.app/assets/og-image.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="BAID X: the future of work in Africa isn't about connections, it's about capability." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BAID X · Ghana's work network" />
+  <meta name="twitter:description" content="Find verified professionals, companies, project managers and suppliers across Ghana. Hire, run projects and build trust, all in one place." />
+  <meta name="twitter:image" content="https://baid-x-website.vercel.app/assets/og-image.png" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
@@ -25,7 +49,7 @@
     <div class="wrap">
       <header class="topbar">
         <div class="topbar-row">
-          <img class="brand-logo" src="assets/logo-white.png" alt="BAID X" />
+          <img class="brand-logo" src="assets/logo.png" alt="BAID X" />
           <button class="btn-pro" id="joinBtn" data-action="join" data-group="pro">Join as a Pro</button>
           <button class="icon-btn" id="filterBtn" data-go="filters" aria-label="Filters" hidden>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.500V20l-4-2v-4.500z"/></svg>
@@ -57,18 +81,18 @@
       <div class="empty" id="chatsGuest">
         <svg width="150" height="150" viewBox="0 0 150 150" fill="none" aria-hidden="true">
           <path d="M30 70 75 50l45 20v42L75 132 30 112z" fill="#2b2b2b"/>
-          <path d="M30 70 75 90l45-20" stroke="#ffd600" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M75 90v42" stroke="#ffd600" stroke-width="3"/>
-          <path d="M30 70 45 52l30 10M120 70 105 52 75 62" stroke="#ffd600" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M30 70 75 90l45-20" stroke="#d9d9d9" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M75 90v42" stroke="#d9d9d9" stroke-width="3"/>
+          <path d="M30 70 45 52l30 10M120 70 105 52 75 62" stroke="#d9d9d9" stroke-width="3" stroke-linejoin="round"/>
           <path d="M60 28c6-8 20-8 24 2" stroke="#7a7a7a" stroke-width="2.500" stroke-dasharray="3 6" stroke-linecap="round"/>
-          <circle cx="86" cy="32" r="4" fill="#ffd600"/><circle cx="26" cy="46" r="2.500" fill="#7a7a7a"/><circle cx="124" cy="96" r="2.500" fill="#7a7a7a"/>
+          <circle cx="86" cy="32" r="4" fill="#d9d9d9"/><circle cx="26" cy="46" r="2.500" fill="#7a7a7a"/><circle cx="124" cy="96" r="2.500" fill="#7a7a7a"/>
         </svg>
         <h2>Sign in to view chats</h2>
         <p>Your conversations will appear here after you sign in.</p>
         <button class="btn-light" data-action="signin">Sign in</button>
       </div>
       <div class="empty" id="chatsMember" hidden>
-        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#ffd600" stroke-width="1.200" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a1.500 1.500 0 0 1 1.500 1.500v9A1.500 1.500 0 0 1 19 16h-7l-4.500 4v-4H5a1.500 1.500 0 0 1-1.500-1.500v-9A1.500 1.500 0 0 1 5 4z"/><path d="M8 8.500h8M8 11.500h5" stroke-linecap="round"/></svg>
+        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#d9d9d9" stroke-width="1.200" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14a1.500 1.500 0 0 1 1.500 1.500v9A1.500 1.500 0 0 1 19 16h-7l-4.500 4v-4H5a1.500 1.500 0 0 1-1.500-1.500v-9A1.500 1.500 0 0 1 5 4z"/><path d="M8 8.500h8M8 11.500h5" stroke-linecap="round"/></svg>
         <h2>No conversations yet</h2>
         <p>When you message a company, professional or supplier, it will show up here.</p>
         <button class="btn-light" data-tab="home">Browse BAID X</button>

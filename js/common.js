@@ -1,6 +1,8 @@
 /* Shared helpers, role definitions and category data for every BAID X page. */
 (() => {
   "use strict";
+  // Capture a password-recovery link before the Supabase client consumes and clears the URL hash.
+  window.BX_RECOVERY = /type=recovery/.test(location.hash + location.search);
   const cfg = window.BAIDX_CONFIG;
   const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHABLE_KEY);
 

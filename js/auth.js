@@ -287,7 +287,8 @@
   sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { S.mode = "reset"; prepPass(); show("pass"); } });
   (async () => {
     const me = await loadMe();
-    if (me?.role && S.mode !== "reset") { if (!location.hash.includes("type=recovery")) location.replace(HOME); return; }
+    if (window.BX_RECOVERY) return; // the PASSWORD_RECOVERY event below opens the "set a new password" step
+    if (me?.role && S.mode !== "reset") { location.replace(HOME); return; }
     if (me && !me.role) { startOnboard(); return; }
     if (params.get("mode") === "signin") { S.mode = "signin"; show("signin"); }
   })();
