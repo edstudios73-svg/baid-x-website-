@@ -67,7 +67,7 @@
     // First visit this session: the full sequence. Any refresh after that: the same sequence, very fast and a little soft.
     const seen = ssGet("baidx_splash"), calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (seen) el.classList.add("quick");
-    const hold = calm ? 700 : seen ? 1050 : 3300, out = seen ? 360 : 750;
+    const hold = calm ? 700 : seen ? 800 : 3300, out = seen ? 300 : 750;
     setTimeout(() => { el.classList.add("leave"); ssSet("baidx_splash", "1"); setTimeout(() => el.classList.add("hide"), out); }, hold);
   }
 
