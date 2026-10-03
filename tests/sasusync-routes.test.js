@@ -370,3 +370,29 @@ test("identity helpers: synthetic email is deterministic and reserved-domain; te
   assert.equal(id.syntheticEmail("233552148347"), "p233552148347@phone.baidx.invalid"); assert.ok(id.syntheticEmail("233552148347").endsWith(".invalid"));
   const p = id.tempPassword(); assert.ok(p.length < 72 && p.length >= 30 && p !== id.tempPassword());
 });
+
+/* ---------- global daily OTP cap ---------- */
+const rlByKey = (deny) => [(u, o) => has(u, "rl_hit"), (u, o) => { const k = JSON.parse(o.body).p_key; return reply(200, { allowed: !deny.includes(k), count: 1, retry_after_s: 60 }); }];
+test("daily cap: when reached, start returns 429, the provider is NOT called, and it is audited", async () => {
+  env(LIVE); const calls = install([rlByKey(["otp:start:all"]), [(u) => has(u, "auth_user_by_phone"), reply(200, null)], [(u) => has(u, "/otp/generate"), reply(200, { success: true, otp_id: 9 })], audit]);
+  const r = await post(start, { phone: "0552148347", purpose: "signup" });
+  assert.equal(r.status, 429); assert.ok(!calls.some((c) => has(c.url, "/otp/generate"))); assert.ok(calls.some((c) => has(c.url, "audit_logs") && c.body.action === "otp.daily_cap_reached"));
+});
+test("daily cap: counts only real sends (reset for an unknown number and invalid input do not consume it); cap env is honoured, default 40", async () => {
+  env(LIVE); let calls = install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, null)], audit]);
+  await post(start, { phone: "0552148347", purpose: "reset" }); await post(start, { phone: "12", purpose: "signup" });
+  assert.ok(!calls.some((c) => has(c.url, "rl_hit") && c.body.p_key === "otp:start:all"));
+  calls = install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, null)], [(u) => has(u, "/otp/generate"), reply(200, { success: true, otp_id: 5 })], [(u) => has(u, "sasusync_otp_requests"), reply(201)], audit]);
+  await post(start, { phone: "0552148347", purpose: "signup" });
+  const hit = calls.find((c) => has(c.url, "rl_hit") && c.body.p_key === "otp:start:all"); assert.equal(hit.body.p_max, 40); assert.equal(hit.body.p_window_s, 86400);
+  env({ ...LIVE, SASUSYNC_OTP_DAILY_CAP: "7" }); calls = install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, null)], [(u) => has(u, "/otp/generate"), reply(200, { success: true, otp_id: 6 })], [(u) => has(u, "sasusync_otp_requests"), reply(201)], audit]);
+  await post(start, { phone: "0552148347", purpose: "signup" }); assert.equal(calls.find((c) => has(c.url, "rl_hit") && c.body.p_key === "otp:start:all").body.p_max, 7);
+});
+test("daily cap: a bad cap value falls back to the default (never unlimited); limiter outage fails closed (503, nothing sent)", async () => {
+  for (const v of ["0", "-5", "abc", "1.5", ""]) {
+    env({ ...LIVE, SASUSYNC_OTP_DAILY_CAP: v }); const calls = install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, null)], [(u) => has(u, "/otp/generate"), reply(200, { success: true, otp_id: 6 })], [(u) => has(u, "sasusync_otp_requests"), reply(201)], audit]);
+    await post(start, { phone: "0552148347", purpose: "signup" }); assert.equal(calls.find((c) => has(c.url, "rl_hit") && c.body.p_key === "otp:start:all").body.p_max, 40, v);
+  }
+  env(LIVE); const calls = install([[(u, o) => has(u, "rl_hit") && JSON.parse(o.body).p_key === "otp:start:all", reply(500, {})], rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, null)], [(u) => has(u, "/otp/generate"), reply(200, { success: true, otp_id: 1 })], audit]);
+  assert.equal((await post(start, { phone: "0552148347", purpose: "signup" })).status, 503); assert.ok(!calls.some((c) => has(c.url, "/otp/generate")));
+});

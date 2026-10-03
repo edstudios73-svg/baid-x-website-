@@ -29,6 +29,13 @@ module.exports = async (req, res) => {
     if (purpose === "signup" && userId) return res.status(409).json({ error: "This number already has an account. Sign in instead." });
     if (purpose === "reset" && !userId) return res.status(200).json({ ok: true, expires_in: 300 }); // no enumeration: look identical, send nothing
 
+    // Global daily ceiling on real OTP sends (each costs credits). Counted only here, after every cheap check, so it measures actual sends.
+    // Default 40/day (about 120 credits at 3 per code); the owner can change SASUSYNC_OTP_DAILY_CAP in Vercel.
+    const cap = Number.isInteger(Number(process.env.SASUSYNC_OTP_DAILY_CAP)) && Number(process.env.SASUSYNC_OTP_DAILY_CAP) > 0 ? Number(process.env.SASUSYNC_OTP_DAILY_CAP) : 40;
+    const day = await rpc("rl_hit", { p_key: "otp:start:all", p_window_s: 86400, p_max: cap });
+    if (!day.ok) return res.status(503).json({ error: "Try again shortly." });
+    if (day.json && day.json.allowed === false) { await audit("otp.daily_cap_reached", null, { cap }); return res.status(429).json({ error: "Phone codes are temporarily unavailable. Please try again later or sign up with email." }); }
+
     let gen;
     try { gen = await generateOtp({ to: phone }); }
     catch (e) {
