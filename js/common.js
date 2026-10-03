@@ -309,16 +309,18 @@
     if (k === "guest") continue;
     for (const r of ["verification", "edit-profile", "info", "portfolio", "certs", "team-link", "post-job", "wallet"]) NAV[k].parent[r] = NAV[k].parent[r] || "profile";
     NAV[k].parent.notifications = "home";
+    NAV[k].parent.engagement = k === "worker" ? "work" : k === "individual-employer" ? "hires" : "home";
+    NAV[k].parent.applicants = k === "individual-employer" ? "hires" : "home";
     NAV[k].parent.chat = NAV[k].parent.chat || (k === "business" ? "inquiries" : "chats");
   }
   // Routes each role may open (anything else falls back to Home).
   const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker", "orgs", "org", "join", "billing", "verification", "edit-profile", "info", "chat", "notifications"];
   const ROLE_ROUTES = {
-    worker: ["jobs", "work", "wallet", "growth", "projects", "ws", "invites", "portfolio", "certs"],
-    company: ["discover", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials", "wallet", "team-link", "hires", "post-job"],
+    worker: ["jobs", "work", "engagement", "wallet", "growth", "projects", "ws", "invites", "portfolio", "certs"],
+    company: ["discover", "applicants", "engagement", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials", "wallet", "team-link", "hires", "post-job"],
     "project-manager": ["discover", "projects", "ws", "invites", "wallet", "portfolio", "certs", "team-link"],
     business: ["discover", "catalog", "inquiries", "wallet", "portfolio"],
-    "individual-employer": ["discover", "hires", "post-job", "wallet"],
+    "individual-employer": ["discover", "hires", "post-job", "wallet", "applicants", "engagement"],
   };
   const money = (n) => { const v = Number(n) || 0; return `${v < 0 ? "-" : ""}GH₵${Math.abs(v).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
   const ago = (iso) => {

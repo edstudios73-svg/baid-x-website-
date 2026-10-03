@@ -65,9 +65,9 @@
   async function hiresView(c) {
     const { head, empty, row, pill, statusKind } = U(), col = c.role === "company" ? "company_id" : "employer_id";
     const { data } = await c.sb.from("jobs").select("id,title,status,city_town,daily_rate_ghs,workers_needed,created_at").eq(col, c.uid).order("created_at", { ascending: false }).limit(50);
-    const jobs = data || [];
-    return head(c.role === "company" ? "Job posts" : "Hires", `<button class="btn-light sm" data-go="post-job">Post a job</button>`) + (jobs.length ? jobs.map((j) => `<div class="row"><span class="ic">${icon("hire", 17)}</span><span class="tx"><b>${esc(j.title)}</b><small>${esc(j.city_town || "Ghana")}${j.daily_rate_ghs ? ` · ${money(j.daily_rate_ghs)}/day` : ""} · ${esc(ago(j.created_at))}</small></span><span class="pill ${j.status === "open" ? "ok" : ""}">${esc(pretty(j.status))}</span>${j.status === "open" ? `<button class="btn-dark sm" data-mk="close-job" data-id="${esc(j.id)}">Close</button>` : `<button class="btn-dark sm" data-mk="open-job" data-id="${esc(j.id)}">Reopen</button>`}</div>`).join("")
-      : empty("hire", "No jobs yet", "Post a job and professionals can apply. You can also find a trade in Discover and message them.", `<button class="btn-light sm" data-go="post-job">Post a job</button>`));
+    const jobs = data || [], hired = window.ESCROW ? await window.ESCROW.hiresSection(c).catch(() => "") : "";
+    return head(c.role === "company" ? "Job posts" : "Hires", `<button class="btn-light sm" data-go="post-job">Post a job</button>`) + (jobs.length ? jobs.map((j) => `<div class="row"><span class="ic">${icon("hire", 17)}</span><span class="tx"><b>${esc(j.title)}</b><small>${esc(j.city_town || "Ghana")}${j.daily_rate_ghs ? ` · ${money(j.daily_rate_ghs)}/day` : ""} · ${esc(ago(j.created_at))}</small></span><span class="pill ${j.status === "open" ? "ok" : ""}">${esc(pretty(j.status))}</span><button class="btn-light sm" data-go="applicants/${esc(j.id)}">Applicants</button>${j.status === "open" ? `<button class="btn-dark sm" data-mk="close-job" data-id="${esc(j.id)}">Close</button>` : `<button class="btn-dark sm" data-mk="open-job" data-id="${esc(j.id)}">Reopen</button>`}</div>`).join("")
+      : empty("hire", "No jobs yet", "Post a job and professionals can apply. You can also find a trade in Discover and message them.", `<button class="btn-light sm" data-go="post-job">Post a job</button>`)) + hired;
   }
   async function postJobView(c) {
     const { head } = U(), F2 = F();

@@ -136,9 +136,10 @@
     const J = Object.fromEntries(jobs.map((j) => [j.id, j]));
     const f = { applications: (a) => !["accepted", "completed"].includes(a.status), active: (a) => a.status === "accepted", completed: (a) => a.status === "completed" }[seg];
     const list = apps.filter(f);
+    const eng = seg !== "applications" && window.ESCROW ? await window.ESCROW.workSection(c, seg).catch(() => "") : "";
     const msgs = { applications: ["No applications yet", "Browse the Job Marketplace and apply to jobs that match your trade.", `<button class="btn-light sm" data-go="jobs">Browse jobs</button>`], active: ["No active work", "Jobs you have been accepted for will show here.", ""], completed: ["Nothing completed yet", "Finished jobs, reviews and earned XP will show here.", ""] }[seg];
     return head("Work") + segs([["applications", "Applications", "work/applications"], ["active", "Active", "work/active"], ["projects", "Projects", "projects"], ["completed", "Completed", "work/completed"], ["wallet", "Wallet", "wallet"]], seg)
-      + (list.length ? list.map((a) => row("work", J[a.job_id]?.title || "Job", `${J[a.job_id]?.city_town || "Ghana"} · applied ${ago(a.created_at)}${a.proposed_rate_ghs ? ` · you asked ${money(a.proposed_rate_ghs)}` : ""}`, pill(pretty(a.status), statusKind(a.status)))).join("") : empty("work", ...msgs));
+      + eng + (seg === "active" && eng ? "" : list.length ? list.map((a) => row("work", J[a.job_id]?.title || "Job", `${J[a.job_id]?.city_town || "Ghana"} · applied ${ago(a.created_at)}${a.proposed_rate_ghs ? ` · you asked ${money(a.proposed_rate_ghs)}` : ""}`, pill(pretty(a.status), statusKind(a.status)))).join("") : empty("work", ...msgs));
   }
 
   /* ---------- Wallet ---------- */

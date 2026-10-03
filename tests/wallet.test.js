@@ -70,6 +70,6 @@ test("billing UI: Services & fees tab sells verification, boosts and XID through
 });
 test("routes/menus: clients and companies can open the wallet; every role's route list is explicit", () => {
   const c = fs.readFileSync(require.resolve("../js/common.js"), "utf8"), a = fs.readFileSync(require.resolve("../js/app.js"), "utf8");
-  assert.ok(/"individual-employer": \["discover", "hires", "post-job", "wallet"\]/.test(c));
+  assert.ok(/"individual-employer": \["discover", "hires", "post-job", "wallet"[^\]]*\]/.test(c));
   assert.ok(a.includes('["Wallet", "Add money and pay for work.", "wallet"]') && a.includes('["Wallet", "Add money, earnings and withdrawals.", "wallet"]'));
 });

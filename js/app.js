@@ -94,7 +94,7 @@
     if (!allowed(name)) name = "home";
     state.route = { name, arg };
     document.body.classList.toggle("g-on", !!R() && ["chats", "chat", "notifications"].includes(name));
-    const T = { home: "Ghana's work network", discover: "Discover verified professionals", jobs: "Job marketplace", work: "Work", projects: "Projects", ws: "Project workspace", chats: "Chats", chat: "Chat", profile: "Profile", notifications: "Notifications", wallet: "Wallet", invites: "Invitations", approvals: "Approvals", orgs: "Organizations", billing: "Plans & billing", catalog: "Catalog", inquiries: "Inquiries", hires: "Hires" };
+    const T = { home: "Ghana's work network", discover: "Discover verified professionals", jobs: "Job marketplace", work: "Work", projects: "Projects", ws: "Project workspace", chats: "Chats", chat: "Chat", profile: "Profile", notifications: "Notifications", wallet: "Wallet", invites: "Invitations", approvals: "Approvals", orgs: "Organizations", billing: "Plans & billing", catalog: "Catalog", inquiries: "Inquiries", hires: "Hires", applicants: "Applicants", engagement: "Engagement" };
     document.title = name === "home" ? "BAID X · Ghana's work network" : `${T[name] || "BAID X"} · BAID X`;
     const member = !!R();
     let screen;
