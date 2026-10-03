@@ -308,6 +308,7 @@
         <div class="row2">${pill(j.live_allowed ? "Live enabled" : "Live disabled", j.live_allowed ? "ok" : "w")}${pill(j.mode === "live" ? "Live mode" : "Sandbox mode", "b")}${j.sender ? pill(`Sender “${j.sender_id}”: ${pretty(j.sender.status)}`, j.sender.status === "approved" ? "ok" : "w") : ""}${lvl && lvl !== "OK" ? pill(lvl === "EXHAUSTED" ? "Credits exhausted" : "Credits low", "w") : ""}${pill(j.phone_auth ? "Phone sign-in on" : "Phone sign-in off", j.phone_auth ? "ok" : "b")}${pill(o.sms_notifications_enabled ? "SMS alerts on" : "SMS alerts off", o.sms_notifications_enabled ? "ok" : "b")}</div>
         ${c ? kv("SMS you can still send", c.sms_sendable) + kv("Verification codes you can still send", c.otp_sendable) + (c.credits_per_otp ? kv("Credits per code", c.credits_per_otp) : "") + (c.main_balance !== undefined ? kv("Main balance", `${c.main_balance} ${c.currency || ""}`) : "") : `<p class="mut">${j.error ? "The provider couldn't be reached." : "Provider not configured."}</p>`}
         ${kv("Last delivery report received", o.last_webhook_at ? ago(o.last_webhook_at) : "None yet")}${kv("Deliveries (7 days)", Object.keys(d7).length ? Object.entries(d7).map(([k, v]) => `${k} ${v}`).join(" · ") : "None")}${kv("Codes requested / verified (24h)", `${o.otp_requests_24h ?? 0} / ${o.otp_verified_24h ?? 0}`)}
+        ${j.live_allowed && isSuper() ? `<div style="margin-top:12px"><button class="btn-or" data-sms-live>Send ONE live test SMS</button> <span class="pill w">LIVE — REAL SMS · uses 1+ credits</span> <button class="btn gh" data-sms-lookup>Look up job</button><div id="smsres" class="mut" style="margin-top:8px"></div></div>` : ""}
         ${j.mode === "sandbox" && isSuper() ? `<div style="margin-top:12px"><button class="btn gh" data-sms-sandbox>Send Sandbox Test</button> <span class="pill b">SANDBOX — NO DELIVERY</span> <button class="btn gh" data-sms-lookup>Look up job</button><div id="smsres" class="mut" style="margin-top:8px"></div></div>` : ""}
         <p class="mut" style="margin-top:8px">Live sending is off until the owner turns it on in Vercel.</p></div>`;
     } catch { return ""; }
@@ -373,6 +374,20 @@
     if ((el = q("[data-org]"))) { const susp = el.dataset.s === "SUSPENDED"; const r = await ask(susp ? "Suspend this organization?" : "Restore this organization?", susp ? "Members lose access to it immediately." : "Members regain access.", { field: susp, label: susp ? "Suspend" : "Restore", danger: susp, ph: "Reason (optional)" }); if (!r) return; return act("Organization", () => rpc("platform_set_org_status", { p_org: el.dataset.org, p_status: el.dataset.s, p_reason: r.value || null }), susp ? "Organization suspended" : "Organization restored"); }
     if ((el = q("[data-price]"))) { const r = await ask("Change price", "Enter the new price in cedis. It applies to new checkouts only.", { field: true, label: "Save price", ph: `Currently ${(el.dataset.v / 100).toFixed(2)}` }); if (!r) return; const v = Math.round(parseFloat(r.value) * 100); if (!(v >= 0)) return toast("Enter a valid amount."); return act("Price", () => rpc("admin_set_plan_price", { p_id: el.dataset.price, p_price_minor: v }), "Price updated"); }
     if (q("[data-founding]")) { if (!(await ask("Start the founding program?", "The 90-day clock starts now for all five account types. This cannot be undone.", { label: "Start" }))) return; return act("Founding", () => rpc("admin_start_founding"), "Founding program started"); }
+    if ((el = q("[data-sms-live]"))) {
+      const a = await ask("LIVE — REAL SMS", "This sends ONE real text message through SasuSync and uses credits. Enter YOUR OWN Ghana mobile number, then type SEND ONE LIVE SMS below. It is checked against the provider before sending and is never retried.", { field: true, danger: true, label: "Send one live SMS", ph: "0XX XXX XXXX" });
+      if (!a) return;
+      const typed = await ask("Final confirmation", "Type SEND ONE LIVE SMS exactly to send.", { field: true, danger: true, label: "Send now", ph: "SEND ONE LIVE SMS" });
+      if (!typed) return;
+      const out = document.getElementById("smsres"); el.disabled = true; if (out) out.textContent = "Sending one live SMS…";
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "live_test", live_test: true, confirm: typed.value.trim(), to: a.value.trim() }) });
+        const j = await r.json().catch(() => ({}));
+        if (out) out.innerHTML = r.ok && j.result ? `<b>${esc(j.result)}</b> · ${j.sent ? "Accepted by SasuSync" : `Not sent (${esc(j.error_category || "error")}${j.sender_status ? `: sender ${esc(j.sender_status)}` : ""})`}${j.queued ? " · queued" : ""}${j.job_id ? ` · job ${esc(j.job_id)}` : ""}${j.credits_used !== undefined && j.credits_used !== null ? ` · credits used ${esc(j.credits_used)}, remaining ${esc(j.credits_remaining)}` : ""}${j.note ? ` · ${esc(j.note)}` : ""}` : esc(j.error || "The test could not run.");
+      } catch { if (out) out.textContent = "The test could not run. It may or may not have been sent: use Look up job before trying again."; }
+      el.disabled = false; return;
+    }
     if ((el = q("[data-sms-lookup]"))) {
       const a = await ask("Look up a send", "Reads the delivery status of one job from SasuSync. Nothing is sent and nothing is charged.", { field: true, label: "Look up", ph: "Job id" });
       if (!a || !a.value.trim()) return;

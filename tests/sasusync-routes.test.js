@@ -263,3 +263,57 @@ test("lookup: provider error handled safely (category only, no secrets); unknown
   install([staffOk, statusRoute({ success: true, delivery_status: "unknown", messages: [] }), [(u) => has(u, "notification_logs"), reply(200, [])]]);
   const u = await run(admin, lookReq()); assert.equal(u.json.delivery_status, "unknown"); assert.deepEqual(u.json.messages, []); assert.equal(u.json.matched_log, null);
 });
+
+/* ---------- one-message live test ---------- */
+const liveReq = (over = {}, headers = { authorization: "Bearer t" }) => ({ method: "POST", headers, body: { action: "live_test", live_test: true, confirm: "SEND ONE LIVE SMS", to: "0552148347", ...over } });
+const userRoute = [(u) => has(u, "/auth/v1/user"), reply(200, { id: "admin-1" })];
+const LIVEENV = { SASUSYNC_MODE: "live", SASUSYNC_SENDER_APPROVED: "true" };
+const senderRoute = (st) => [(u) => has(u, "/sender/id/status"), reply(200, { status: st })];
+const balRoute = (n = 400) => [(u) => has(u, "/api/v1/balance"), reply(200, { sms_credits: n, sms_sendable: n, otp_sendable: 100, rates: { otp_sms_credits: 3 }, currency: "GHS" })];
+const sendRoute = [(u) => has(u, "/api/v1/send"), reply(200, { success: true, balance: { deducted: 1, remaining: 399 }, data: { status: "queued", job_id: "j-1" } })];
+const base = (...extra) => [staffOk, who(["finance:ADMINISTER"]), userRoute, rl(), senderRoute("approved"), balRoute(), sendRoute, aud, ...extra];
+
+test("live test: authorized + confirmed + approved sender sends EXACTLY one live SMS, single attempt, reports credits used", async () => {
+  env(LIVEENV); const calls = install(base());
+  const r = await run(admin, liveReq());
+  assert.equal(r.status, 200); assert.equal(r.json.result, "LIVE — REAL SMS"); assert.equal(r.json.sent, true); assert.equal(r.json.job_id, "j-1"); assert.equal(r.json.credits_used, 1); assert.equal(r.json.credits_remaining, 399);
+  assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 1); assert.ok(!calls.some((c) => has(c.url, "/otp/") || has(c.url, "smssandbox")));
+  assert.ok(!JSON.stringify(r.json).includes("233552148347") && !JSON.stringify(r.json).includes("live SMS is working"));
+});
+test("live test: refused unless live env on, confirmation typed exactly, flag boolean true, valid number, and staff authorized (no send in any case)", async () => {
+  const cases = [[{}, {}, 401], [{ SASUSYNC_MODE: "sandbox" }, {}, 409], [{ SASUSYNC_MODE: "live" }, {}, 409], [LIVEENV, { confirm: "yes" }, 400], [LIVEENV, { live_test: "true" }, 400], [LIVEENV, { to: "123" }, 400]];
+  for (const [e, over, status] of cases) {
+    env(e); const calls = install(base()); const r = await run(admin, liveReq(over, status === 401 ? {} : { authorization: "Bearer t" }));
+    assert.equal(r.status, status, JSON.stringify([e, over])); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 0);
+  }
+  env(LIVEENV); let calls = install([staffOk, who(["support:READ"]), userRoute, rl(), senderRoute("approved"), balRoute(), sendRoute]);
+  assert.equal((await run(admin, liveReq())).status, 403); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 0);
+});
+test("live test: provider must itself report the sender approved; pending/rejected/unknown/no credit -> nothing sent", async () => {
+  for (const st of ["pending", "rejected", "not_found", "weird"]) {
+    env(LIVEENV); const calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, rl(), senderRoute(st), balRoute(), sendRoute, aud]);
+    const r = await run(admin, liveReq()); assert.equal(r.json.sent, false); assert.equal(r.json.error_category, "SENDER_NOT_APPROVED"); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 0);
+  }
+  env(LIVEENV); const calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, rl(), senderRoute("approved"), balRoute(0), sendRoute, aud]);
+  assert.equal((await run(admin, liveReq())).json.error_category, "NO_CREDIT"); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 0);
+});
+test("live test: rate limited (per admin / global) -> 429 and nothing sent", async () => {
+  env(LIVEENV); const calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, rl(false), senderRoute("approved"), balRoute(), sendRoute]);
+  assert.equal((await run(admin, liveReq())).status, 429); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 0);
+});
+test("live test: a failed or timed-out send is NEVER resent; errors carry category only", async () => {
+  for (const [rsp, kind] of [[reply(503, { detail: "busy ss_FAKE_KEY_FOR_TESTS" }), "SERVER"], [reply(402, { detail: "no credit" }), "INSUFFICIENT_CREDIT"], [new Error("ECONNRESET"), "NETWORK"], [Object.assign(new Error("a"), { name: "AbortError" }), "TIMEOUT"]]) {
+    env(LIVEENV); const calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, rl(), senderRoute("approved"), balRoute(), [(u) => has(u, "/api/v1/send"), rsp], aud]);
+    const r = await run(admin, liveReq());
+    assert.equal(r.json.sent, false); assert.equal(r.json.error_category, kind); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 1, kind);
+    assert.ok(!JSON.stringify(r.json).includes("FAKE_KEY") && !JSON.stringify(r.json).includes("233552148347"));
+    if (kind === "NETWORK" || kind === "TIMEOUT") assert.ok(r.json.note);
+  }
+});
+test("live test: no console output; audit holds masked number, no message, no key", async () => {
+  env(LIVEENV); const out = []; const o = { l: console.log, e: console.error, w: console.warn }; console.log = console.error = console.warn = (...a) => out.push(a.join(" "));
+  const calls = install(base()); await run(admin, liveReq()); Object.assign(console, o);
+  assert.deepEqual(out, []);
+  const a = JSON.stringify(calls.filter((c) => has(c.url, "audit_logs")).map((c) => c.body));
+  assert.ok(a.includes("sms.live_test") && !a.includes("233552148347") && !a.includes("live SMS is working") && !a.includes("FAKE_KEY"));
+});
