@@ -37,6 +37,7 @@
   <meta name="twitter:image:alt" content="BAID X: the ecosystem of professionals, project managers, companies, suppliers and clients." />
   <meta name="twitter:image" content="https://baid-x-website.vercel.app/assets/og-image.png?v=3" />
   <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/theme.css" />
 </head>
 <body>
 
@@ -53,6 +54,7 @@
         <div class="topbar-row">
           <img class="brand-logo" src="assets/logo.png" alt="BAID X" />
           <button class="btn-pro" id="joinBtn" data-action="join" data-group="pro">Join as a Pro</button>
+          <button class="bell" id="dirBell" data-go="notifications" aria-label="Notifications" hidden></button>
           <button class="icon-btn" id="filterBtn" data-go="filters" aria-label="Filters" hidden>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.500V20l-4-2v-4.500z"/></svg>
             <i class="dot" id="filterDot" hidden></i>
@@ -81,6 +83,7 @@
   <!-- Chats -->
   <main class="screen" id="screen-chats">
     <div class="wrap">
+      <div data-appbar></div>
       <h1 class="page-title">Chats</h1>
       <div class="empty" id="chatsGuest">
         <svg width="150" height="150" viewBox="0 0 150 150" fill="none" aria-hidden="true">
@@ -118,20 +121,25 @@
             <span><b>Sign in as a client</b><small>For homeowners hiring, and for companies</small></span>
             <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
           </button>
-          <p class="legal">By continuing you agree to the BAID X Terms and Privacy Policy.</p>
+          <p class="legal">By continuing you agree to the BAID X <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
         </div>
       </div>
 
       <div id="profileMember" hidden>
+        <div data-appbar></div>
         <header class="acc-head"><h1>Account</h1>
           <button class="icon-btn" data-fx="public-profile" aria-label="View public profile"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.500-7 10-7 10 7 10 7-3.500 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </header>
-        <div class="acc-id">
-          <div class="acc-avatar" id="accAvatar"></div>
-          <h2 id="accName"></h2>
-          <p id="accPhone"></p>
-          <div class="tags"><span id="accRole"></span><span id="accStatus"></span></div>
+        <div class="acc2">
+          <div class="a-cover" id="accCover"><button class="a-edit" data-go="edit-profile">Edit cover</button></div>
+          <div class="a-body">
+            <div class="acc-avatar" id="accAvatar"></div>
+            <h2><span id="accName"></span><span id="accSeal" hidden></span></h2>
+            <p class="a-sub" id="accPhone"></p>
+            <div class="tags"><span id="accRole"></span><span id="accStatus"></span></div>
+          </div>
         </div>
+        <div id="accVerified" hidden></div>
         <button class="acc-card check" data-go="checklist">
           <span class="ic warn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>
           <span class="tx"><b>Verification checklist</b><small>Complete required checks before your profile can be approved.</small></span>
@@ -198,5 +206,6 @@
   <script src="js/features.js"></script>
   <script src="js/market.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/notify.js"></script>
 </body>
 </html>

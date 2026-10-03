@@ -11,11 +11,19 @@
   const nz = (v) => (v == null ? "—" : v);
 
   /* ---------- ui blocks ---------- */
-  const greet = () => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; };
+  // The greeting reads the clock first: late night, morning, afternoon, evening, night.
+  const period = (h) => (h < 5 ? ["Burning the midnight oil", "moon"] : h < 12 ? ["Good morning", "sun"] : h < 17 ? ["Good afternoon", "sun"] : h < 21 ? ["Good evening", "sunset"] : ["Good night", "moon"]);
+  const greet = () => period(new Date().getHours())[0];
   const first = (s) => String(s || "").trim().split(/\s+/)[0] || "there";
-  const hero = (title, sub) => `<div class="d-hero"><h1>${esc(title)}</h1><p>${sub}</p></div>`;
+  const clockParts = () => { const d = new Date(); return [d.toLocaleTimeString("en-GH", { hour: "numeric", minute: "2-digit" }), d.toLocaleDateString("en-GH", { weekday: "long", day: "numeric", month: "short" })]; };
+  const hero = (who, sub, chips = [], verified = false) => {
+    const [g, ic] = period(new Date().getHours()), [t, dt] = clockParts();
+    const all = (verified ? [`<span class="h-chip v">${icon("seal", 14)} Verified</span>`] : []).concat(chips);
+    return `${window.APP.appbar()}<div class="hero2" data-hero><div class="h-top"><span class="h-greet">${icon(ic, 18)}<span data-greet>${g}</span></span><span class="h-time"><b data-clock>${t}</b><span data-date>${dt}</span></span></div><h1>${who}</h1><p>${sub}</p>${all.length ? `<div class="h-chips">${all.join("")}</div>` : ""}</div>`;
+  };
+  setInterval(() => { const h = document.querySelector("[data-hero]"); if (!h) return; const [g] = period(new Date().getHours()), [t, dt] = clockParts(); h.querySelector("[data-greet]").textContent = g; h.querySelector("[data-clock]").textContent = t; h.querySelector("[data-date]").textContent = dt; }, 20000);
   const pill = (t, kind = "") => `<span class="pill ${kind}">${esc(t)}</span>`;
-  const stats = (a) => `<div class="dstats">${a.map(([v, l]) => `<div class="dstat"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div>`;
+  const stats = (a) => `<div class="dstats">${a.map(([v, l, ic]) => `<div class="dstat">${ic ? `<span class="si">${icon(ic, 16)}</span>` : ""}<b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div>`;
   const sec = (t) => `<div class="sec">${esc(t)}</div>`;
   const tile = ([ic, t, s, to]) => `<button class="tile" ${to ? (to.startsWith("trade:") ? `data-trade="${esc(to.slice(6))}"` : `data-go="${to}"`) : "data-soon"}><span class="ic">${icon(ic, 18)}</span><span><b>${esc(t)}</b><small>${esc(s)}</small></span></button>`;
   const tiles = (a) => `<div class="tiles">${a.map(tile).join("")}</div>`;
@@ -25,7 +33,7 @@
   const empty = (ic, title, text, cta = "") => `<div class="d-empty">${icon(ic, 44)}<h3>${esc(title)}</h3><p>${esc(text)}</p>${cta}</div>`;
   const segs = (items, active) => `<div class="segs">${items.map(([k, l, to]) => `<button class="${k === active ? "on" : ""}" data-go="${to}">${esc(l)}</button>`).join("")}</div>`;
   const head = (title, right = "") => `<div class="d-head"><h1>${esc(title)}</h1>${right}</div>`;
-  const banner = (c) => (c.cl && c.cl.done < c.cl.total
+  const banner = (c) => (c.cl && c.cl.done < c.cl.total && c.profile.verification_status !== "verified"
     ? `<div class="banner"><span class="b-ic">${icon("star", 18)}</span><div class="b-txt"><p>Your profile isn't public yet. Complete the required items to be approved.</p><b>${c.cl.done}/${c.cl.total} complete</b></div><button class="b-btn" data-go="checklist">Continue setup</button></div>` : "");
   const soonBtn = (t) => `<button class="btn-light sm" data-soon>${esc(t)}</button>`;
   const statusKind = (s) => ({ open: "ok", active: "ok", accepted: "ok", completed: "ok", done: "ok", shortlisted: "warn", submitted: "warn", pending: "warn", planning: "warn", draft: "warn" }[String(s || "").toLowerCase()] || "");
@@ -42,8 +50,8 @@
         count(c, "job_applications", (x) => x.eq("worker_id", c.uid).eq("status", "accepted")),
         rows(c, "wallet_accounts", "available_ghs,pending_ghs", (x) => x.eq("owner_id", c.uid), 1),
       ]);
-      return hero(`${greet()}, ${first(p.full_name)}`, `${esc(trade(p.primary_job_category_id) || "Professional")} · ${esc([p.city_town, p.region].filter((v) => v && v !== "Pending").join(", ") || "Add your location")}${p.available_for_work ? ` · ${pill("Available for work", "ok")}` : ""}`)
-        + banner(c) + stats([[nz(open), "Open jobs"], [nz(apps), "Applications"], [nz(accepted), "Accepted"]])
+      return hero(`${esc(first(p.full_name))} <em>👋</em>`, `${esc(trade(p.primary_job_category_id) || "Professional")} · ${esc([p.city_town, p.region].filter((v) => v && v !== "Pending").join(", ") || "Add your location")}`, [p.available_for_work ? `<span class="h-chip">● Available for work</span>` : "", `<span class="h-chip">${esc(pretty(p.rank_tier) || "New")} · ${p.xp_total || 0} XP</span>`], p.verification_status === "verified")
+        + banner(c) + stats([[nz(open), "Open jobs", "work"], [nz(apps), "Applications", "mail"], [nz(accepted), "Accepted", "task"]])
         + card(pretty(p.rank_tier) || "New worker", `${p.xp_total || 0} XP`, `${bar(Math.min(100, ((p.xp_total || 0) / 2000) * 100))}<div class="cap2">Earn XP by finishing your profile, getting accepted and completing jobs.</div>`)
         + sec("Quick access") + tiles([["wallet", "Wallet", money(wallet[0]?.available_ghs), "wallet"], ["grow", "Career growth", `${p.xp_total || 0} XP`, "growth"], ["work", "Applications", `${nz(apps)} total`, "work"], ["star", "Trust score", Number(p.trust_score || 0).toFixed(1), "growth"]]);
     },
@@ -55,8 +63,8 @@
       const applicants = ids.length ? await count(c, "job_applications", (x) => x.in("job_id", ids)) : 0;
       const active = projects.filter((x) => ["active", "planning"].includes(String(x.status).toLowerCase())).length;
       const p0 = projects[0];
-      return hero(`${greet()}`, `${esc(p.company_name || "Your company")}`)
-        + banner(c) + stats([[active, "Active projects"], [jobs.filter((j) => j.status === "open").length, "Open jobs"], [applicants, "Applicants"]])
+      return hero(`<em>${esc(p.company_name || "Your company")}</em>`, "Here's how your projects and hiring are doing.", [], p.verification_status === "verified")
+        + banner(c) + stats([[active, "Active projects", "proj"], [jobs.filter((j) => j.status === "open").length, "Open jobs", "work"], [applicants, "Applicants", "team"]])
         + (p0 ? card(p0.name, `${p0.progress_pct || 0}%`, `${bar(p0.progress_pct)}<div class="cap2">${pill(pretty(p0.status), statusKind(p0.status))} ${esc(p0.city_town || "")}</div>`)
                : card("Start your first project", "", `<div class="cap2" style="margin:0 0 10px">Define the workers, project manager, equipment and materials you need, then invite people in.</div><button class="btn-light sm" data-go="new-project">Create a project</button>`))
         + sec("Run the business") + tiles([["pay", "Payments", "Records and invoices", "payments"], ["equip", "Equipment", "Find and request", "equipment"], ["mat", "Materials", "Compare supply", "materials"], ["key", "Join code", "Link a project manager", "team-link"]]);
@@ -68,8 +76,8 @@
       const openTasks = ids.length ? await count(c, "project_tasks", (x) => x.in("project_id", ids).neq("status", "done")) : 0;
       const avg = projects.length ? Math.round(projects.reduce((a, x) => a + (Number(x.progress_pct) || 0), 0) / projects.length) : 0;
       const p0 = projects[0];
-      return hero("Site overview", `${projects.length} assigned project${projects.length === 1 ? "" : "s"}`)
-        + banner(c) + stats([[projects.length, "Projects"], [nz(openTasks), "Open tasks"], [`${avg}%`, "Avg progress"]])
+      return hero(`${esc(first(p.full_name))} <em>on site</em>`, `${projects.length} assigned project${projects.length === 1 ? "" : "s"} · ${nz(openTasks)} open task${openTasks === 1 ? "" : "s"}`, [], p.verification_status === "verified")
+        + banner(c) + stats([[projects.length, "Projects", "proj"], [nz(openTasks), "Open tasks", "task"], [`${avg}%`, "Avg progress", "prog"]])
         + (p0 ? card(p0.name, pretty(p0.status), `${bar(p0.progress_pct)}<div class="cap2">${esc(p0.city_town || "")} ${p0.progress_pct || 0}% complete</div>`)
                : card("No project yet", "", `<div class="cap2" style="margin:0">Ask your company for a join code. Once they approve the link, their projects appear here.</div>`))
         + sec("Your projects") + tiles([["task", "Tasks", `${nz(openTasks)} open`, "ws/tasks"], ["team", "Team", "Build your crew", "ws/team"], ["rep", "Reports", "Daily and weekly", "ws/reports"], ["pay", "Finance", "Requests and records", "ws/finance"]]);
@@ -81,8 +89,8 @@
         rows(c, "product_inquiries", "id,inquirer_name,message,status,created_at", (x) => x.eq("business_id", c.uid).order("created_at", { ascending: false }), 1),
       ]);
       const l = latest[0];
-      return hero("Your shop", esc(c.profile.business_name || "Supplier"))
-        + banner(c) + stats([[nz(products), "Products"], [nz(equip), "Equipment"], [nz(inq), "Inquiries"]])
+      return hero(`<em>${esc(c.profile.business_name || "Your shop")}</em>`, "Your catalog, equipment and customer inquiries.", [c.profile.accepting_orders ? `<span class="h-chip">● Accepting orders</span>` : ""], c.profile.verification_status === "verified")
+        + banner(c) + stats([[nz(products), "Products", "box"], [nz(equip), "Equipment", "equip"], [nz(inq), "Inquiries", "mail"]])
         + (l ? card(`Inquiry from ${l.inquirer_name || "a customer"}`, ago(l.created_at), `<div class="cap2" style="margin:0">${esc(l.message || "")}</div>`)
               : card("No inquiries yet", "", `<div class="cap2" style="margin:0">When a customer or company asks about your listings, it shows up here.</div>`))
         + sec("Quick access") + tiles([["plus", "Add product", "Catalog", "catalog"], ["mail", "Inquiries", `${nz(inq)} total`, "inquiries"], ["equip", "Equipment", `${nz(equip)} listed`, "catalog/equipment"], ["wallet", "Wallet", "Balance and payouts", "wallet"]]);
@@ -92,8 +100,8 @@
       const ids = jobs.map((j) => j.id);
       const hired = ids.length ? await count(c, "job_applications", (x) => x.in("job_id", ids).eq("status", "accepted")) : 0;
       const trades = ["Electrician", "Plumber", "Painter", "General Handyman"];
-      return hero(`${greet()}, ${first(c.profile.full_name)}`, "Need something fixed or built?")
-        + banner(c) + stats([[jobs.length, "Jobs posted"], [jobs.filter((j) => j.status === "open").length, "Open"], [hired, "Hired"]])
+      return hero(`${esc(first(c.profile.full_name))} <em>👋</em>`, "Need something fixed or built?", [], c.profile.verification_status === "verified")
+        + banner(c) + stats([[jobs.length, "Jobs posted", "work"], [jobs.filter((j) => j.status === "open").length, "Open", "mail"], [hired, "Hired", "hire"]])
         + sec("Find a trade") + tiles(trades.map((t) => ["work", t, "Browse pros", `trade:${t}`]));
     },
   };
@@ -111,10 +119,10 @@
     const { jobs, applied } = c.state.jobsCache, s = q.trim().toLowerCase();
     const list = jobs.filter((j) => !s || `${j.title} ${trade(j.job_category_id) || ""} ${j.city_town || ""} ${j.region || ""}`.toLowerCase().includes(s));
     if (!list.length) return empty("work", jobs.length ? "No matching jobs" : "No open jobs right now", jobs.length ? "Try a different search." : "New jobs from companies and homeowners will appear here. Check back soon.");
-    return list.map((j) => `<div class="job"><div class="job-top"><b>${esc(j.title)}</b><span class="rate">${j.daily_rate_ghs ? `${money(j.daily_rate_ghs)}<small>/day</small>` : ""}</span></div>
-      <div class="job-meta">${trade(j.job_category_id) ? pill(trade(j.job_category_id)) : ""}<span>${icon("site", 14)} ${esc([j.city_town, j.region].filter(Boolean).join(", ") || "Ghana")}</span><span>${j.workers_needed || 1} needed</span><span>${esc(ago(j.created_at))}</span></div>
+    return list.map((j) => `<div class="job"><div class="job-top"><div class="jt">${trade(j.job_category_id) ? `<span class="tr">${esc(trade(j.job_category_id))}</span>` : ""}<b>${esc(j.title)}</b></div><span class="rate">${j.daily_rate_ghs ? `${money(j.daily_rate_ghs)}<small>per day</small>` : `<small>Rate on request</small>`}</span></div>
       ${j.description ? `<p>${esc(j.description)}</p>` : ""}
-      ${applied[j.id] ? `<div class="job-act">${pill(pretty(applied[j.id]), statusKind(applied[j.id]))}</div>` : `<div class="job-act"><button class="btn-light sm" data-apply="${esc(j.id)}">Apply</button></div>`}</div>`).join("");
+      <div class="job-info"><span class="pl">${icon("site", 14)}<i>${esc([j.city_town, j.region].filter(Boolean).join(", ") || "Ghana")}</i></span><span>${icon("team", 14)} ${j.workers_needed || 1} needed</span><span>${icon("cal", 14)} ${esc(ago(j.created_at))}</span></div>
+      ${applied[j.id] ? `<div class="job-act">${pill(pretty(applied[j.id]), statusKind(applied[j.id]))}</div>` : `<div class="job-act"><button class="btn-light sm" data-apply="${esc(j.id)}">Apply now</button></div>`}</div>`).join("");
   }
 
   /* ---------- Worker: Work management ---------- */

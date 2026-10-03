@@ -3,7 +3,7 @@
    the device unwrapped, so the server (and BAID X staff) only ever store ciphertext for new chats. */
 (() => {
   "use strict";
-  const { sb, esc, icon, toast } = window.BX;
+  const { sb, esc, icon, toast, ago } = window.BX;
   const U8 = (b) => new Uint8Array(b);
   const te = new TextEncoder(), td = new TextDecoder();
   const b64 = (buf) => { const a = U8(buf); let s = ""; for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
@@ -102,6 +102,23 @@
      State + realtime
      ====================================================================== */
   const S = { convs: [], byId: new Map(), previews: {}, th: null, ch: null, calls: null, notifPerm: "Notification" in window ? Notification.permission : "denied" };
+  S.pres = {};
+  const isOn = (id) => { const p = S.pres[id]; return !!p && p.status === "online" && Date.now() - new Date(p.last_seen_at).getTime() < 110000; };
+  const seenText = (id) => (isOn(id) ? "Active now" : S.pres[id]?.last_seen_at ? `Last seen ${ago(S.pres[id].last_seen_at)}` : "Offline");
+  const avp = (name, photo, id, cls = "") => `<span class="av-wrap">${av(name, photo, cls)}<i class="pres ${isOn(id) ? "on" : ""}" data-pres="${esc(id || "")}"></i></span>`;
+  async function beat(status) { const u = me(); if (!u) return; const now = new Date().toISOString(); try { await sb.from("user_presence").upsert({ user_id: u, status: status || "online", last_seen_at: now, updated_at: now }); } catch { /* offline */ } }
+  async function loadPresence() { const ids = [...new Set(S.convs.map((c) => c.peer_id).filter(Boolean))]; if (!ids.length) return; const { data } = await sb.from("user_presence").select("user_id,status,last_seen_at").in("user_id", ids); (data || []).forEach((r) => { S.pres[r.user_id] = r; }); paintPresence(); }
+  function paintPresence() {
+    document.querySelectorAll("[data-pres]").forEach((el) => el.classList.toggle("on", isOn(el.dataset.pres)));
+    const h = document.getElementById("chSub"), T = S.th; if (h && T) h.innerHTML = `<span class="${isOn(T.peer.id) ? "on-line" : ""}">${esc(seenText(T.peer.id))}</span> · ${si("lock", 11)} ${T.noKey ? "Not encrypted yet" : "Encrypted"}`;
+  }
+  let beatT = null;
+  function startPresence() {
+    if (beatT) return; beat("online"); loadPresence();
+    beatT = setInterval(() => { if (document.visibilityState === "visible") beat("online"); loadPresence(); }, 40000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { beat("online"); loadPresence(); } else beat("offline"); });
+    window.addEventListener("pagehide", () => beat("offline"));
+  }
   const blobCache = new Map();
   let audioCtx = null;
   const blip = () => { try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = "sine"; o.frequency.value = 880; g.gain.setValueAtTime(0.0001, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.18); o.connect(g).connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.2); } catch { /* sound is optional */ } };
@@ -121,7 +138,9 @@
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (p) => onMessage(p.new))
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversation_participants" }, (p) => onParticipant(p.new))
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${u}` }, (p) => onNotification(p.new))
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_presence" }, (p) => { const r = p.new; if (r && r.user_id) { S.pres[r.user_id] = r; paintPresence(); } })
       .subscribe((st) => { S.rtState = st; });
+    startPresence();
     S.inbox = sb.channel("inbox-" + u, { config: { broadcast: { self: false } } }).on("broadcast", { event: "call" }, (p) => onCallSignal(p.payload)).subscribe();
   }
   async function onMessage(row) {
@@ -139,13 +158,13 @@
     S.previews[c.id] = d.t === "locked" ? "🔒 Message" : d.t === "image" ? "📷 Photo" : d.t === "audio" ? "🎤 Voice note" : d.t === "file" ? "📎 " + (d.a?.name || "File") : d.x || ""; renderList();
   }
   function onParticipant(row) { if (S.th && row.conversation_id === S.th.id && row.user_id !== me()) S.th.peerRead(row.last_read_at); }
-  function onNotification(n) { if (!n) return; notify(n.title || "BAID X", n.body || "", n.href && n.href.startsWith("#/") ? n.href : "#/home"); if (location.hash.startsWith("#/home")) window.APP?.route(); }
+  function onNotification(n) { if (!n) return; window.NOTIFY?.bump(); notify(n.title || "BAID X", n.body || "", n.href && n.href.startsWith("#/") ? n.href : "#/home"); if (location.hash.startsWith("#/home")) window.APP?.route(); }
 
   /* ======================================================================
      Chats list
      ====================================================================== */
   let listBox = null;
-  function rowHtml(x) { const prev = S.previews[x.id] || x.preview || "No messages yet"; return `<button class="row chat" data-go="chat/${esc(x.id)}">${av(x.peer_name, x.peer_photo)}<span class="tx"><b>${esc(x.peer_name)}</b><small>${esc(prev)}</small></span><span class="meta2">${x.last_message_at ? esc(hhmmShort(x.last_message_at)) : ""}</span>${x.unread ? `<span class="badge">${x.unread}</span>` : ""}</button>`; }
+  function rowHtml(x) { const prev = S.previews[x.id] || x.preview || "No messages yet"; return `<button class="row chat" data-go="chat/${esc(x.id)}">${avp(x.peer_name, x.peer_photo, x.peer_id)}<span class="tx"><b>${esc(x.peer_name)}</b><small>${esc(prev)}</small></span><span class="meta2">${x.last_message_at ? esc(hhmmShort(x.last_message_at)) : ""}</span>${x.unread ? `<span class="badge">${x.unread}</span>` : ""}</button>`; }
   const hhmmShort = (iso) => { const d = new Date(iso), n = new Date(); return d.toDateString() === n.toDateString() ? hhmm(iso) : d.toLocaleDateString("en-GH", { day: "numeric", month: "short" }); };
   function renderList() {
     if (!listBox || !document.body.contains(listBox)) return;
@@ -155,7 +174,7 @@
   }
   async function list(box) {
     listBox = box; box.innerHTML = '<div class="skel" style="height:72px;margin-top:14px"></div>'.repeat(3);
-    try { await loadConvs(); startRealtime(); renderList(); syncNav(); S.convs.slice(0, 12).forEach((c) => { /* warm previews for encrypted chats */ }); } catch (e) { console.error(e); box.innerHTML = '<div class="state"><b>Couldn\'t load chats</b>Check your connection and try again.</div>'; }
+    try { await loadConvs(); startRealtime(); renderList(); syncNav(); loadPresence(); S.convs.slice(0, 12).forEach((c) => { /* warm previews for encrypted chats */ }); } catch (e) { console.error(e); box.innerHTML = '<div class="state"><b>Couldn\'t load chats</b>Check your connection and try again.</div>'; }
   }
 
   /* ======================================================================
@@ -176,11 +195,11 @@
     const root = document.getElementById("chatWrap"); if (!root) return;
     let data;
     try { await loadConvs().catch(() => {}); data = await rpc("chat_thread", { p_conv: id }); } catch (e) { root.querySelector("#msgArea").innerHTML = `<div class="state"><b>Couldn't open this chat</b>${esc(e.message || "")}</div>`; return; }
-    startRealtime();
+    startRealtime(); loadPresence();
     const peer = data.peer || {}, u = me();
     const T = { id, peer, msgs: [], pending: new Map(), peerReadAt: peer.last_read_at ? new Date(peer.last_read_at).getTime() : 0, typingT: null, lastTypingSent: 0, noKey: false, recording: null, oldest: null, atEnd: true };
     S.th = T; let readT = null;
-    const headHtml = `<button class="icon-btn" data-go="chats" aria-label="Back">${si("back", 22)}</button>${av(peer.name, peer.photo)}<span class="tx"><b>${esc(peer.name || "Chat")}</b><small id="chSub">${esc(String(peer.role || "").replace(/[_-]/g, " "))}</small></span><button class="icon-btn" id="callA" aria-label="Voice call">${si("phone")}</button><button class="icon-btn" id="callV" aria-label="Video call">${si("video")}</button>`;
+    const headHtml = `<button class="icon-btn" data-go="chats" aria-label="Back">${si("back", 22)}</button>${avp(peer.name, peer.photo, peer.id)}<span class="tx"><b>${esc(peer.name || "Chat")}</b><small id="chSub">${esc(String(peer.role || "").replace(/[_-]/g, " "))}</small></span><button class="icon-btn" id="callA" aria-label="Voice call">${si("phone")}</button><button class="icon-btn" id="callV" aria-label="Video call">${si("video")}</button>`;
     document.getElementById("chHead").innerHTML = headHtml;
     document.getElementById("comp").innerHTML = `<div class="comp-sec" id="compSec" hidden></div><div class="comp-row" id="compRow"><label class="ib" title="Attach">${si("clip")}<input type="file" id="fileIn" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" multiple hidden /></label><textarea id="msgIn" rows="1" placeholder="Message" maxlength="4000" enterkeyhint="send"></textarea><button class="ib mic" id="micBtn" aria-label="Voice note">${si("mic")}</button><button class="ib send" id="sendBtn" aria-label="Send" hidden>${si("send")}</button></div>`;
     const area = document.getElementById("msgArea"), input = document.getElementById("msgIn"), sendBtn = document.getElementById("sendBtn"), micBtn = document.getElementById("micBtn");
@@ -248,7 +267,7 @@
     markRead(true); const c0 = S.byId.get(id); if (c0) { c0.unread = 0; syncNav(); }
     ensureKeys().then(async () => { const pk = await peerKeys(peer.id, true); T.noKey = !pk.length; banner(); }).catch(() => {});
     async function loadOlder() { try { const o = await rpc("chat_thread", { p_conv: id, p_before: T.oldest }); const more = await Promise.all((o.messages || []).map(toLocal)); if (!more.length) { T.atStart = true; } else { T.oldest = o.messages[0].at; T.msgs = more.concat(T.msgs); T.atStart = o.messages.length < 60; } const h = area.scrollHeight; renderAll(); area.scrollTop = area.scrollHeight - h; } catch { toast("Couldn't load earlier messages."); } }
-    function banner() { const h = document.getElementById("chSub"); if (!h) return; h.innerHTML = `${si("lock", 11)} ${T.noKey ? "Not encrypted yet. They haven't set up secure chat" : "End-to-end encrypted"}`; }
+    function banner() { paintPresence(); }
 
     /* ---- receiving ---- */
     T.receive = async (row) => {

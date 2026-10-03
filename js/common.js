@@ -233,6 +233,13 @@
     plus: '<path d="M12 5v14M5 12h14"/>',
     lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
     key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3"/>',
+    bell: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.500 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.500M12 19.500V22M2 12h2.500M19.500 12H22M4.900 4.900l1.800 1.800M17.300 17.300l1.800 1.800M4.900 19.100l1.800-1.800M17.300 6.700l1.800-1.800"/>',
+    sunset: '<path d="M7 17a5 5 0 0 1 10 0M12 4v4M4.500 9.500l1.800 1.800M19.500 9.500l-1.800 1.800M2 17h20M6 21h12"/>',
+    moon: '<path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500z"/>',
+    seal: '<path d="M12 2.500 14.600 4.400 17.800 4.300 18.800 7.300 21.400 9.200 20.400 12.200 21.400 15.200 18.800 17.100 17.800 20.100 14.600 20 12 21.900 9.400 20 6.200 20.100 5.200 17.100 2.600 15.200 3.600 12.200 2.600 9.200 5.200 7.300 6.200 4.300 9.400 4.400z" fill="currentColor" stroke="none"/><path d="m8.300 12.200 2.600 2.600 4.800-5.200" stroke="#06121c" stroke-width="2.200"/>',
+    phone: '<path d="M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+    cal: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
   };
   const icon = (k, s = 24) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ""}</svg>`;
 
@@ -270,10 +277,11 @@
   for (const k of Object.keys(NAV)) {
     if (k === "guest") continue;
     for (const r of ["verification", "edit-profile", "info", "portfolio", "certs", "team-link", "post-job", "wallet"]) NAV[k].parent[r] = NAV[k].parent[r] || "profile";
+    NAV[k].parent.notifications = "home";
     NAV[k].parent.chat = NAV[k].parent.chat || (k === "business" ? "inquiries" : "chats");
   }
   // Routes each role may open (anything else falls back to Home).
-  const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker", "orgs", "org", "join", "billing", "verification", "edit-profile", "info", "chat"];
+  const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker", "orgs", "org", "join", "billing", "verification", "edit-profile", "info", "chat", "notifications"];
   const ROLE_ROUTES = {
     worker: ["jobs", "work", "wallet", "growth", "projects", "ws", "invites", "portfolio", "certs"],
     company: ["discover", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials", "wallet", "team-link", "hires", "post-job"],

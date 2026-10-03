@@ -27,7 +27,7 @@
           kind: "worker", id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
           desc: r.short_bio || (trade ? `${trade} based in ${r.city_town || "Ghana"}.` : "Skilled professional on BAID X."),
           tag: trade || pretty(r.rank_tier) || "Professional", place: place(r), catId: r.primary_job_category_id, region: r.region,
-          stats: [[r.daily_rate_ghs ? `GH₵${num(r.daily_rate_ghs)}` : "—", "Daily rate"], [pretty(r.years_of_experience) || "—", "Experience"]],
+          stats: [[r.daily_rate_ghs ? `GH₵${num(r.daily_rate_ghs)}` : "On request", "Daily rate"], [r.years_of_experience ? `${pretty(r.years_of_experience)}${/^\d/.test(String(r.years_of_experience)) ? " yrs" : ""}` : "New", "Experience"]],
         };
       },
     },
@@ -56,7 +56,7 @@
   // What each role most likely wants to find first when they open Discover.
   const DEFAULT_CHIP = { company: "professionals", "individual-employer": "professionals", "project-manager": "companies", business: "companies" };
 
-  const state = { me: null, route: { name: "home", arg: "" }, filter: "all", q: "", items: [], loading: false, failed: false, f: { type: "all", cat: null, region: null }, draft: null, dirInit: false, unread: 0, projectId: null };
+  const state = { me: null, route: { name: "home", arg: "" }, filter: "all", q: "", items: [], loading: false, failed: false, f: { type: "all", cat: null, region: null }, draft: null, dirInit: false, unread: 0, notif: 0, projectId: null };
   const R = () => state.me?.role || null;
 
   /* ---------- Splash ---------- */
@@ -116,6 +116,13 @@
   }
 
   /* ---------- Navigation (bottom bar on phones, sidebar on desktop) ---------- */
+  const myInitials = () => { const me = state.me, p = me?.profile || {}; return initials(p[ROLES[me?.role]?.nameKey] || "BX"); };
+  const myPhoto = () => { const p = state.me?.profile || {}; return p.profile_photo_url || p.company_logo_url || p.logo_url || ""; };
+  const bellInner = () => `${icon("bell", 21)}<i class="bn" data-bn ${state.notif > 0 ? "" : "hidden"}>${state.notif > 9 ? "9+" : state.notif || ""}</i>`;
+  const appbar = () => `<div class="appbar"><img class="ab-logo" src="assets/logo.png" alt="BAID X" /><span class="sp"></span><button class="bell" data-go="notifications" aria-label="Notifications">${bellInner()}</button><button class="ab-me" data-go="profile" aria-label="My profile" ${myPhoto() ? `style="background-image:url('${esc(myPhoto())}')"` : ""}>${myPhoto() ? "" : esc(myInitials())}</button></div>`;
+  function updateBell(ring) {
+    $$(".bell").forEach((b) => { if (!b.querySelector("[data-bn]")) b.innerHTML = bellInner(); const n = b.querySelector("[data-bn]"); n.hidden = !(state.notif > 0); n.textContent = state.notif > 9 ? "9+" : state.notif || ""; if (ring) { b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); } });
+  }
   function renderNav() {
     const role = R(), cfg = NAV[role || "guest"];
     const badge = (k) => (k === "chats" && state.unread > 0 ? `<i class="nbadge">${state.unread > 9 ? "9+" : state.unread}</i>` : "");
@@ -145,13 +152,18 @@
   }
   const PIN = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 21s7-6.200 7-11.500A7 7 0 0 0 5 9.500C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>';
   const BAG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7"/></svg>';
+  const KIND_LABEL = { worker: "Professional", company: "Company", pm: "Project manager", business: "Supplier" };
+  const SEAL = () => `<span class="vbadge" title="Verified">${icon("seal", 17)}</span>`;
   function cardHTML(it) {
-    const cover = it.cover ? `<div class="cover" style="background-image:url('${esc(it.cover)}')"></div>` : '<div class="cover ph"><img src="assets/favicon.png" alt="" /></div>';
-    const avatar = it.image ? `<div class="avatar" style="background-image:url('${esc(it.image)}')"></div>` : `<div class="avatar initials">${esc(initials(it.name))}</div>`;
-    return `<article class="card" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">${cover}${avatar}
-      <div class="card-body"><h3>${esc(it.name)}</h3><p class="desc">${esc(it.desc)}</p>
-        <div class="meta">${BAG}<span>${esc(it.tag)}</span></div><div class="meta loc">${PIN}<span>${esc(it.place)}</span></div></div>
-      <div class="stats">${it.stats.map(([v, l]) => `<div class="stat"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div></article>`;
+    const role = R(), canInvite = (role === "company" && ["worker", "pm"].includes(it.kind)) || (role === "project-manager" && it.kind === "worker");
+    const cover = `<div class="c-cover k-${esc(it.kind)} ${it.cover ? "has" : ""}" ${it.cover ? `style="background-image:url('${esc(it.cover)}')"` : ""}><span class="c-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span></div>`;
+    const av = `<div class="c-av" ${it.image ? `style="background-image:url('${esc(it.image)}')"` : ""}>${it.image ? "" : esc(initials(it.name))}</div>`;
+    const msg = role ? `<button class="b2" data-fx="message" data-id="${esc(it.id)}" data-name="${esc(it.name)}">Message</button>` : "";
+    return `<article class="card c2" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">${cover}
+      <div class="c-head">${av}<div class="c-id"><h3><span class="nm">${esc(it.name)}</span>${SEAL()}</h3><div class="c-tag">${esc(it.tag)}</div></div></div>
+      <div class="c-body"><div class="c-loc">${PIN.replace('width="20" height="20"', 'width="15" height="15"')}<span>${esc(it.place)}</span></div><p class="desc">${esc(it.desc)}</p></div>
+      <div class="c-stats">${it.stats.map(([v, l]) => `<div class="c-stat"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div>
+      <div class="c-foot"><button class="b1">${canInvite ? "Invite to project" : "View profile"}</button>${msg}</div></article>`;
   }
   const norm = (s) => String(s || "").toLowerCase().replace(/\s*region$/, "").trim();
   function visible() {
@@ -185,7 +197,8 @@
   /* ---------- Member shell: account screen, chats ---------- */
   function paintMember() {
     const me = state.me, member = !!me?.role;
-    $("#joinBtn").hidden = member; $("#filterBtn").hidden = !member;
+    $("#joinBtn").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member;
+    if (member) { $("#dirBell").innerHTML = bellInner(); $$("[data-appbar]").forEach((el) => { el.innerHTML = appbar(); }); }
     $("#chatsGuest").hidden = member; $("#chatsMember").hidden = !member;
     $("#profileGuest").hidden = member; $("#profileMember").hidden = !member;
     if (!member) return;
@@ -195,8 +208,16 @@
     const photo = p.profile_photo_url || p.company_logo_url || p.logo_url;
     $("#accAvatar").style.backgroundImage = photo ? `url('${photo.replace(/'/g, "%27")}')` : "";
     $("#accAvatar").textContent = photo ? "" : initials(name);
+    const verified = p.verification_status === "verified";
+    $("#accCover").style.backgroundImage = p.cover_url ? `url('${p.cover_url.replace(/'/g, "%27")}')` : "";
     $("#accName").textContent = name; $("#accPhone").textContent = phone ? (/^\d/.test(phone) ? `+${phone}` : phone) : "";
-    $("#accRole").textContent = role.account; $("#accStatus").textContent = statusLabel(p.verification_status);
+    $("#accSeal").hidden = !verified; $("#accSeal").innerHTML = verified ? SEAL() : "";
+    $("#accRole").textContent = role.account;
+    $("#accStatus").className = verified ? "vt" : ""; $("#accStatus").innerHTML = verified ? `${icon("seal", 14)} Verified` : esc(statusLabel(p.verification_status));
+    // verified members don't need the checklist any more: show the badge instead
+    document.querySelector(".acc-card.check").hidden = verified;
+    $("#accVerified").hidden = !verified;
+    $("#accVerified").innerHTML = verified ? `<div class="verified-card"><span class="vc-ic">${icon("seal", 26)}</span><span><b>Verified ${esc(role.account.toLowerCase())}</b><small>BAID X has confirmed your identity. The badge shows on your profile and cards.</small></span></div>` : "";
     $("#accCount").textContent = `${cl.done}/${cl.total}`;
     $("#filterDot").hidden = !(state.f.type !== "all" || state.f.cat || state.f.region);
 
@@ -211,7 +232,7 @@
     };
     $("#accMenu").innerHTML = [billRow, orgRow, ...menus[me.role]].map(([t, d, to]) => row(t, d, to)).join("");
     $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account.", null, "add-email"), row("Change phone", "Update the mobile number linked to this account.", null, "change-phone"), row("Change password", "Set a new password for sign-in.", null, "change-password")].join("");
-    $("#accInfo").innerHTML = [row("User guide", "How to use BAID X, step by step, for every role.", null, "open-docs"), row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", "info/terms"), row("Privacy policy", "Read how we handle your information.", "info/privacy"), row("About BAID X", "Product and company information.", "info/about")].join("");
+    $("#accInfo").innerHTML = [row("User guide", "How to use BAID X, step by step, for every role.", null, "open-docs"), row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", null, "open-terms"), row("Privacy policy", "Read how we handle your information.", null, "open-privacy"), row("About BAID X", "Product and company information.", null, "open-about")].join("");
   }
 
   const HOURGLASS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 5 5 5 9s-5 4-5 9M17 3c0 5-5 5-5 9s5 4 5 9"/></svg>';
@@ -289,7 +310,7 @@
     const sign = t.closest("[data-action='join'],[data-action='signin']");
     if (sign) { const gr = sign.dataset.group; const mode = sign.dataset.action === "signin" ? "signin" : "signup"; return void (location.href = `auth.html?mode=${mode}${gr ? `&group=${gr}` : ""}`); }
     const card = t.closest(".card");
-    if (card) {
+    if (card && !t.closest("[data-fx]")) {
       const role = R(), kind = card.dataset.kind;
       if (role === "company" && ["worker", "pm"].includes(kind)) return window.PROJ?.openInvite(kind, card.dataset.id);
       if (role === "project-manager" && kind === "worker") return window.PROJ?.openInvite("worker", card.dataset.id);
@@ -298,7 +319,7 @@
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });
   window.addEventListener("hashchange", route);
-  window.APP = { state, go, route, dashCtx, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
+  window.APP = { state, go, route, dashCtx, appbar, updateBell, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
 
   /* ---------- Boot ---------- */
   renderChips(); renderNav(); runSplash();
