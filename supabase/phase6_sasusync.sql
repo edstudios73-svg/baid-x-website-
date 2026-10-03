@@ -147,3 +147,30 @@ end $$;
 create or replace function public.auth_email_by_phone(p_phone text) returns text language sql stable security definer set search_path = public, auth as $$
   select u.email from auth.users u where u.id = public.auth_user_by_phone(p_phone) $$;
 revoke execute on function public.auth_email_by_phone(text) from public, anon, authenticated;
+
+-- 11) SMS announcements (admin bulk SMS). Applied to project igfmmprlrybxsdzehwid. No phone numbers are stored in sms_broadcasts.
+create table if not exists public.sms_broadcasts (id uuid primary key default gen_random_uuid(), request_id uuid not null unique, created_by uuid, message text not null, parts int not null, target_roles text[] not null default '{}', mode text not null, status text not null default 'sending' check (status in ('sending','sent','partial','failed')), recipients int not null default 0, accepted int not null default 0, credits_used numeric, chunks jsonb not null default '[]'::jsonb, error text, created_at timestamptz not null default now(), finished_at timestamptz);
+alter table public.sms_broadcasts enable row level security;
+revoke all on public.sms_broadcasts from anon, authenticated;
+create or replace function public.sms_broadcast_recipients(p_roles text[]) returns jsonb language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object('user_id', a.user_id, 'role', a.role, 'phone', coalesce(pi.phone, case a.role
+      when 'worker' then (select phone_number from worker_profiles where id = a.user_id)
+      when 'company' then (select contact_phone from company_profiles where id = a.user_id)
+      when 'project-manager' then (select phone_number from project_manager_profiles where id = a.user_id)
+      when 'business' then (select contact_phone from business_profiles where id = a.user_id)
+      when 'individual-employer' then (select phone_number from individual_employer_profiles where id = a.user_id) end))), '[]'::jsonb)
+  from account_roles a
+  left join phone_identities pi on pi.user_id = a.user_id
+  left join notification_preferences np on np.user_id = a.user_id
+  where a.account_status = 'active'
+    and (coalesce(array_length(p_roles, 1), 0) = 0 or a.role = any(p_roles))
+    and coalesce(np.sms_enabled, true) and coalesce(np.announcements, true) $$;
+revoke execute on function public.sms_broadcast_recipients(text[]) from public, anon, authenticated;
+create or replace function public.admin_sms_broadcasts() returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_active_admin() then raise exception 'not allowed'; end if;
+  return coalesce((select jsonb_agg(x) from (select id, created_at, finished_at, left(message, 160) as message, parts, target_roles, mode, status, recipients, accepted, credits_used, error from sms_broadcasts order by created_at desc limit 20) x), '[]'::jsonb);
+end $$;
+grant execute on function public.admin_sms_broadcasts() to authenticated;
+revoke execute on function public.admin_sms_broadcasts() from anon, public;
+-- admin_broadcast: the sms channel is no longer reported as "not configured" (the SMS itself is sent by /api/sasusync-admin sms_broadcast)

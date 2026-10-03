@@ -33,3 +33,12 @@ test("signup UI: password needs 8+ chars, a letter, a number and a capital or sy
   assert.ok(/Promise\.all\(\[password \? sb\.auth\.updateUser/.test(auth), "password update and profile insert run together");
   assert.ok(!/getUser\(\)/.test(auth.slice(auth.indexOf("async function finishProfile"), auth.indexOf("/* ---------- sign in"))), "no network getUser in the create step");
 });
+
+test("admin broadcast UI: SMS channel previews first, needs typed SEND, sends a request id + expected count, then records the in-app broadcast", () => {
+  const f = src.slice(src.indexOf('if (f.id === "bf")'), src.indexOf('if (f.id === "setf")'));
+  assert.ok(f.indexOf("dry_run: true") > -1 && f.indexOf("dry_run: true") < f.indexOf('confirm: "SEND SMS BROADCAST"'));
+  assert.ok(/toUpperCase\(\) !== "SEND"/.test(f) && f.includes("request_id: rq") && f.includes("expected_recipients: p.recipients"));
+  assert.ok(f.indexOf('confirm: "SEND SMS BROADCAST"') < f.indexOf('rpc("admin_broadcast"'));
+  assert.ok(f.includes("440") && f.includes("enough_credit") && f.includes("within_limit"));
+  assert.ok(!/api\/v1\/send|smssandbox/.test(src));
+});

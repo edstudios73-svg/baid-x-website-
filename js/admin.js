@@ -188,11 +188,11 @@
       const items = [["broadcast", "Broadcast"], ["history", "History"], ["delivery", "Delivery"]];
       if (t === "broadcast") return tabs("notif", items, t) + `<form class="c" id="bf"><div class="row2" style="margin-bottom:14px;color:var(--or);font-weight:800">Compose announcement</div><label class="fl"><span>Title</span><input class="in" name="title" placeholder="Platform update" required maxlength="100" /></label><label class="fl"><span>Message</span><textarea class="in" name="body" placeholder="Tell members what's new…" required maxlength="1000"></textarea></label><label class="fl"><span>Link (optional)</span><input class="in" name="href" placeholder="#/billing" /></label>
         <div class="fl"><span>Target roles</span><div class="seg" id="roleseg">${[["", "All members"], ["worker", "Workers"], ["company", "Companies"], ["project-manager", "Project managers"], ["business", "Businesses"], ["individual-employer", "Clients"]].map(([k, l], i) => `<button type="button" class="${i === 0 ? "on" : ""}" data-r="${k}">${l}</button>`).join("")}</div></div>
-        <div class="fl"><span>Channels</span><div class="seg"><button type="button" class="chan on" disabled>In-app</button><button type="button" class="chan" data-ch="email">Email</button><button type="button" class="chan" data-ch="sms">SMS</button><button type="button" class="chan" data-ch="push">Push</button></div><small>In-app delivers now. Email, SMS and push are recorded; SMS only sends once the sender ID is approved and enabled.</small></div>
+        <div class="fl"><span>Channels</span><div class="seg"><button type="button" class="chan on" disabled>In-app</button><button type="button" class="chan" data-ch="email">Email</button><button type="button" class="chan" data-ch="sms">SMS</button><button type="button" class="chan" data-ch="push">Push</button></div><small>In-app delivers now. Tick SMS to also text everyone in the audience who has a phone number (you'll see the cost and confirm first). Email and push are recorded only.</small></div>
         <button class="btn-or" type="submit">Send broadcast</button></form>`;
-      const b = await rpc("admin_broadcasts");
+      const b = await rpc("admin_broadcasts"), sb2 = t === "delivery" ? await rpc("admin_sms_broadcasts").catch(() => []) : [];
       if (t === "history") return tabs("notif", items, t) + table(["When", "Title", "To", "Recipients", "Channels"], b.history.map((x) => `<tr><td class="mut">${esc(when(x.created_at))}</td><td><b>${esc(x.title)}</b><div class="mut">${esc(x.body)}</div></td><td>${esc((x.target_roles || []).length ? x.target_roles.map(pretty).join(", ") : "All members")}</td><td>${x.recipient_count}</td><td>${(x.channels || []).map((c) => `<span class="pill ${c === "in_app" ? "ok" : "w"}">${esc(pretty(c))}</span>`).join(" ")}</td></tr>`), "No broadcasts yet.");
-      return tabs("notif", items, t) + `<div class="c" style="margin-bottom:14px"><span class="l">Delivery</span><p class="mut" style="margin-top:8px">In-app announcements are delivered the moment you send. Email has no provider connected. SMS stays off until the sender ID is approved and the owner switches it on.</p></div>` + table(["When", "Channel", "Status", "Provider", "Note"], b.logs.map((l) => `<tr><td class="mut">${esc(when(l.created_at))}</td><td>${esc(pretty(l.channel))}</td><td>${stPill(l.status)}</td><td>${esc(l.provider || "—")}</td><td class="mut">${esc(l.error || "")}</td></tr>`), "No delivery logs yet.");
+      return tabs("notif", items, t) + `<div class="c" style="margin-bottom:14px"><span class="l">Delivery</span><p class="mut" style="margin-top:8px">In-app announcements are delivered the moment you send. SMS announcements go out through SasuSync when SMS is ticked. Email has no provider connected.</p></div>` + `<h2 class="sec">SMS announcements</h2>` + table(["When", "Message", "To", "People", "Accepted", "Credits", "Status"], sb2.map((x) => `<tr><td class="mut">${esc(when(x.created_at))}</td><td>${esc(x.message)}${x.mode === "sandbox" ? ' <span class="pill b">sandbox</span>' : ""}</td><td>${esc((x.target_roles || []).length ? x.target_roles.map(pretty).join(", ") : "All members")}</td><td>${x.recipients}</td><td>${x.accepted}</td><td>${x.credits_used ?? "—"}</td><td>${stPill(x.status)}${x.error ? `<div class="mut">${esc(x.error)}</div>` : ""}</td></tr>`), "No SMS announcements yet.") + `<h2 class="sec" style="margin-top:18px">Other deliveries</h2>` + table(["When", "Channel", "Status", "Provider", "Note"], b.logs.map((l) => `<tr><td class="mut">${esc(when(l.created_at))}</td><td>${esc(pretty(l.channel))}</td><td>${stPill(l.status)}</td><td>${esc(l.provider || "—")}</td><td class="mut">${esc(l.error || "")}</td></tr>`), "No delivery logs yet.");
     },
 
     async reports() {
@@ -291,6 +291,11 @@
   async function api(action) {
     const { data: { session } } = await sb.auth.getSession();
     const r = await fetch("/api/paystack-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action }) });
+    return { ok: r.ok, json: await r.json().catch(() => ({})) };
+  }
+  async function smsCall(body) {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify(body) });
     return { ok: r.ok, json: await r.json().catch(() => ({})) };
   }
   /* SasuSync SMS/OTP health: read-only provider checks (spend nothing). Never shows keys, secrets or codes. */
@@ -434,8 +439,31 @@
     if (f.id === "uq") { e.preventDefault(); S.q = document.getElementById("uqi").value.trim(); return rerender(); }
     if (f.id === "bf") {
       e.preventDefault(); const d = Object.fromEntries(new FormData(f)), roles = [...document.querySelectorAll("#roleseg .on")].map((b) => b.dataset.r).filter(Boolean), chans = ["in_app", ...[...document.querySelectorAll("[data-ch].on")].map((b) => b.dataset.ch)];
-      if (!(await ask("Send this broadcast?", `It goes to ${roles.length ? roles.map(pretty).join(", ") : "all members"}.`, { label: "Send now" }))) return;
-      try { const n = await rpc("admin_broadcast", { p_title: d.title, p_body: d.body, p_href: d.href || null, p_roles: roles, p_channels: chans }); toast(`Sent to ${n} member${n === 1 ? "" : "s"}`); S.tab.notif = "history"; rerender(); } catch (er) { toast(er.message); }
+      const aud = roles.length ? roles.map(pretty).join(", ") : "all members", btn = f.querySelector("button[type=submit]");
+      let smsNote = "";
+      if (chans.includes("sms")) {
+        // SMS goes through SasuSync. Preview first (free), then an explicit typed confirmation before any message is sent.
+        if (d.body.trim().length > 440) return toast("SMS announcements can be at most 440 characters. Shorten the message.");
+        btn.disabled = true;
+        const pv = await smsCall({ action: "sms_broadcast", dry_run: true, roles, message: d.body });
+        btn.disabled = false;
+        if (!pv.ok || pv.json.error || pv.json.error_category) return toast(pv.json.error || pv.json.note || "Couldn't prepare the SMS preview.");
+        const p = pv.json;
+        if (!p.recipients) return toast("No one in this audience has a phone number, so no SMS would be sent.");
+        if (!p.within_limit) return toast(`That is ${p.recipients} people; the limit per broadcast is ${p.max_recipients}.`);
+        if (!p.enough_credit) return toast(`Not enough SMS credit: this needs about ${p.credits_estimate}, you have ${p.sms_sendable} (${p.otp_reserve} are kept for sign-in codes).`);
+        const skipped = Object.values(p.skipped || {}).reduce((a, b) => a + b, 0);
+        const go = await ask(`${p.result}`, `SMS to ${p.recipients} ${p.recipients === 1 ? "person" : "people"} (${aud}). ${p.parts} message part${p.parts === 1 ? "" : "s"} each, about ${p.credits_estimate} credits${p.mode === "live" ? ` of ${p.sms_sendable} available` : ""}.${skipped ? ` ${skipped} skipped (no valid number or duplicate).` : ""} ${p.mode === "live" ? "Real text messages will be sent and cannot be recalled. Type SEND to confirm." : "Sandbox: nothing is delivered or charged. Type SEND to continue."}`, { field: true, danger: p.mode === "live", label: p.mode === "live" ? "Send SMS" : "Run sandbox", ph: "SEND" });
+        if (!go || go.value.trim().toUpperCase() !== "SEND") return toast("Cancelled. Nothing was sent.");
+        btn.disabled = true; btn.textContent = "Sending SMS…";
+        const rq = crypto.randomUUID ? crypto.randomUUID() : "00000000-0000-4000-8000-" + String(Date.now()).padStart(12, "0");
+        const sr = await smsCall({ action: "sms_broadcast", roles, message: d.body, confirm: "SEND SMS BROADCAST", request_id: rq, expected_recipients: p.recipients });
+        btn.disabled = false; btn.textContent = "Send broadcast";
+        const j = sr.json || {};
+        if (!sr.ok && !j.status) return toast(j.error || "The SMS broadcast could not run. Nothing was sent.");
+        smsNote = ` · SMS: ${j.accepted ?? 0} of ${j.recipients ?? p.recipients} accepted${j.status && j.status !== "sent" ? ` (${j.status}${j.error_category ? `: ${j.error_category}` : ""})` : ""}`;
+      } else if (!(await ask("Send this broadcast?", `It goes to ${aud}.`, { label: "Send now" }))) return;
+      try { const n = await rpc("admin_broadcast", { p_title: d.title, p_body: d.body, p_href: d.href || null, p_roles: roles, p_channels: chans }); toast(`In-app: ${n} member${n === 1 ? "" : "s"}${smsNote}`); S.tab.notif = "history"; rerender(); } catch (er) { toast(er.message); }
     }
     if (f.id === "setf") { e.preventDefault(); const v = parseFloat(f.rate.value); if (!(v >= 0 && v <= 0.5)) return toast("Enter a rate between 0 and 0.5."); act("Setting", () => rpc("admin_set_setting", { p_key: "commission_rate", p_value: v }), "Saved"); }
     if (f.id === "pwf") { e.preventDefault(); const { error } = await sb.auth.updateUser({ password: f.pw.value }); if (error) return toast(error.message); f.reset(); toast("Password changed"); }

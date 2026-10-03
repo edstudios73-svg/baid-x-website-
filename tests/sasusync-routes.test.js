@@ -401,3 +401,83 @@ test("daily cap: a bad cap value falls back to the default (never unlimited); li
   env(LIVE); const calls = install([[(u, o) => has(u, "rl_hit") && JSON.parse(o.body).p_key === "otp:start:all", reply(500, {})], rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, null)], [(u) => has(u, "/otp/generate"), reply(200, { success: true, otp_id: 1 })], audit]);
   assert.equal((await post(start, { phone: "0552148347", purpose: "signup" })).status, 503); assert.ok(!calls.some((c) => has(c.url, "/otp/generate")));
 });
+
+/* ---------- admin SMS announcement (bulk) ---------- */
+const bReq = (over = {}, headers = { authorization: "Bearer t" }) => ({ method: "POST", headers, body: { action: "sms_broadcast", roles: ["worker"], message: "Platform update: new jobs are live.", ...over } });
+const mkRecipients = (n, extra = []) => [...Array.from({ length: n }, (_, i) => ({ user_id: "u" + i, role: "worker", phone: "02" + String(40000000 + i) })), ...extra];
+const recRoute = (list) => [(u) => has(u, "sms_broadcast_recipients"), reply(200, list)];
+const bal = (n) => [(u) => has(u, "/api/v1/balance"), reply(200, { sms_credits: n, sms_sendable: n, otp_sendable: 50, rates: { otp_sms_credits: 3 } })];
+const rowIns = [(u, o) => has(u, "/rest/v1/sms_broadcasts") && o.method === "POST", reply(201, [{ id: "bc-1" }])];
+const rowPatch = [(u, o) => has(u, "/rest/v1/sms_broadcasts") && o.method === "PATCH", reply(204)];
+const RID = "11111111-2222-4333-8444-555555555555";
+const sendBody = (n, over = {}) => ({ confirm: "SEND SMS BROADCAST", request_id: RID, expected_recipients: n, ...over });
+const providerCalls = (calls) => calls.filter((c) => has(c.url, "sms.test") && c.method === "POST");
+
+test("sms_broadcast: staff gate (401 / 403 non-finance) and no provider or recipient call", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); let calls = install([]); assert.equal((await run(admin, bReq({}, {}))).status, 401);
+  calls = install([staffOk, who(["support:READ"]), recRoute(mkRecipients(2))]); assert.equal((await run(admin, bReq())).status, 403);
+  assert.ok(!calls.some((c) => has(c.url, "sms_broadcast_recipients")) && providerCalls(calls).length === 0);
+});
+test("sms_broadcast dry run: counts normalized/deduped recipients, parts and credit cost; sends NOTHING; never returns numbers", async () => {
+  env({ SASUSYNC_MODE: "sandbox" });
+  const list = mkRecipients(3, [{ user_id: "d", role: "worker", phone: "+233 24 000 0000" }, { user_id: "x", role: "worker", phone: "12" }, { user_id: "y", role: "worker", phone: null }]);
+  const calls = install([staffOk, who(["finance:ADMINISTER"]), recRoute(list)]);
+  const r = await run(admin, bReq({ dry_run: true, message: "x".repeat(160) }));
+  assert.equal(r.status, 200); assert.equal(r.json.dry_run, true); assert.equal(r.json.result, "SANDBOX — NO DELIVERY"); assert.equal(r.json.mode, "sandbox");
+  assert.equal(r.json.recipients, 3); assert.deepEqual(r.json.skipped, { no_phone: 1, invalid_number: 1, duplicate: 1 }); assert.equal(r.json.parts, 2); assert.equal(r.json.credits_estimate, 6);
+  assert.equal(providerCalls(calls).length, 0); assert.ok(!JSON.stringify(r.json).match(/233\d{9}|02\d{8}/));
+  assert.deepEqual(calls.find((c) => has(c.url, "sms_broadcast_recipients")).body, { p_roles: ["worker"] });
+});
+test("sms_broadcast: validates roles and message length; unknown role 400; empty roles = everyone", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); let calls = install([staffOk, who(["finance:ADMINISTER"]), recRoute([])]);
+  assert.equal((await run(admin, bReq({ roles: ["worker", "admin"] }))).status, 400); assert.equal((await run(admin, bReq({ message: "hi" }))).status, 400); assert.equal((await run(admin, bReq({ message: "y".repeat(441) }))).status, 400);
+  await run(admin, bReq({ roles: [], dry_run: true })); assert.deepEqual(calls.find((c) => has(c.url, "sms_broadcast_recipients")).body, { p_roles: [] });
+});
+test("sms_broadcast send: needs typed confirm, request id, matching expected count; stale audience is refused with a fresh preview", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); const base = () => [staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(3)), rl(), rowIns, rowPatch, aud, [(u) => has(u, "/smssandbox/v1/send"), reply(200, { success: true, data: { job_id: "s-1", status: "queued" } })]];
+  for (const [over, status] of [[{ confirm: undefined }, 400], [{ request_id: "nope" }, 400], [{ expected_recipients: 2 }, 409], [{ expected_recipients: undefined }, 409]]) {
+    const calls = install(base()); const r = await run(admin, bReq({ ...sendBody(3), ...over })); assert.equal(r.status, status, JSON.stringify(over)); assert.equal(providerCalls(calls).length, 0);
+  }
+});
+test("sms_broadcast SANDBOX send: only /smssandbox/v1/send, one call per 200, row created then finalised, no numbers/messages in audit, labelled", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); const calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(205)), rl(), rowIns, rowPatch, aud, [(u) => has(u, "/smssandbox/v1/send"), reply(200, { success: true, data: { job_id: "sandbox_1", status: "queued" } })]]);
+  const r = await run(admin, bReq(sendBody(205)));
+  assert.equal(r.status, 200); assert.equal(r.json.result, "SANDBOX — NO DELIVERY"); assert.equal(r.json.status, "sent"); assert.equal(r.json.accepted, 205); assert.equal(r.json.credits_used, 0);
+  const pc = providerCalls(calls); assert.equal(pc.length, 2); assert.ok(pc.every((c) => c.url.endsWith("/smssandbox/v1/send"))); assert.deepEqual(pc.map((c) => c.body.recipients.length), [200, 5]);
+  assert.ok(pc[0].body.message.startsWith("BAID X: ") && pc[0].body.sender === "BAID X");
+  assert.ok(!calls.some((c) => has(c.url, "/api/v1/send")));
+  const ins = calls.find((c) => has(c.url, "sms_broadcasts") && c.method === "POST").body; assert.equal(ins.request_id, RID); assert.equal(ins.mode, "sandbox"); assert.ok(!JSON.stringify(ins).match(/233\d{9}|02\d{8}/));
+  const a = JSON.stringify(calls.filter((c) => has(c.url, "audit_logs")).map((c) => c.body)); assert.ok(a.includes("sms.broadcast") && !a.includes("new jobs are live") && !a.match(/233\d{9}|02\d{8}/));
+});
+test("sms_broadcast LIVE: refused when live is requested but unapproved; credit check keeps an OTP reserve; limit enforced", async () => {
+  env({ SASUSYNC_MODE: "live" }); let calls = install([staffOk, who(["finance:ADMINISTER"]), recRoute(mkRecipients(2)), bal(400)]);
+  assert.equal((await run(admin, bReq({ dry_run: true }))).status, 409); assert.equal(providerCalls(calls).length, 0);
+  env(LIVEENV); calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(10)), bal(35), rl(), rowIns, rowPatch, aud, sendRoute]);   // needs 10 x 1 part = 10; 35 - 10 = 25 < reserve 30
+  let r = await run(admin, bReq(sendBody(10))); assert.equal(r.status, 409); assert.equal(r.json.enough_credit, false); assert.ok(!calls.some((c) => has(c.url, "/api/v1/send")) && !calls.some((c) => has(c.url, "sms_broadcasts")));
+  env({ ...LIVEENV, SASUSYNC_BROADCAST_MAX: "5" }); calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(6)), bal(400), rl(), rowIns, rowPatch, aud, sendRoute]);
+  r = await run(admin, bReq(sendBody(6))); assert.equal(r.status, 409); assert.equal(r.json.within_limit, false); assert.ok(!calls.some((c) => has(c.url, "/api/v1/send")));
+});
+test("sms_broadcast LIVE send: uses /api/v1/send, single attempt per chunk, credits summed from the provider's balance.deducted", async () => {
+  env(LIVEENV); let n = 0; const calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(205)), bal(400), rl(), rowIns, rowPatch, aud, [(u) => has(u, "/api/v1/send"), () => reply(200, { success: true, balance: { deducted: ++n === 1 ? 200 : 5, remaining: 100 }, data: { job_id: "j" + n, status: "queued" } })]]);
+  const r = await run(admin, bReq(sendBody(205)));
+  assert.equal(r.json.result, "LIVE — REAL SMS"); assert.equal(r.json.status, "sent"); assert.equal(r.json.accepted, 205); assert.equal(r.json.credits_used, 205);
+  assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 2); assert.ok(!calls.some((c) => has(c.url, "smssandbox") || has(c.url, "/otp/")));
+});
+test("sms_broadcast: a failing chunk stops the run, is NEVER resent, reports partial; timeout says it may have been sent", async () => {
+  env(LIVEENV); let n = 0; let calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(205)), bal(400), rl(), rowIns, rowPatch, aud, [(u) => has(u, "/api/v1/send"), () => (++n === 1 ? reply(200, { success: true, balance: { deducted: 200, remaining: 100 }, data: { job_id: "j1", status: "queued" } }) : reply(503, { detail: "busy" }))]]);
+  let r = await run(admin, bReq(sendBody(205))); assert.equal(r.json.status, "partial"); assert.equal(r.json.accepted, 200); assert.equal(r.json.error_category, "SERVER"); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 2);
+  calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(3)), bal(400), rl(), rowIns, rowPatch, aud, [(u) => has(u, "/api/v1/send"), new Error("ECONNRESET")]]);
+  r = await run(admin, bReq(sendBody(3))); assert.equal(r.json.status, "failed"); assert.ok(r.json.error_category.includes("may have been sent")); assert.equal(calls.filter((c) => has(c.url, "/api/v1/send")).length, 1);
+});
+test("sms_broadcast: duplicate request id and rate limit both refuse before any send", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); let calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(3)), rl(), [(u, o) => has(u, "/rest/v1/sms_broadcasts") && o.method === "POST", reply(409, { code: "23505" })], aud, sandboxSend]);
+  assert.equal((await run(admin, bReq(sendBody(3)))).status, 409); assert.equal(providerCalls(calls).length, 0);
+  calls = install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(3)), rl(false), rowIns, rowPatch, aud, sandboxSend]);
+  assert.equal((await run(admin, bReq(sendBody(3)))).status, 429); assert.equal(providerCalls(calls).length, 0); assert.ok(!calls.some((c) => has(c.url, "/rest/v1/sms_broadcasts")));
+});
+test("sms_broadcast: no console output and no key/number/message in any response", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); const out = []; const o = { l: console.log, e: console.error, w: console.warn }; console.log = console.error = console.warn = (...a) => out.push(a.join(" "));
+  install([staffOk, who(["finance:ADMINISTER"]), userRoute, recRoute(mkRecipients(3)), rl(), rowIns, rowPatch, aud, [(u) => has(u, "/smssandbox/v1/send"), reply(401, { detail: "ss_FAKE_KEY_FOR_TESTS" })]]);
+  const r = await run(admin, bReq(sendBody(3))); Object.assign(console, o);
+  assert.deepEqual(out, []); assert.equal(r.json.status, "failed"); assert.equal(r.json.error_category, "AUTH"); assert.ok(!JSON.stringify(r.json).match(/FAKE_KEY|233\d{9}|02\d{8}|new jobs are live/));
+});

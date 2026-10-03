@@ -16,7 +16,7 @@ function install(routes) { // routes: array of [matcher(url,opts)->bool, respons
 }
 const FAKE = { SASUSYNC_API_KEY: "ss_FAKE_KEY_FOR_TESTS", SASUSYNC_SENDER_ID: "BAID X", SASUSYNC_BASE_URL: "https://sms.test", SUPABASE_SERVICE_ROLE_KEY: "fake-service", SUPABASE_URL: "https://db.test" };
 function env(over = {}) {
-  for (const k of ["SASUSYNC_MODE", "SASUSYNC_SENDER_APPROVED", "SASUSYNC_PHONE_AUTH", "SASUSYNC_OTP_DAILY_CAP"]) delete process.env[k];
+  for (const k of ["SASUSYNC_MODE", "SASUSYNC_SENDER_APPROVED", "SASUSYNC_PHONE_AUTH", "SASUSYNC_OTP_DAILY_CAP", "SASUSYNC_BROADCAST_MAX", "SASUSYNC_OTP_RESERVE"]) delete process.env[k];
   Object.assign(process.env, FAKE, over);
 }
 function mockRes() {
