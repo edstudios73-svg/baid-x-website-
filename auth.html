@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="css/app.css" />
   <link rel="stylesheet" href="css/auth.css" />
   <link rel="stylesheet" href="css/auth-glass.css" />
+  <link rel="stylesheet" href="css/auth-motion.css" />
 <meta name="robots" content="noindex, follow" />
 </head>
 <body class="auth">
@@ -87,7 +88,7 @@
         <button data-m="email">Email</button>
       </div>
       <div class="field-row" id="siPhoneRow">
-        <button class="cc" type="button" data-cc>🇬🇭 <span>+233</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button class="cc" type="button" data-cc><svg class="flag" viewBox="0 0 22 15" aria-hidden="true"><rect width="22" height="5" fill="#ce1126"/><rect y="5" width="22" height="5" fill="#fcd116"/><rect y="10" width="22" height="5" fill="#006b3f"/><path d="M11 5.4l.9 2.7h2.8l-2.3 1.7.9 2.7L11 10.8l-2.3 1.7.9-2.7-2.3-1.7h2.8z" fill="#000" transform="scale(.9) translate(1.2 .1)"/></svg> <span>+233</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
         <input id="siPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="0201234567" />
       </div>
       <input class="field" id="siEmail" type="email" autocomplete="email" placeholder="Email address" hidden />
@@ -107,7 +108,7 @@
       <h1 class="h1" id="phoneTitle">Phone number</h1>
       <p class="sub" id="phoneSub">A verification code will be sent to this number.</p>
       <div class="field-row">
-        <button class="cc" type="button" data-cc>🇬🇭 <span>+233</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button class="cc" type="button" data-cc><svg class="flag" viewBox="0 0 22 15" aria-hidden="true"><rect width="22" height="5" fill="#ce1126"/><rect y="5" width="22" height="5" fill="#fcd116"/><rect y="10" width="22" height="5" fill="#006b3f"/><path d="M11 5.4l.9 2.7h2.8l-2.3 1.7.9 2.7L11 10.8l-2.3 1.7.9-2.7-2.3-1.7h2.8z" fill="#000" transform="scale(.9) translate(1.2 .1)"/></svg> <span>+233</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.500" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button>
         <input id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="0201234567" />
       </div>
       <p class="err" id="phoneErr" role="alert"></p>
@@ -154,6 +155,7 @@
         <input class="field" id="pass" type="password" autocomplete="new-password" placeholder="Create your password" />
         <button type="button" class="eye" data-eye aria-label="Show password"></button>
       </div>
+      <div class="meter" id="meter" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="meter-l" id="meterL"></div>
       <ul class="rules" id="rules">
         <li data-r="len">At least 8 characters</li>
         <li data-r="num">A number</li>

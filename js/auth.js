@@ -106,7 +106,13 @@
     const j = await r.json().catch(() => ({}));
     return r.ok ? {} : { error: { message: j.error || "We couldn't save your password. Try again." } };
   }
-  const setBusy = (btn, on, label) => { btn.disabled = on; if (label) btn.textContent = on ? "Please wait…" : label; };
+    // when an error message appears, the field above it shakes (no change needed at each call site)
+  $$(".err").forEach((el) => new MutationObserver(() => {
+    if (!el.textContent.trim()) return;
+    const box = el.closest(".view"), f = box && box.querySelector(".field-row, .pw, .field"); if (!f) return;
+    f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); setTimeout(() => f.classList.remove("shake"), 600);
+  }).observe(el, { childList: true, characterData: true, subtree: true }));
+  const setBusy = (btn, on, label) => { btn.disabled = on; btn.classList.toggle("is-loading", on); if (label) btn.textContent = label; };
 
   /* ---------- 1. phone ---------- */
   function resetPhoneView() {
@@ -114,7 +120,7 @@
     $("#phoneTitle").textContent = reset ? "Reset password" : "Phone number";
     $("#phoneSub").textContent = reset ? "We'll send a code to the number on your account." : "A verification code will be sent to this number.";
   }
-  $("#phone").addEventListener("input", () => { $("#phoneNext").disabled = !toE164($("#phone").value); $("#phoneErr").textContent = ""; });
+  $("#phone").addEventListener("input", () => { const ok = !!toE164($("#phone").value); $("#phoneNext").disabled = !ok; $("#phoneErr").textContent = ""; $("#phone").closest(".field-row").classList.toggle("valid", ok); });
   $("#phone").addEventListener("keydown", (e) => e.key === "Enter" && !$("#phoneNext").disabled && $("#phoneNext").click());
   $("#phoneNext").addEventListener("click", async () => {
     const phone = toE164($("#phone").value); if (!phone) return;
@@ -261,6 +267,11 @@
     const p = $("#pass").value; let ok = true;
     $$("#rules li").forEach((li) => { const pass = rules[li.dataset.r](p); li.classList.toggle("ok", pass); ok = ok && pass; });
     $("#passNext").disabled = !ok; $("#passErr").textContent = "";
+    // strength: Weak / Fair while a rule is missing; Good when all pass; Strong at 12+ characters
+    const passed = Object.values(rules).filter((f) => f(p)).length, lvl = !p ? 0 : !ok ? (passed >= 3 ? 2 : 1) : p.length >= 12 ? 4 : 3;
+    const [word, col] = [["", "#9a9a9a"], ["Weak", "#f87171"], ["Fair", "#fbbf24"], ["Good", "#7dd3fc"], ["Strong", "#34d399"]][lvl];
+    $$("#meter i").forEach((b, k) => { b.classList.toggle("on", k < lvl); b.style.setProperty("--mc", col); });
+    $("#meterL").style.setProperty("--mc", col); $("#meterL").textContent = word;
   }
   $("#pass").addEventListener("input", checkPass);
   $("#pass").addEventListener("keydown", (e) => e.key === "Enter" && !$("#passNext").disabled && $("#passNext").click());
