@@ -345,20 +345,33 @@
 
   /* profile card sheet for Discover (works for guests too) */
   /* ---------- Switch account (accounts remembered on this device) ---------- */
+  const maskPh = (p) => { const d = String(p || "").replace(/\D/g, ""); return d ? `+${d.slice(0, 3)} ••• ${d.slice(-3)}` : ""; };
   function accountSheet(c) {
-    const me = c.uid, list = window.BX.accounts.list();
-    const row = (a) => `<div class="row acct" data-acc="${esc(a.id)}"><span class="av" ${a.photo ? `style="background-image:url('${esc(a.photo)}')"` : ""}>${a.photo ? "" : esc(initials(a.name))}</span><span class="tx"><b>${esc(a.name)}</b><small>${esc(ROLES[a.role]?.account || "Account")}${a.id === me ? " · signed in now" : a.r ? " · tap to switch" : " · password needed"}</small></span>${a.id === me ? `<span class="pill ok">Active</span>` : `<button class="btn-dark xs" data-acc-forget="${esc(a.id)}">Remove</button>`}</div>`;
-    openSheet("Accounts on this device", `<p class="cap2">Switch between the accounts you've used here. Removing one only forgets it on this device.</p><div id="accRows">${list.map(row).join("")}</div><button class="btn-light" style="width:100%;margin-top:12px" data-acc-add>Add another account</button>`);
+    const me = c.uid, list = window.BX.accounts.list().slice().sort((a, b) => (b.id === me) - (a.id === me));
+    const row = (a) => {
+      const live = !!a.r, here = a.id === me, where = a.phone ? maskPh(a.phone) : window.BX.isPlaceholderEmail(a.email) ? "" : a.email || "";
+      const sub = [ROLES[a.role]?.account || "Account", where, !live && !here ? "session expired" : ""].filter(Boolean).join(" · ");
+      const act = here ? `<span class="pill ok">Signed in</span>` : live ? `<button class="btn-light sm" data-acc-go="${esc(a.id)}">Switch</button>` : `<button class="btn-dark sm" data-acc-go="${esc(a.id)}">Sign in</button>`;
+      return `<div class="acct-c ${here ? "on" : ""}" data-acc="${esc(a.id)}"><span class="av" ${a.photo ? `style="background-image:url('${esc(a.photo)}')"` : ""}>${a.photo ? "" : esc(initials(a.name))}</span><span class="tx"><b>${esc(a.name)}</b><small>${esc(sub)}</small></span>${act}${here ? "" : `<button class="acct-x" data-acc-forget="${esc(a.id)}" aria-label="Remove ${esc(a.name)} from this device">${icon("plus", 14)}</button>`}</div>`;
+    };
+    openSheet("Switch account", `<p class="cap2">Stay signed in to several accounts and move between them in one tap.</p><div id="accRows">${list.map(row).join("")}</div>
+      <button class="acct-add" data-acc-add>${icon("plus", 18)} Add another account</button>
+      <div class="acct-note">${icon("shield", 15)}<span>Accounts stay signed in on this device only. Remove one to forget it here.</span></div>`);
+  }
+  function switching(a) {
+    const root = document.getElementById("sheetRoot"); closeSheet();
+    const d = document.createElement("div"); d.className = "acct-load"; d.innerHTML = `<span class="av big" ${a.photo ? `style="background-image:url('${esc(a.photo)}')"` : ""}>${a.photo ? "" : esc(initials(a.name))}</span><b>Switching to ${esc(a.name)}</b><small>Loading wallet, projects and messages…</small><div class="acct-bar"><i></i></div>`;
+    document.body.appendChild(d); return d;
   }
   document.addEventListener("click", async (e) => {
     const add = e.target.closest("[data-acc-add]"); if (add) { location.href = "auth.html?mode=signin&add=1"; return; }
-    const fg = e.target.closest("[data-acc-forget]"); if (fg) { e.stopPropagation(); window.BX.accounts.forget(fg.dataset.accForget); fg.closest(".row").remove(); return; }
-    const r = e.target.closest(".row.acct"); if (!r) return;
-    const id = r.dataset.acc, me = window.APP?.state.me?.session?.user?.id; if (id === me) return;
-    const a = window.BX.accounts.list().find((x) => x.id === id); if (!a) return;
-    if (!a.r) { location.href = "auth.html?mode=signin"; return; }
-    const res = await window.BX.accounts.switchTo(id);
-    if (res.ok) { location.hash = "#/home"; location.reload(); } else window.BX.toast("Please sign in to that account again.");
+    const fg = e.target.closest("[data-acc-forget]"); if (fg) { e.stopPropagation(); window.BX.accounts.forget(fg.dataset.accForget); fg.closest(".acct-c").remove(); return; }
+    const go = e.target.closest("[data-acc-go]"); if (!go) return;
+    const id = go.dataset.accGo, a = window.BX.accounts.list().find((x) => x.id === id); if (!a) return;
+    if (!a.r) { location.href = `auth.html?mode=signin&acc=${encodeURIComponent(id)}`; return; }
+    const ov = switching(a), res = await window.BX.accounts.switchTo(id);
+    if (res.ok) { location.hash = "#/home"; location.reload(); }
+    else { ov.remove(); window.BX.toast("That account's sign-in expired. Please sign in to it again.", "err"); setTimeout(() => { location.href = `auth.html?mode=signin&acc=${encodeURIComponent(id)}`; }, 1400); }
   });
   async function openCard(kind, id) {
     const c = window.APP.state.me?.role ? window.APP.dashCtx() : null, src = { company: "companies", worker: "professionals", pm: "managers", business: "businesses" }[kind], S = window.APP.sources[src];

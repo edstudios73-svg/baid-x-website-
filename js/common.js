@@ -14,10 +14,17 @@
   const isPlaceholderEmail = (v) => /\.invalid$/i.test(String(v || "").trim());
 
   let toastTimer;
-  function toast(msg) {
+  // Messages are always solid and readable: red for problems, green for success, gold for waiting, white for the rest.
+  const TOAST_ICON = { err: '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>', ok: '<path d="m5 12.5 4.5 4.5L19 7.5"/>', warn: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>' };
+  const toastKind = (m) => (/couldn.?t|can.?t|cannot|failed|wrong|not (allowed|available|enough|switched|found)|nothing was charged|expired|invalid|error|isn.?t|unable|too many|already|denied|enter |choose |add (a|an|your)|please sign|sign in|rejected/i.test(m) ? "err" : /still waiting|waiting|wait a|confirming|checking/i.test(m) ? "warn" : /confirmed|saved|added|sent|released|submitted|done|paid|active|cancel|refund|funded|accepted|published|updated|copied|opened|switched|hired|placed|delivered|settled|removed|ready/i.test(m) ? "ok" : "info");
+  function toast(msg, kind) {
     const t = $("#toast"); if (!t) return;
-    t.textContent = msg; t.classList.add("show");
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+    const k = kind || toastKind(String(msg || ""));
+    t.className = `toast t-${k} show`;
+    t.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOAST_ICON[k]}</svg><span></span>`;
+    t.lastChild.textContent = String(msg || "");
+    t.setAttribute("role", k === "err" ? "alert" : "status");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), k === "err" ? 4600 : 3000);
   }
 
   /* ---------- Job categories (mirror of public.job_categories; guests and new users cannot read that table) ---------- */

@@ -1,0 +1,29 @@
+/* Messages: solid colours, white or near-black text, never dark-on-dark. Loaded after the theme so it always wins. */
+.toast { display: flex; align-items: center; gap: 10px; width: max-content; max-width: min(92vw, 460px); padding: 13px 18px; border-radius: 16px; font-weight: 700; font-size: 14.5px; line-height: 1.35; text-align: left; backdrop-filter: none; border: 0; background: #f6f6f7; color: #0a0a0a; box-shadow: 0 18px 40px -12px rgba(0,0,0,.65); }
+.toast svg { flex: none; }
+.toast.t-err { background: #c62d3a; color: #fff; box-shadow: 0 18px 40px -12px rgba(198,45,58,.7); }
+.toast.t-ok { background: #16a36a; color: #fff; box-shadow: 0 18px 40px -12px rgba(22,163,106,.6); }
+.toast.t-warn { background: #e8c46a; color: #1a1304; }
+.toast.t-info { background: #f6f6f7; color: #0a0a0a; }
+
+/* switch account */
+.acct-c { display: flex; align-items: center; gap: 12px; background: #101010; border: 1px solid #232323; border-radius: 18px; padding: 14px; margin-bottom: 10px; position: relative; }
+.acct-c.on { border-color: rgba(232,196,106,.55); background: linear-gradient(180deg, rgba(232,196,106,.08), #101010); }
+.acct-c .av { width: 46px; height: 46px; flex: none; } .acct-c .tx { flex: 1; min-width: 0; } .acct-c .tx b { display: block; font-size: 15px; } .acct-c .tx small { display: block; color: #8c8c8c; font-size: 12px; margin-top: 2px; }
+.acct-x { position: absolute; top: -7px; right: -5px; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #333; background: #1a1a1a; color: #aaa; display: grid; place-items: center; transform: rotate(45deg); cursor: pointer; }
+.acct-add { width: 100%; display: flex; gap: 8px; justify-content: center; align-items: center; padding: 15px; border-radius: 16px; border: 1px dashed #3a3a3a; background: none; color: #e8d9a8; font-weight: 700; font-size: 14px; margin-top: 4px; cursor: pointer; }
+.acct-note { display: flex; gap: 8px; font-size: 12px; color: #a0a0a0; background: #101010; border: 1px solid #232323; border-radius: 14px; padding: 12px 14px; margin-top: 14px; line-height: 1.5; } .acct-note svg { flex: none; margin-top: 1px; }
+.acct-load { position: fixed; inset: 0; z-index: 200; background: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; animation: acctIn .25s ease; }
+.acct-load .av.big { width: 84px; height: 84px; font-size: 28px; border: 2px solid #e8c46a; } .acct-load b { font-size: 18px; } .acct-load small { color: #8c8c8c; }
+.acct-bar { width: 200px; height: 4px; background: #222; border-radius: 9px; margin-top: 10px; overflow: hidden; } .acct-bar i { display: block; width: 40%; height: 100%; background: #e8c46a; border-radius: 9px; animation: acctBar 1.1s ease-in-out infinite; }
+@keyframes acctBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } } @keyframes acctIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Paystack status screens */
+.pay-ov { position: fixed; inset: 0; z-index: 210; background: #050505; display: grid; place-items: center; padding: 24px; animation: acctIn .25s ease; }
+.pay-in { width: min(100%, 420px); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; } .pay-in > b { font-size: 21px; } .pay-in > small { color: #8c8c8c; font-size: 14px; }
+.pay-spin { width: 56px; height: 56px; border-radius: 50%; border: 4px solid #262626; border-top-color: #e8c46a; animation: paySpin .9s linear infinite; margin-bottom: 6px; } @keyframes paySpin { to { transform: rotate(360deg); } }
+.pay-pill { display: flex; gap: 6px; align-items: center; margin-top: 16px; border: 1px solid #2a2a2a; border-radius: 99px; padding: 8px 14px; font-size: 12px; color: #cfcfcf; }
+.pay-ring { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; border: 3px solid #e8c46a; color: #e8c46a; margin-bottom: 8px; } .pay-ring.ok { background: #16a36a; border-color: #16a36a; color: #fff; }
+.pay-steps { width: 100%; text-align: left; background: #101010; border: 1px solid #232323; border-radius: 18px; padding: 14px 16px; margin-top: 14px; }
+.ps { display: flex; gap: 12px; padding: 9px 0; } .ps i { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #333; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 800; color: #777; flex: none; } .ps.done i { background: #16a36a; border-color: #16a36a; color: #fff; } .ps.now i { border-color: #e8c46a; color: #e8c46a; }
+.ps b { display: block; font-size: 14px; } .ps small { color: #8c8c8c; font-size: 12px; } .ps:not(.done):not(.now) b { color: #777; }

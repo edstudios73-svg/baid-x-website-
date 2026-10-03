@@ -40,3 +40,12 @@ button.wl-row { cursor: pointer; } button.wl-row:hover { border-color: rgba(255,
 .bsec { margin-top: 14px; } .bsec > small { color: var(--muted); font-size: 10.5px; font-weight: 700; letter-spacing: .1em; } .bsec p { margin: 5px 0 0; font-size: 13px; color: #cfcfcf; line-height: 1.45; }
 .bi2 { display: flex; gap: 11px; margin-top: 10px; } .bic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: rgba(232,217,168,.1); color: #e8d9a8; flex: none; } .bi2 b { display: block; font-size: 13.5px; } .bi2 small { color: var(--muted); font-size: 12px; line-height: 1.35; }
 .dcard.svc .ic { color: #e8d9a8; border-color: rgba(232,217,168,.28); background: rgba(232,217,168,.08); }
+
+/* services & fees */
+.cats { display: flex; gap: 8px; overflow-x: auto; margin: 4px 0 14px; padding-bottom: 2px; scrollbar-width: none; } .cats::-webkit-scrollbar { display: none; }
+.cat { display: flex; gap: 6px; align-items: center; white-space: nowrap; padding: 10px 15px; border-radius: 99px; border: 1px solid #2a2a2a; background: #101010; color: #cfcfcf; font-weight: 700; font-size: 13px; cursor: pointer; } .cat.on { background: #f6f6f7; color: #0a0a0a; border-color: #f6f6f7; }
+.herob { display: flex; gap: 14px; align-items: center; background: #101010; border: 1px solid #232323; border-radius: 18px; padding: 16px; margin-bottom: 12px; } .herob .hi { color: #e8d9a8; flex: none; display: grid; place-items: center; } .herob b { display: block; font-size: 16px; } .herob small { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.lg-one { background: #101010; border: 1px solid #232323; border-radius: 18px; padding: 14px 8px; margin: 0 0 12px; }
+.svc2 { display: flex; gap: 12px; align-items: center; background: #101010; border: 1px solid #232323; border-radius: 18px; padding: 14px; margin-bottom: 10px; } .sic { width: 46px; height: 46px; border-radius: 14px; border: 1px solid; display: grid; place-items: center; flex: none; }
+.svc2 .tx { flex: 1; min-width: 0; } .svc2 .tx b { display: block; font-size: 15px; } .svc2 .tx small { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; margin-top: 2px; } .svc2 .pr { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; } .svc2 .pr b { font-size: 16px; } .svc2 .pr small { max-width: 90px; text-align: right; }
+.foot { display: flex; gap: 6px; justify-content: center; align-items: center; color: var(--muted); font-size: 12px; margin-top: 14px; }

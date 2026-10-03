@@ -57,33 +57,34 @@
         ${caps ? `<ul class="caps">${caps}</ul>` : ""}
         <div class="prow"><button class="more" data-bact="benefits" data-tier="${t}">See what you get</button>${isCur ? "" : `<button class="btn-light sm" data-bact="choose" data-id="${esc(show.id)}">${cur === "access" ? "Choose " + TIER_NAME[t] : "Switch to " + TIER_NAME[t]}</button>`}</div></div>`;
     }).join("");
-    // payment history now lives on its own tab
-    html += `<p class="cap2">Verification is a separate service and is never part of a plan. Paying for a plan does not make an account verified.</p>`;
     return html;
   }
 
   const HISTORY = (pays) => `<div class="sec">Payment history</div>` + (pays.length ? pays.map((p) => `<div class="row"><span class="ic">${icon("pay", 17)}</span><span class="tx"><b>${esc(pretty(p.purpose === "wallet_deposit" ? "wallet top-up" : p.purpose))}</b><small>${esc(date(p.created_at))} · ${esc(p.reference)}</small></span><span class="rt"><b>${cedi(p.amount_minor || p.expected_amount_minor || 0, p.currency)}</b>${pill(PAY_STATUS, p.status)}</span></div>`).join("") : `<div class="cap2">No payments yet.</div>`);
-  const KIND = { verification: ["Verification", "seal", "A one-time review fee. Paying starts the review; it does not guarantee approval."], boost: ["Boosts", "bolt", "Appear higher in search and listings for the time you choose."], xid: ["Digital ID", "id", "A shareable ID card, valid for a year."], promotion: ["Promotions", "mega", "Featured placement for your catalog listings."] };
+  const KIND = { verification: ["Verification", "shield", "Get a verified badge", "Show people you're real. Your badge colour shows how you were verified."], boost: ["Boosts", "bolt", "Be seen first", "A boost lifts your profile or listing in search for the time you choose."], xid: ["Digital ID", "id", "Your digital ID", "A shareable ID card, valid for a year."], promotion: ["Promotions", "mega", "Get your listings noticed", "Featured placement for your catalog listings."] };
   const TIER_OF = { identity: "identity", standard: "identity", professional: "professional", advanced: "advanced", enhanced: "advanced" };
   const BADGE_WORD = { identity: "Green", professional: "Purple", advanced: "Gold" };
+  const VER_WHAT = { identity: "Your ID document is checked", standard: "Your business is checked", professional: "ID plus trade and certificates checked", advanced: "Everything, plus references and a background check", enhanced: "Your business, plus a deeper check" };
   const DUR = (h) => (!h ? "" : h < 48 ? `${h} hours` : `${Math.round(h / 24)} days`);
   async function servicesView(c) {
     const { data } = await c.sb.from("service_catalog").select("id,kind,code,label,price_minor,currency,duration_hours,metadata,role").eq("is_active", true).order("price_minor", { ascending: true });
-    const mine = (data || []).filter((x) => !x.role || x.role === c.role);
-    const B = window.BX.BADGES, me = c.profile || {}, cur = me.verification_status === "verified" ? (B[me.badge_tier] ? me.badge_tier : "verified") : null;
-    let html = (cur ? `<div class="dcard"><h4><span>Your badge</span><span class="pill ok">Active</span></h4><div class="bd-cur">${window.BX.badge(cur, 40)}<div><b>${esc(B[cur][1])}</b><small>${esc(B[cur][2])}. Shown on your profile, cards and search results.</small></div></div></div>` : "")
-      + `<div class="lg"><div class="lg-h"><b>Verification badges</b><small>Your badge colour shows how you were verified</small></div><div class="lg-grid">${["verified", "identity", "professional", "advanced"].map((k) => `<div>${window.BX.badge(k, 28)}<b>${esc(k === "verified" ? "Verified" : B[k][1].replace(" verified", ""))}</b><small>${esc(B[k][2])}</small></div>`).join("")}</div></div>`
-      + `<p class="cap2" style="margin-bottom:10px">Verification, boosts and digital IDs are paid separately from your plan, by Mobile Money or card through Paystack. Nothing is charged until you confirm, and nothing is activated until Paystack confirms the payment.</p>`;
-    for (const k of ["verification", "boost", "xid", "promotion"]) {
-      const list = mine.filter((x) => x.kind === k); if (!list.length) continue;
-      const [title, ic, blurb] = KIND[k];
-      html += `<div class="sec">${esc(title)}</div><p class="cap2" style="margin:-4px 2px 8px">${esc(blurb)}</p>` + list.map((x) => {
-        const t = x.metadata?.target, later = k === "promotion" || t === "project" || t === "business_listing";
-        const tier = k === "verification" ? TIER_OF[x.code] : null, bd = tier ? window.BX.BADGES[tier] : null;
-        return `<div class="dcard svc"><span class="ic" ${bd ? `style="background:${bd[0]}1f;border-color:${bd[0]}55;color:${bd[0]}"` : ""}>${icon(tier ? "seal" : ic, tier ? 22 : 18)}</span><span class="tx"><b>${esc(x.label)}</b><small>${esc(DUR(x.duration_hours) || (k === "verification" ? "One-time review" : "Per year"))}</small>${bd ? `<span class="tagc" style="color:${bd[0]};border-color:${bd[0]}55;background:${bd[0]}14">${esc(BADGE_WORD[tier])} badge</span>` : ""}</span><span class="pr"><b>${cedi(x.price_minor, x.currency)}</b>${later ? `<small class="cap2">Buy from the ${k === "promotion" ? "catalog" : t === "project" ? "project" : "listing"} page</small>` : `<button class="btn-light sm" data-bact="svc" data-kind="${esc(k)}" data-code="${esc(x.code)}" data-target="${esc(t || "")}" data-label="${esc(x.label)}" data-price="${x.price_minor}">${k === "boost" ? "Boost" : k === "xid" ? "Get" : "Pay"}</button>`}</span></div>`;
-      }).join("");
-    }
-    return html || `<div class="cap2">No services are available for your account type yet.</div>`;
+    const mine = (data || []).filter((x) => !x.role || x.role === c.role), kinds = ["verification", "boost", "xid", "promotion"].filter((k) => mine.some((x) => x.kind === k));
+    if (!kinds.length) return `<div class="cap2">No services are available for your account type yet.</div>`;
+    const k = kinds.includes(state.cat) ? state.cat : kinds[0], [title, icn, heading, blurb] = KIND[k], B = window.BX.BADGES, me = c.profile || {};
+    const cur = me.verification_status === "verified" ? (B[me.badge_tier] ? me.badge_tier : "verified") : null;
+    const pills = `<div class="cats">${kinds.map((x) => `<button class="cat ${x === k ? "on" : ""}" data-bact="cat" data-k="${x}">${icon(KIND[x][1], 17)} ${esc(KIND[x][0])}</button>`).join("")}</div>`;
+    let html = pills;
+    if (k === "verification" && cur) html += `<div class="dcard"><h4><span>Your badge</span><span class="pill ok">Active</span></h4><div class="bd-cur">${window.BX.badge(cur, 40)}<div><b>${esc(B[cur][1])}</b><small>${esc(B[cur][2])}. Shown on your profile, cards and search results.</small></div></div></div>`;
+    html += `<div class="herob"><span class="hi">${k === "verification" ? window.BX.badge(cur || "identity", 30) : icon(icn, 28)}</span><div><b>${esc(heading)}</b><small>${esc(blurb)}</small></div></div>`;
+    if (k === "verification") html += `<div class="lg-grid lg-one">${["verified", "identity", "professional", "advanced"].map((t) => `<div>${window.BX.badge(t, 26)}<b>${esc(t === "verified" ? "Verified" : B[t][1].replace(" verified", ""))}</b><small>${esc(B[t][2])}</small></div>`).join("")}</div>`;
+    html += mine.filter((x) => x.kind === k).map((x) => {
+      const t = x.metadata?.target, later = k === "promotion" || t === "project" || t === "business_listing";
+      const tier = k === "verification" ? TIER_OF[x.code] : null, bd = tier ? B[tier] : null, col = bd ? bd[0] : "#e8d9a8";
+      const what = k === "verification" ? VER_WHAT[x.code] || "One-time review" : k === "boost" ? `Lasts ${DUR(x.duration_hours)}` : k === "xid" ? "Valid for one year" : `${DUR(x.duration_hours)}${x.metadata?.listings ? ` · up to ${x.metadata.listings} listings` : ""}`;
+      const name = k === "verification" ? pretty(x.code === "standard" ? "business" : x.code) : x.label;
+      return `<div class="svc2"><span class="sic" style="background:${col}1f;border-color:${col}55;color:${col}">${tier ? window.BX.badge(tier, 24) : icon(icn, 22)}</span><div class="tx"><b>${esc(name)}</b><small>${esc(what)}</small>${bd ? `<span class="tagc" style="color:${col};border-color:${col}55;background:${col}14">${esc(BADGE_WORD[tier])} badge</span>` : ""}</div><div class="pr"><b>${cedi(x.price_minor, x.currency)}</b>${later ? `<small class="cap2">From the ${k === "promotion" ? "catalog" : t === "project" ? "project" : "listing"} page</small>` : `<button class="btn-light sm" data-bact="svc" data-kind="${esc(k)}" data-code="${esc(x.code)}" data-target="${esc(t || "")}" data-label="${esc(x.label)}" data-price="${x.price_minor}">${k === "boost" ? "Boost" : k === "xid" ? "Get" : "Buy"}</button>`}</div></div>`;
+    }).join("");
+    return html + `<div class="foot">${icon("lock", 14)} Secure payment with Paystack · Mobile Money or card</div>`;
   }
   async function buyService(c, el) {
     const kind = el.dataset.kind, code = el.dataset.code, target = el.dataset.target;
@@ -101,14 +102,21 @@
     try { ck = await rpc(c, "billing_start_service", { p_kind: kind, p_code: code, p_target: detail || {}, p_org: null }); } catch (e) { return c.toast(e.message || "Couldn't start checkout"); }
     return goPaystack(c, ck.reference);
   }
+  /* ---- full-screen status screens: opening Paystack, then confirming the payment ---- */
+  const LOCK = (n = 14) => icon("lock", n);
+  function overlay(html) { let d = document.getElementById("payOv"); if (!d) { d = document.createElement("div"); d.id = "payOv"; d.className = "pay-ov"; document.body.appendChild(d); } d.innerHTML = `<div class="pay-in">${html}</div>`; return d; }
+  const closeOverlay = () => document.getElementById("payOv")?.remove();
+  const stepRow = (n, t, sub, st) => `<div class="ps ${st}"><i>${st === "done" ? icon("check", 14) : n}</i><div><b>${esc(t)}</b><small>${esc(sub)}</small></div></div>`;
   async function goPaystack(c, reference) {
+    overlay(`<div class="pay-spin"></div><b>Opening Paystack</b><small>Taking you to the secure payment page…</small><div class="pay-pill">${LOCK()} Paystack · Mobile Money &amp; card</div>`);
     try {
       const { data: { session } } = await c.sb.auth.getSession();
-      const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ reference }) });
+      const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify({ reference }) });
       const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j.authorization_url) return c.toast(r.status === 404 || r.status === 503 ? "Payments are not switched on yet. Nothing was charged." : j.error || "Couldn't reach Paystack. Nothing was charged.");
+      if (r.status === 401) { closeOverlay(); c.toast("Your sign-in expired. Please sign in again to pay.", "err"); setTimeout(async () => { await window.BX.sessionAlive(); location.replace("auth.html?mode=signin"); }, 1500); return; }
+      if (!r.ok || !j.authorization_url) { closeOverlay(); return c.toast(r.status === 404 || r.status === 503 ? "Payments are not switched on yet. Nothing was charged." : j.error || "Couldn't reach Paystack. Nothing was charged.", "err"); }
       location.href = j.authorization_url;
-    } catch { c.toast("Couldn't reach Paystack. Nothing was charged."); }
+    } catch { closeOverlay(); c.toast("Couldn't reach Paystack. Nothing was charged.", "err"); }
   }
   window.BX_PAY = { goPaystack };
 
@@ -118,18 +126,25 @@
     const ref = m[1], app = window.APP; if (!app?.state.me?.session) return setTimeout(confirmReturn, 400);
     const dest = /wallet/.test(location.hash) ? "#/wallet" : "#/billing";
     history.replaceState(null, "", location.pathname + dest);
-    const c = app.dashCtx(); c.toast("Confirming your payment…");
-    for (let i = 0; i < 6; i++) {
+    const c = app.dashCtx();
+    const show = (st) => overlay(`<div class="pay-ring">${icon("shield", 34)}</div><b>Confirming your payment</b><small>We're checking with Paystack. This takes a few seconds.</small><div class="pay-steps">${stepRow(1, "Payment received", "Back from Paystack", "done")}${stepRow(2, "Verifying with Paystack", "Checking amount and reference", st === 2 ? "now" : "done")}${stepRow(3, "Activating your purchase", "Unlocking it on your account", st === 3 ? "now" : "")}</div>`);
+    show(2);
+    for (let i = 0; i < 8; i++) {
       try {
         const { data: { session } } = await c.sb.auth.getSession();
-        const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "verify", reference: ref }) });
+        const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify({ action: "verify", reference: ref }) });
         const j = await r.json().catch(() => ({}));
-        if (j.status === "successful") { c.toast("Payment confirmed. Your purchase is active."); await app.refresh(); return; }
-        if (j.status === "failed") return c.toast("That payment didn't go through. Nothing was charged.");
+        if (j.status === "successful") {
+          await app.refresh();
+          overlay(`<div class="pay-ring ok">${icon("check", 38)}</div><b>Payment confirmed</b><small>Your purchase is active.</small><div class="pay-steps">${stepRow(1, "Payment received", "Paystack confirmed it", "done")}${stepRow(2, "Verified with Paystack", "Amount and reference match", "done")}${stepRow(3, "Activated", "It's on your account now", "done")}</div><button class="btn-light" style="width:100%;margin-top:16px" data-bact="pay-done">Done</button><p class="cap2" style="text-align:center;margin-top:10px">Receipt saved in History · Ref ${esc(ref)}</p>`);
+          return;
+        }
+        if (j.status === "failed") { closeOverlay(); return c.toast("That payment didn't go through. Nothing was charged.", "err"); }
+        if (i === 1) show(3);
       } catch { /* retry */ }
       await new Promise((ok) => setTimeout(ok, 2500));
     }
-    c.toast("We're still waiting for Paystack to confirm. Your purchase activates as soon as it does.");
+    closeOverlay(); c.toast("Still waiting for Paystack to confirm. Your purchase activates as soon as it does.", "warn");
   }
   window.addEventListener("load", () => setTimeout(confirmReturn, 600));
 
@@ -157,7 +172,6 @@
     openSheet(`${TIER_NAME[tier]} plan`, `<div class="bn">${icon("crown", 22)}<div><b>${cedi(p.price_minor, p.currency)} / ${state.interval === "monthly" ? "month" : "year"}</b><small>Cancel any time · 7-day refund window</small></div></div>
       <div class="bsec"><small>BEST FOR</small><p>${esc(meta.best_for || BEST[tier] || "")}</p></div>
       <div class="bsec"><small>WHAT YOU GET</small>${items.map((b) => `<div class="bi2"><span class="bic">${icon("star", 16)}</span><div><b>${esc(b.t)}</b>${b.d ? `<small>${esc(b.d)}</small>` : ""}</div></div>`).join("")}</div>
-      <div class="bsec"><small>WHAT IT DOES NOT INCLUDE</small><p>Verification badges are bought separately and are never part of a plan.</p></div>
       <button class="btn-light" style="width:100%;margin-top:14px" data-bact="choose" data-id="${esc(p.id)}">Choose ${TIER_NAME[tier]} · ${cedi(p.price_minor, p.currency)}</button>`);
   }
 
@@ -176,7 +190,6 @@
       ${row("Payment fees", "Any Paystack processing fee is shown by Paystack before you pay")}
       <div class="req"><small>Cancelling</small><p>You can stop renewal at any time. You keep paid access until the end of the period you paid for. Your profile, messages, jobs and projects are never deleted.</p></div>
       <div class="req"><small>If a payment fails</small><p>You get 7 days of grace with access kept. After that the account returns to Access. Nothing is deleted.</p></div>
-      <div class="req"><small>Not included</small><p>A plan does not verify your account. Verification is a separate review.</p></div>
       <button class="btn-light" style="width:100%" data-bact="pay" data-id="${esc(plan.id)}">Pay ${cedi(plan.price_minor, plan.currency)} with Paystack</button>
       <p class="cap2">Access starts only after Paystack confirms your payment to BAID X. Returning to the site does not by itself activate anything.</p>`);
   }
@@ -198,6 +211,8 @@
     if (e.target.closest("[data-close]")) return closeSheet();
     const el = e.target.closest("[data-bact]"); if (!el) return;
     const c = window.APP.dashCtx(), a = el.dataset.bact;
+    if (a === "pay-done") { closeOverlay(); return window.APP.route(); }
+    if (a === "cat") { state.cat = el.dataset.k; return window.APP.route(); }
     if (a === "tab") { state.tab = el.dataset.t; return window.APP.route(); }
     if (a === "svc") { el.disabled = true; await buyService(c, el); el.disabled = false; return; }
     if (a === "svc-go") { el.disabled = true; closeSheet(); await startService(c, el.dataset.kind, el.dataset.code, { target_id: el.dataset.tid }); return; }

@@ -415,6 +415,7 @@
     const adding = params.get("add") === "1"; // "Add another account" from the profile: stay here even though someone is signed in
     if (me?.role && S.mode !== "reset" && !adding) { location.replace(HOME); return; }
     if (me && !me.role && !adding) { startOnboard(); return; }
+    if (params.get("acc") && ACCS().some((x) => x.id === params.get("acc"))) { S.mode = "signin"; prefillSignin(ACCS().find((x) => x.id === params.get("acc"))); return; }
     if (params.get("mode") === "signin") { if (ACCS().length && !adding) openChooser(); else signinIntent(); }
   })();
 
