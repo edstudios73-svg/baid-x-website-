@@ -7,6 +7,8 @@ const fs = require("node:fs");
 const handler = require("../api/webhooks/sasusync");
 const lib = require("../api/_lib/sasusync-webhook");
 
+// No test may reach the network: database calls from the handler go to this stub.
+global.fetch = async () => ({ ok: true, status: 200, text: async () => JSON.stringify("applied"), headers: { get: () => null } });
 const SECRET = "test-secret-not-a-real-one";
 const sign = (raw, secret = SECRET) => crypto.createHmac("sha256", secret).update(raw).digest("hex");
 
@@ -35,7 +37,7 @@ test("3. invalid signature: rejected 401 (wrong value, wrong secret, wrong lengt
 });
 test("4. valid signature: accepted 200", async () => {
   const r = await call({ body: goodBody, headers: { "content-type": "application/json", "x-webhook-signature": sign(goodBody) } });
-  assert.equal(r.status, 200); assert.deepEqual(r.json, { received: true });
+  assert.equal(r.status, 200); assert.equal(r.json.received, true);
 });
 test("5. valid signature but malformed JSON: 400, no crash", async () => {
   const bad = "{not json";

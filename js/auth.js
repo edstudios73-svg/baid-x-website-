@@ -115,7 +115,16 @@
     setBusy($("#phoneNext"), false, "Continue");
     if (ok) { S.phone = phone; prepCode(); show("code"); }
   });
+  // Phone codes go through SasuSync only when the server says so (flag off by default); otherwise the original path is untouched.
+  let phoneApi = false;
+  fetch("/api/auth/phone/start").then((r) => r.json()).then((j) => { phoneApi = j && j.enabled === true; }).catch(() => {});
   async function sendCode(phone) {
+    if (phoneApi) {
+      const r = await fetch("/api/auth/phone/start", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ phone, purpose: S.mode === "reset" ? "reset" : "signup" }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { $("#phoneErr").textContent = j.error || "We couldn't send the code. Try again shortly."; return false; }
+      return true;
+    }
     const { error } = await sb.auth.signInWithOtp({ phone, options: { shouldCreateUser: S.mode !== "reset" } });
     if (error) { $("#phoneErr").textContent = friendly(error); return false; }
     return true;
@@ -156,7 +165,13 @@
   let verifying = false;
   async function verifyCode() {
     if (verifying) return; verifying = true; setBusy($("#codeNext"), true, "Continue");
-    const { data, error } = await sb.auth.verifyOtp({ phone: S.phone, token: otpValue(), type: "sms" });
+    let data, error;
+    if (phoneApi) {
+      const r = await fetch("/api/auth/phone/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ phone: S.phone, code: otpValue() }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.session) { const x = await sb.auth.setSession({ access_token: j.session.access_token, refresh_token: j.session.refresh_token }); data = x.data; error = x.error; }
+      else error = { message: j.error || "That code isn't right." };
+    } else ({ data, error } = await sb.auth.verifyOtp({ phone: S.phone, token: otpValue(), type: "sms" }));
     verifying = false; setBusy($("#codeNext"), false, "Continue");
     if (error) { $("#codeErr").textContent = friendly(error); $$("#otp input").forEach((i) => (i.value = "")); $$("#otp input")[0].focus(); $("#codeNext").disabled = true; return; }
     S.user = data.user;

@@ -188,11 +188,11 @@
       const items = [["broadcast", "Broadcast"], ["history", "History"], ["delivery", "Delivery"]];
       if (t === "broadcast") return tabs("notif", items, t) + `<form class="c" id="bf"><div class="row2" style="margin-bottom:14px;color:var(--or);font-weight:800">Compose announcement</div><label class="fl"><span>Title</span><input class="in" name="title" placeholder="Platform update" required maxlength="100" /></label><label class="fl"><span>Message</span><textarea class="in" name="body" placeholder="Tell members what's new…" required maxlength="1000"></textarea></label><label class="fl"><span>Link (optional)</span><input class="in" name="href" placeholder="#/billing" /></label>
         <div class="fl"><span>Target roles</span><div class="seg" id="roleseg">${[["", "All members"], ["worker", "Workers"], ["company", "Companies"], ["project-manager", "Project managers"], ["business", "Businesses"], ["individual-employer", "Clients"]].map(([k, l], i) => `<button type="button" class="${i === 0 ? "on" : ""}" data-r="${k}">${l}</button>`).join("")}</div></div>
-        <div class="fl"><span>Channels</span><div class="seg"><button type="button" class="chan on" disabled>In-app</button><button type="button" class="chan" data-ch="email">Email</button><button type="button" class="chan" data-ch="sms">SMS</button><button type="button" class="chan" data-ch="push">Push</button></div><small>In-app delivers now. Email, SMS and push are recorded, but need a sending provider before anything is sent.</small></div>
+        <div class="fl"><span>Channels</span><div class="seg"><button type="button" class="chan on" disabled>In-app</button><button type="button" class="chan" data-ch="email">Email</button><button type="button" class="chan" data-ch="sms">SMS</button><button type="button" class="chan" data-ch="push">Push</button></div><small>In-app delivers now. Email, SMS and push are recorded; SMS only sends once the sender ID is approved and enabled.</small></div>
         <button class="btn-or" type="submit">Send broadcast</button></form>`;
       const b = await rpc("admin_broadcasts");
       if (t === "history") return tabs("notif", items, t) + table(["When", "Title", "To", "Recipients", "Channels"], b.history.map((x) => `<tr><td class="mut">${esc(when(x.created_at))}</td><td><b>${esc(x.title)}</b><div class="mut">${esc(x.body)}</div></td><td>${esc((x.target_roles || []).length ? x.target_roles.map(pretty).join(", ") : "All members")}</td><td>${x.recipient_count}</td><td>${(x.channels || []).map((c) => `<span class="pill ${c === "in_app" ? "ok" : "w"}">${esc(pretty(c))}</span>`).join(" ")}</td></tr>`), "No broadcasts yet.");
-      return tabs("notif", items, t) + `<div class="c" style="margin-bottom:14px"><span class="l">Delivery</span><p class="mut" style="margin-top:8px">In-app announcements are delivered the moment you send. Email, SMS and push have no provider connected, so they are recorded as not sent.</p></div>` + table(["When", "Channel", "Status", "Provider", "Note"], b.logs.map((l) => `<tr><td class="mut">${esc(when(l.created_at))}</td><td>${esc(pretty(l.channel))}</td><td>${stPill(l.status)}</td><td>${esc(l.provider || "—")}</td><td class="mut">${esc(l.error || "")}</td></tr>`), "No delivery logs yet.");
+      return tabs("notif", items, t) + `<div class="c" style="margin-bottom:14px"><span class="l">Delivery</span><p class="mut" style="margin-top:8px">In-app announcements are delivered the moment you send. Email has no provider connected. SMS stays off until the sender ID is approved and the owner switches it on.</p></div>` + table(["When", "Channel", "Status", "Provider", "Note"], b.logs.map((l) => `<tr><td class="mut">${esc(when(l.created_at))}</td><td>${esc(pretty(l.channel))}</td><td>${stPill(l.status)}</td><td>${esc(l.provider || "—")}</td><td class="mut">${esc(l.error || "")}</td></tr>`), "No delivery logs yet.");
     },
 
     async reports() {
@@ -219,9 +219,10 @@
     },
 
     async health() {
+      const sms = await smsPanel();
       const h = await rpc("admin_health"), conn = await api("status").catch(() => ({ json: {} })), c = conn.json || {};
       const sig = (label, val, ok, note) => `<div class="c"><span class="l">${esc(label)}</span><b class="n ${ok === false ? "hl" : ""}">${esc(val)}</b><div class="mut" style="margin-top:6px;font-size:12px">${esc(note || "")}</div></div>`;
-      return `<div class="g g4">${sig("Database", "Online", true, `Server time ${when(h.db_time)}`)}${sig("Paystack", c.mode ? pretty(c.mode) + " mode" : "Not connected", c.mode === "test" || c.mode === "live", c.plans ? `${c.plans_with_code} of ${c.plans} plans linked` : "Keys not detected")}${sig("Webhook problems", h.webhook_flagged + h.webhook_failed, h.webhook_flagged + h.webhook_failed === 0, h.webhook_last ? `Last event ${ago(h.webhook_last)}` : "No events received yet")}${sig("Payments to review", h.payments_flagged, h.payments_flagged === 0, "Amount or currency mismatches")}${sig("Verification waiting", h.unverified_waiting, true, "Open the Verification queue")}${sig("Deposits waiting", h.deposits_waiting, true, "Confirm in Finance")}${sig("Withdrawals waiting", h.withdrawals_waiting, true, "Pay out in Finance")}${sig("Two-step sign-in", h.mfa_enforced ? "Enforced" : "Not enforced", h.mfa_enforced, "Required for privileged roles")}${sig("Active staff", h.staff_active, h.staff_active <= 2, "Keep this number small")}${sig("Stale checkouts", h.pending_checkouts, true, "Pending for over a day")}${sig("Last audit entry", h.last_audit ? ago(h.last_audit) : "—", true, "")}</div>`;
+      return `<div class="g g4">${sig("Database", "Online", true, `Server time ${when(h.db_time)}`)}${sig("Paystack", c.mode ? pretty(c.mode) + " mode" : "Not connected", c.mode === "test" || c.mode === "live", c.plans ? `${c.plans_with_code} of ${c.plans} plans linked` : "Keys not detected")}${sig("Webhook problems", h.webhook_flagged + h.webhook_failed, h.webhook_flagged + h.webhook_failed === 0, h.webhook_last ? `Last event ${ago(h.webhook_last)}` : "No events received yet")}${sig("Payments to review", h.payments_flagged, h.payments_flagged === 0, "Amount or currency mismatches")}${sig("Verification waiting", h.unverified_waiting, true, "Open the Verification queue")}${sig("Deposits waiting", h.deposits_waiting, true, "Confirm in Finance")}${sig("Withdrawals waiting", h.withdrawals_waiting, true, "Pay out in Finance")}${sig("Two-step sign-in", h.mfa_enforced ? "Enforced" : "Not enforced", h.mfa_enforced, "Required for privileged roles")}${sig("Active staff", h.staff_active, h.staff_active <= 2, "Keep this number small")}${sig("Stale checkouts", h.pending_checkouts, true, "Pending for over a day")}${sig("Last audit entry", h.last_audit ? ago(h.last_audit) : "—", true, "")}</div>${sms}`;
     },
 
     async settings() {
@@ -291,6 +292,24 @@
     const { data: { session } } = await sb.auth.getSession();
     const r = await fetch("/api/paystack-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action }) });
     return { ok: r.ok, json: await r.json().catch(() => ({})) };
+  }
+  /* SasuSync SMS/OTP health: read-only provider checks (spend nothing). Never shows keys, secrets or codes. */
+  async function smsPanel() {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "refresh" }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) return "";
+      const c = j.capacity, o = j.overview || {}, lvl = c ? c.level : null;
+      const pill = (t, cls) => `<span class="pill ${cls}">${esc(t)}</span>`;
+      const kv = (k, v) => `<div class="kv"><span>${esc(k)}</span><b>${esc(v)}</b></div>`;
+      const d7 = o.delivery_7d || {};
+      return `<h2 class="sec" style="margin-top:22px">SMS &amp; verification codes (SasuSync)</h2><div class="c">
+        <div class="row2">${pill(j.live_allowed ? "Live enabled" : "Live disabled", j.live_allowed ? "ok" : "w")}${pill(j.mode === "live" ? "Live mode" : "Sandbox mode", "b")}${j.sender ? pill(`Sender “${j.sender_id}”: ${pretty(j.sender.status)}`, j.sender.status === "approved" ? "ok" : "w") : ""}${lvl && lvl !== "OK" ? pill(lvl === "EXHAUSTED" ? "Credits exhausted" : "Credits low", "w") : ""}${pill(j.phone_auth ? "Phone sign-in on" : "Phone sign-in off", j.phone_auth ? "ok" : "b")}${pill(o.sms_notifications_enabled ? "SMS alerts on" : "SMS alerts off", o.sms_notifications_enabled ? "ok" : "b")}</div>
+        ${c ? kv("SMS you can still send", c.sms_sendable) + kv("Verification codes you can still send", c.otp_sendable) + (c.credits_per_otp ? kv("Credits per code", c.credits_per_otp) : "") + (c.main_balance !== undefined ? kv("Main balance", `${c.main_balance} ${c.currency || ""}`) : "") : `<p class="mut">${j.error ? "The provider couldn't be reached." : "Provider not configured."}</p>`}
+        ${kv("Last delivery report received", o.last_webhook_at ? ago(o.last_webhook_at) : "None yet")}${kv("Deliveries (7 days)", Object.keys(d7).length ? Object.entries(d7).map(([k, v]) => `${k} ${v}`).join(" · ") : "None")}${kv("Codes requested / verified (24h)", `${o.otp_requests_24h ?? 0} / ${o.otp_verified_24h ?? 0}`)}
+        <p class="mut" style="margin-top:8px">Live sending stays off until the sender ID is approved and the owner enables it in Vercel.</p></div>`;
+    } catch { return ""; }
   }
   async function paystackBox() {
     const box = document.getElementById("psbox"); if (!box) return;
