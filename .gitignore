@@ -6,3 +6,6 @@ node_modules
 
 # brag video sources (bundled music licence unchecked)
 brag-output/composition/
+brag-long/composition/
+brag-long/render.log
+brag-long/snaps/
