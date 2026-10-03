@@ -1,0 +1,7 @@
+{
+  "name": "baid-x-website",
+  "private": true,
+  "version": "1.0.0",
+  "description": "BAID X: static site plus a few Vercel functions",
+  "dependencies": { "web-push": "^3.6.7" }
+}

@@ -202,7 +202,9 @@
     return { session, role, profile: profile || {} };
   }
   function checklistState(role, profile) {
-    const items = ROLES[role].checklist.map(([title, desc, test]) => ({ title, desc, done: !!test(profile || {}) }));
+    // A reviewer has verified this account, so every check is complete by definition (10 of 10, whatever the optional fields hold).
+    const verified = (profile || {}).verification_status === "verified";
+    const items = ROLES[role].checklist.map(([title, desc, test]) => ({ title, desc, done: verified || !!test(profile || {}) }));
     return { items, done: items.filter((i) => i.done).length, total: items.length };
   }
   const statusLabel = (v) => ({ verified: "Verified", rejected: "Rejected", resubmit_required: "Resubmit" }[v] || "Unverified");

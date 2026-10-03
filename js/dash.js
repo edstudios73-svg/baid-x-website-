@@ -12,7 +12,7 @@
 
   /* ---------- ui blocks ---------- */
   // The greeting reads the clock first: late night, morning, afternoon, evening, night.
-  const period = (h) => (h < 5 ? ["Burning the midnight oil", "moon"] : h < 12 ? ["Good morning", "sun"] : h < 17 ? ["Good afternoon", "sun"] : h < 21 ? ["Good evening", "sunset"] : ["Good night", "moon"]);
+  const period = (h) => (h < 5 ? ["Working late", "moon"] : h < 12 ? ["Good morning", "sun"] : h < 17 ? ["Good afternoon", "sun"] : h < 21 ? ["Good evening", "sunset"] : ["Good night", "moon"]);
   const greet = () => period(new Date().getHours())[0];
   const first = (s) => String(s || "").trim().split(/\s+/)[0] || "there";
   const clockParts = () => { const d = new Date(); return [d.toLocaleTimeString("en-GH", { hour: "numeric", minute: "2-digit" }), d.toLocaleDateString("en-GH", { weekday: "long", day: "numeric", month: "short" })]; };

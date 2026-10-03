@@ -33,7 +33,8 @@
   const k64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
   async function subscribe(prompt) {
     if (!pushOk() || !uid()) return false;
-    const key = window.BAIDX_CONFIG?.VAPID_PUBLIC_KEY;
+    let key = window.BAIDX_CONFIG?.VAPID_PUBLIC_KEY;
+    if (!key) { try { const r = await fetch("/api/push?key=1"); if (r.ok) key = (await r.json()).publicKey; } catch { /* offline */ } }
     if (!key) { if (prompt) toast("Phone alerts are being set up. Try again soon."); return false; }
     try {
       const reg = await navigator.serviceWorker.register("/sw.js"); await navigator.serviceWorker.ready;
