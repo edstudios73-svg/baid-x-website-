@@ -92,7 +92,7 @@
   }
   function friendly(err) {
     const m = String(err?.message || err || "").toLowerCase();
-    if (/provider|sms|twilio|unsupported phone|phone.*not.*enabled/.test(m)) return "SMS sign-up isn't switched on yet. The BAID X admin needs to enable the Phone provider in Supabase.";
+    if (/provider|sms|twilio|unsupported phone|phone.*not.*enabled/.test(m)) return "Phone sign-up isn't switched on yet.";
     if (/invalid login|invalid credentials/.test(m)) return "Wrong phone, email or password.";
     if (/expired|invalid.*token|token.*invalid/.test(m)) return "That code is wrong or has expired.";
     if (/rate|too many|seconds/.test(m)) return "Too many attempts. Please wait a moment and try again.";
@@ -279,7 +279,13 @@
     else { const email = $("#siEmail").value.trim(); if (!/^\S+@\S+\.\S+$/.test(email)) return ($("#siErr").textContent = "Enter a valid email address."); cred = { email, password }; }
     if (!password) return ($("#siErr").textContent = "Enter your password.");
     setBusy($("#doSignin"), true, "Sign in");
-    const { error } = await sb.auth.signInWithPassword(cred);
+    let error;
+    if (S.siMode === "phone" && phoneApi) { // server maps the number to its account; Supabase's phone provider is not used
+      const r = await fetch("/api/auth/phone/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ phone: cred.phone, password }) });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.session) ({ error } = await sb.auth.setSession({ access_token: j.session.access_token, refresh_token: j.session.refresh_token }));
+      else error = { message: j.error || "That number or password isn't right." };
+    } else ({ error } = await sb.auth.signInWithPassword(cred));
     setBusy($("#doSignin"), false, "Sign in");
     if (error) { $("#siErr").textContent = friendly(error); return; }
     const me = await loadMe();

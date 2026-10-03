@@ -121,3 +121,24 @@ begin
 exception when others then return new;
 end $$;
 create trigger sms_on_notification after insert on public.notifications for each row execute function public.trg_sms_notification();
+
+-- 9) Synthetic-email phone identities (Supabase's native Phone provider is NOT used). Applied to project igfmmprlrybxsdzehwid.
+create table if not exists public.phone_identities (phone text primary key check (phone ~ '^233[0-9]{9}$'), user_id uuid not null unique references auth.users(id) on delete cascade, created_at timestamptz not null default now());
+alter table public.phone_identities enable row level security;
+revoke all on public.phone_identities from anon, authenticated;
+create or replace function public.auth_user_by_phone(p_phone text) returns uuid language sql stable security definer set search_path = public, auth as $$
+  select coalesce(
+    (select user_id from public.phone_identities where phone = regexp_replace(p_phone, '\D', '', 'g')),
+    (select id from auth.users where regexp_replace(coalesce(phone,''), '\D', '', 'g') = regexp_replace(p_phone, '\D', '', 'g') limit 1)) $$;
+create or replace function public.sms_recipient(p_user uuid, p_category text) returns text language plpgsql stable security definer set search_path = public, auth as $$
+declare pr notification_preferences%rowtype; ph text; ok boolean;
+begin
+  select * into pr from notification_preferences where user_id = p_user;
+  if not found or coalesce(pr.sms_enabled,false) = false then return null; end if;
+  ok := case p_category when 'jobs' then pr.jobs when 'projects' then pr.projects when 'payments' then pr.payments when 'wallet' then pr.wallet
+        when 'listings' then pr.listings when 'account' then pr.account when 'messages' then pr.messages else false end;
+  if not coalesce(ok,false) then return null; end if;
+  select phone into ph from public.phone_identities where user_id = p_user;
+  if ph is null then select phone into ph from auth.users where id = p_user and phone_confirmed_at is not null; end if;
+  return ph;
+end $$;

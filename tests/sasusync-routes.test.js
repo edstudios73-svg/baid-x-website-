@@ -103,17 +103,41 @@ test("verify: no pending request for the number -> 400 and the provider is not a
   env(LIVE); const calls = install([rl(), [(u) => has(u, "sasusync_otp_requests?phone="), reply(200, [])], audit]);
   assert.equal((await post(verify, { phone: "0552148347", code: "123456" })).status, 400); assert.ok(!calls.some((c) => has(c.url, "/otp/verify")));
 });
-test("verify: verified===true creates the user (phone_confirm) and returns a session; code never stored; claim happens before account creation", async () => {
-  env(LIVE); const calls = install([rl(), pending, [(u) => has(u, "/otp/verify"), reply(200, { verified: true, reason: "verified" })],
-    [(u, o) => has(u, "sasusync_otp_requests?otp_id") && o.method === "PATCH", (u, o) => (JSON.parse(o.body).status === "verified" ? reply(200, [{ otp_id: "77" }]) : reply(204))],
-    [(u) => has(u, "/auth/v1/admin/users"), reply(200, { id: "new-user" })], [(u) => has(u, "grant_type=password"), reply(200, { access_token: "a", refresh_token: "r", expires_in: 3600, token_type: "bearer" })], audit]);
+const claimOk = [(u, o) => has(u, "sasusync_otp_requests?otp_id") && o.method === "PATCH", (u, o) => (JSON.parse(o.body).status === "verified" ? reply(200, [{ otp_id: "77" }]) : reply(204))];
+const grantOk = [(u) => has(u, "grant_type=password"), reply(200, { access_token: "a", refresh_token: "r", expires_in: 3600, token_type: "bearer" })];
+test("verify (signup): verified===true creates a SYNTHETIC-EMAIL user (no phone, no Supabase phone provider), links the number, returns a session; claim comes first", async () => {
+  env(LIVE); const calls = install([rl(), pending, [(u) => has(u, "/otp/verify"), reply(200, { verified: true, reason: "verified" })], claimOk,
+    [(u, o) => has(u, "/auth/v1/admin/users") && o.method === "POST", reply(200, { id: "new-user" })], [(u) => has(u, "/rest/v1/phone_identities"), reply(201)], grantOk, audit]);
   const r = await post(verify, { phone: "0552148347", code: "123456" });
   assert.equal(r.status, 200); assert.equal(r.json.session.access_token, "a"); assert.equal(r.json.session.password, undefined);
   const urls = calls.map((c) => c.url);
   assert.ok(urls.findIndex((u) => has(u, "otp_id=eq.77")) < urls.findIndex((u) => has(u, "/auth/v1/admin/users")));
-  const create = calls.find((c) => has(c.url, "/auth/v1/admin/users")).body; assert.equal(create.phone, "+233552148347"); assert.equal(create.phone_confirm, true);
-  assert.ok(!JSON.stringify(calls.filter((c) => !has(c.url, "/otp/verify"))).includes("123456")); // the code only ever goes to the provider
-  assert.ok(!JSON.stringify(r.json).includes("123456"));
+  const create = calls.find((c) => has(c.url, "/auth/v1/admin/users")).body;
+  assert.equal(create.email, "p233552148347@phone.baidx.invalid"); assert.equal(create.email_confirm, true); assert.equal(create.phone, undefined); assert.equal(create.phone_confirm, undefined);
+  assert.ok(create.password.length >= 30 && create.password.length < 72);
+  const link = calls.find((c) => has(c.url, "/rest/v1/phone_identities")).body; assert.deepEqual(link, { phone: "233552148347", user_id: "new-user" });
+  const grant = calls.find((c) => has(c.url, "grant_type=password")).body; assert.equal(grant.email, create.email); assert.equal(grant.phone, undefined);
+  assert.ok(!calls.some((c) => has(c.url, "/auth/v1/otp") || has(c.url, "type=sms")), "no Supabase phone OTP call anywhere");
+  assert.ok(!JSON.stringify(calls.filter((c) => !has(c.url, "/otp/verify"))).includes("123456")); assert.ok(!JSON.stringify(r.json).includes("123456"));
+});
+test("verify (signup): if the number can't be linked (race) the just-created user is deleted and no session is returned", async () => {
+  env(LIVE); const calls = install([rl(), pending, [(u) => has(u, "/otp/verify"), reply(200, { verified: true })], claimOk,
+    [(u, o) => has(u, "/auth/v1/admin/users") && o.method === "POST", reply(200, { id: "new-user" })], [(u, o) => has(u, "/auth/v1/admin/users/new-user") && o.method === "DELETE", reply(200, {})], [(u) => has(u, "/rest/v1/phone_identities"), reply(409, { code: "23505" })], grantOk, audit]);
+  const r = await post(verify, { phone: "0552148347", code: "123456" });
+  assert.equal(r.status, 409); assert.equal(r.json.session, undefined); assert.ok(calls.some((c) => c.method === "DELETE")); assert.ok(!calls.some((c) => has(c.url, "grant_type")));
+});
+test("verify (reset): existing user's own email is kept; password replaced by a random temp one; session minted by email grant", async () => {
+  env(LIVE); const calls = install([rl(), [(u) => has(u, "sasusync_otp_requests?phone="), reply(200, [{ otp_id: "77", purpose: "reset", user_id: "u-1" }])], [(u) => has(u, "/otp/verify"), reply(200, { verified: true })], claimOk,
+    [(u, o) => has(u, "/auth/v1/admin/users/u-1") && o.method === "GET", reply(200, { id: "u-1", email: "real@person.test" })], [(u, o) => has(u, "/auth/v1/admin/users/u-1") && o.method === "PUT", reply(200, {})], [(u) => has(u, "/rest/v1/phone_identities"), reply(201)], grantOk, audit]);
+  const r = await post(verify, { phone: "0552148347", code: "123456" });
+  assert.equal(r.status, 200); const put = calls.find((c) => c.method === "PUT").body; assert.equal(put.email, undefined); assert.ok(put.password); assert.equal(put.phone, undefined);
+  assert.equal(calls.find((c) => has(c.url, "grant_type")).body.email, "real@person.test");
+});
+test("verify (reset): a phone-only legacy user gets the synthetic email set so the grant can work", async () => {
+  env(LIVE); const calls = install([rl(), [(u) => has(u, "sasusync_otp_requests?phone="), reply(200, [{ otp_id: "77", purpose: "reset", user_id: "u-2" }])], [(u) => has(u, "/otp/verify"), reply(200, { verified: true })], claimOk,
+    [(u, o) => has(u, "/auth/v1/admin/users/u-2") && o.method === "GET", reply(200, { id: "u-2", email: "" })], [(u, o) => has(u, "/auth/v1/admin/users/u-2") && o.method === "PUT", reply(200, {})], [(u) => has(u, "/rest/v1/phone_identities"), reply(201)], grantOk, audit]);
+  await post(verify, { phone: "0552148347", code: "123456" });
+  assert.equal(calls.find((c) => c.method === "PUT").body.email, "p233552148347@phone.baidx.invalid");
 });
 test("verify: replay/double submit loses the claim -> 409 and NO session", async () => {
   env(LIVE); const calls = install([rl(), pending, [(u) => has(u, "/otp/verify"), reply(200, { verified: true })], [(u) => has(u, "sasusync_otp_requests?otp_id"), reply(200, [])], audit]);
@@ -316,4 +340,33 @@ test("live test: no console output; audit holds masked number, no message, no ke
   assert.deepEqual(out, []);
   const a = JSON.stringify(calls.filter((c) => has(c.url, "audit_logs")).map((c) => c.body));
   assert.ok(a.includes("sms.live_test") && !a.includes("233552148347") && !a.includes("live SMS is working") && !a.includes("FAKE_KEY"));
+});
+
+/* ---------- phone + password login (no Supabase phone provider) ---------- */
+const login = require("../api/auth/phone/login");
+test("login: OFF by default (503, no calls); invalid input 400; rate limited 429", async () => {
+  env(); let calls = install([[() => true, reply(200, {})]]); assert.equal((await post(login, { phone: "0552148347", password: "x" })).status, 503); assert.equal(calls.length, 0);
+  env(LIVE); install([rl(), [() => true, reply(200, {})]]); assert.equal((await post(login, { phone: "12", password: "x" })).status, 400); assert.equal((await post(login, { phone: "0552148347", password: "" })).status, 400);
+  calls = install([rl(false)]); const r = await post(login, { phone: "0552148347", password: "x" }); assert.equal(r.status, 429); assert.equal(r.headers["retry-after"], "120");
+});
+test("login: maps number -> account server-side, signs in by that account's EMAIL grant, returns session; never calls a phone grant", async () => {
+  env(LIVE); const calls = install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, "u-1")], [(u) => has(u, "/auth/v1/admin/users/u-1"), reply(200, { id: "u-1", email: "p233552148347@phone.baidx.invalid" })], grantOk]);
+  const r = await post(login, { phone: "+233552148347", password: "correct horse" });
+  assert.equal(r.status, 200); assert.equal(r.json.session.access_token, "a");
+  const g = calls.find((c) => has(c.url, "grant_type=password")).body; assert.equal(g.email, "p233552148347@phone.baidx.invalid"); assert.equal(g.phone, undefined);
+  assert.ok(!JSON.stringify(r.json).includes("phone.baidx.invalid")); // the internal email is never returned
+});
+test("login: unknown number, no email, or wrong password all give the SAME 401 (no enumeration); wrong password is audited with a masked number", async () => {
+  env(LIVE); let r = []; 
+  install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, null)]]); r.push(await post(login, { phone: "0552148347", password: "x" }));
+  install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, "u-1")], [(u) => has(u, "/auth/v1/admin/users/u-1"), reply(200, { id: "u-1" })]]); r.push(await post(login, { phone: "0552148347", password: "x" }));
+  const calls = install([rl(), [(u) => has(u, "auth_user_by_phone"), reply(200, "u-1")], [(u) => has(u, "/auth/v1/admin/users/u-1"), reply(200, { id: "u-1", email: "e@x.test" })], [(u) => has(u, "grant_type"), reply(400, { error_code: "invalid_credentials" })], audit]);
+  r.push(await post(login, { phone: "0552148347", password: "wrong" }));
+  assert.ok(r.every((x) => x.status === 401 && JSON.stringify(x.json) === JSON.stringify(r[0].json)));
+  const a = JSON.stringify(calls.filter((c) => has(c.url, "audit_logs")).map((c) => c.body)); assert.ok(a.includes("phone.login_failed") && !a.includes("233552148347") && !a.includes("wrong"));
+});
+test("identity helpers: synthetic email is deterministic and reserved-domain; temp password is under the 72-byte limit", () => {
+  const id = require("../api/_lib/sasusync/identity");
+  assert.equal(id.syntheticEmail("233552148347"), "p233552148347@phone.baidx.invalid"); assert.ok(id.syntheticEmail("233552148347").endsWith(".invalid"));
+  const p = id.tempPassword(); assert.ok(p.length < 72 && p.length >= 30 && p !== id.tempPassword());
 });
