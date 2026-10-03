@@ -30,7 +30,7 @@ const auth = fs.readFileSync(require.resolve("../js/auth.js"), "utf8"), html = f
 test("signup UI: password needs 8+ chars, a letter, a number and a capital or symbol; Create account saves password + profile together", () => {
   assert.ok(/len: \(p\) => p\.length >= 8/.test(auth) && /mix:/.test(auth) && html.includes('data-r="mix"'));
   assert.ok(/finishProfile\(label, \$\("#pass"\)\.value\)/.test(auth));
-  assert.ok(/Promise\.all\(\[password \? sb\.auth\.updateUser/.test(auth), "password update and profile insert run together");
+  assert.ok(/Promise\.all\(\[password \? savePassword/.test(auth), "password save and profile insert run together");
   assert.ok(!/getUser\(\)/.test(auth.slice(auth.indexOf("async function finishProfile"), auth.indexOf("/* ---------- sign in"))), "no network getUser in the create step");
 });
 

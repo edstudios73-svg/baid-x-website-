@@ -16,6 +16,8 @@
   const greet = () => period(new Date().getHours())[0];
   const first = (s) => String(s || "").trim().split(/\s+/)[0] || "there";
   const clockParts = () => { const d = new Date(); return [d.toLocaleTimeString("en-GH", { hour: "numeric", minute: "2-digit" }), d.toLocaleDateString("en-GH", { weekday: "long", day: "numeric", month: "short" })]; };
+  // A waving hand drawn as an icon (no emoji): silver-to-sky gradient stroke, soft glow, and a gentle wave that settles.
+  const WAVE = `<span class="wave" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="url(#waveG)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="waveG" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#cfe9ff"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient></defs><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg><i></i><i></i></span>`;
   const hero = (who, sub, chips = [], verified = false) => {
     const [g, ic] = period(new Date().getHours()), [t, dt] = clockParts();
     const all = (verified ? [`<span class="h-chip v">${icon("seal", 14)} Verified</span>`] : []).concat(chips);
@@ -50,7 +52,7 @@
         count(c, "job_applications", (x) => x.eq("worker_id", c.uid).eq("status", "accepted")),
         rows(c, "wallet_accounts", "available_ghs,pending_ghs", (x) => x.eq("owner_id", c.uid), 1),
       ]);
-      return hero(`${esc(first(p.full_name))} <em>👋</em>`, `${esc(trade(p.primary_job_category_id) || "Professional")} · ${esc([p.city_town, p.region].filter((v) => v && v !== "Pending").join(", ") || "Add your location")}`, [p.available_for_work ? `<span class="h-chip">● Available for work</span>` : "", `<span class="h-chip">${esc(pretty(p.rank_tier) || "New")} · ${p.xp_total || 0} XP</span>`], p.verification_status === "verified")
+      return hero(`${esc(first(p.full_name))} ${WAVE}`, `${esc(trade(p.primary_job_category_id) || "Professional")} · ${esc([p.city_town, p.region].filter((v) => v && v !== "Pending").join(", ") || "Add your location")}`, [p.available_for_work ? `<span class="h-chip">● Available for work</span>` : "", `<span class="h-chip">${esc(pretty(p.rank_tier) || "New")} · ${p.xp_total || 0} XP</span>`], p.verification_status === "verified")
         + banner(c) + stats([[nz(open), "Open jobs", "work"], [nz(apps), "Applications", "mail"], [nz(accepted), "Accepted", "task"]])
         + card(pretty(p.rank_tier) || "New worker", `${p.xp_total || 0} XP`, `${bar(Math.min(100, ((p.xp_total || 0) / 2000) * 100))}<div class="cap2">Earn XP by finishing your profile, getting accepted and completing jobs.</div>`)
         + sec("Quick access") + tiles([["wallet", "Wallet", money(wallet[0]?.available_ghs), "wallet"], ["grow", "Career growth", `${p.xp_total || 0} XP`, "growth"], ["work", "Applications", `${nz(apps)} total`, "work"], ["star", "Trust score", Number(p.trust_score || 0).toFixed(1), "growth"]]);
@@ -100,7 +102,7 @@
       const ids = jobs.map((j) => j.id);
       const hired = ids.length ? await count(c, "job_applications", (x) => x.in("job_id", ids).eq("status", "accepted")) : 0;
       const trades = ["Electrician", "Plumber", "Painter", "General Handyman"];
-      return hero(`${esc(first(c.profile.full_name))} <em>👋</em>`, "Need something fixed or built?", [], c.profile.verification_status === "verified")
+      return hero(`${esc(first(c.profile.full_name))} ${WAVE}`, "Need something fixed or built?", [], c.profile.verification_status === "verified")
         + banner(c) + stats([[jobs.length, "Jobs posted", "work"], [jobs.filter((j) => j.status === "open").length, "Open", "mail"], [hired, "Hired", "hire"]])
         + sec("Find a trade") + tiles(trades.map((t) => ["work", t, "Browse pros", `trade:${t}`]));
     },

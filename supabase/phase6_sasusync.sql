@@ -255,3 +255,6 @@ grant execute on function public.admin_sms_jobs() to authenticated; grant execut
 revoke execute on function public.admin_sms_jobs() from anon, public; revoke execute on function public.admin_sms_automations() from anon, public;
 revoke execute on function public.sms_jobs_claim(int) from public, anon, authenticated; revoke execute on function public.sms_welcome_context(uuid) from public, anon, authenticated;
 revoke execute on function public.sms_scheduler_poke() from public, anon, authenticated; revoke execute on function public.sched_broadcast_inapp(text,text,text,text[],uuid,text[]) from public, anon, authenticated;
+
+-- 13) one-time password set after a verified phone code (password_set_at)
+alter table public.sasusync_otp_requests add column if not exists password_set_at timestamptz;

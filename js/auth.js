@@ -98,6 +98,14 @@
     if (/rate|too many|seconds/.test(m)) return "Too many attempts. Please wait a moment and try again.";
     return err?.message || "Something went wrong. Please try again.";
   }
+  // Phone accounts: the server sets the password (Supabase would demand a "current password" a phone user doesn't have).
+  async function savePassword(password) {
+    if (!phoneApi) return sb.auth.updateUser({ password });
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch("/api/auth/phone/password", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify({ password }) });
+    const j = await r.json().catch(() => ({}));
+    return r.ok ? {} : { error: { message: j.error || "We couldn't save your password. Try again." } };
+  }
   const setBusy = (btn, on, label) => { btn.disabled = on; if (label) btn.textContent = on ? "Please wait…" : label; };
 
   /* ---------- 1. phone ---------- */
@@ -133,7 +141,7 @@
   /* ---------- 2. confirm code ---------- */
   let resendTimer, resendLeft = 0;
   function buildOtp() {
-    $("#otp").innerHTML = Array.from({ length: OTP_LEN }, (_, i) => `<input inputmode="numeric" maxlength="1" autocomplete="${i ? "off" : "one-time-code"}" aria-label="Digit ${i + 1}" />`).join("");
+    $("#otp").innerHTML = Array.from({ length: OTP_LEN }, (_, i) => `<input style="--i:${i}" inputmode="numeric" maxlength="1" autocomplete="${i ? "off" : "one-time-code"}" aria-label="Digit ${i + 1}" />`).join("");
   }
   function otpValue() { return $$("#otp input").map((i) => i.value).join(""); }
   function prepCode() {
@@ -162,9 +170,30 @@
     if (e.key === "Backspace" && !e.target.value && inputs[i - 1]) { inputs[i - 1].focus(); inputs[i - 1].value = ""; }
   });
   $("#codeNext").addEventListener("click", verifyCode);
+  /* ---- OTP motion: checking wave, right-code seal, wrong-code shake ---- */
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const reduced = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch { /* not supported */ } }
+  async function playOk() {
+    const otp = $("#otp"), seal = $("#seal");
+    if (!seal.querySelector("i")) { // sparkle burst, built once
+      const cols = ["#ffffff", "#bff3d9", "#7dd3fc", "#34d399"];
+      seal.insertAdjacentHTML("beforeend", Array.from({ length: 20 }, (_, k) => `<i style="--a:${Math.round((k / 20) * 360 + (k % 2 ? 9 : 0))}deg;--d:${78 + (k % 3) * 22}px;--s:${k % 4 === 0 ? 7 : 4}px;--t:${(k % 5) * 40 + 380}ms;--col:${cols[k % 4]}"></i>`).join(""));
+    }
+    otp.classList.remove("is-checking"); otp.classList.add("is-ok"); seal.classList.add("on"); buzz([14, 40, 22]);
+    await wait(reduced() ? 250 : 1150);
+    seal.classList.remove("on");
+  }
+  async function playBad() {
+    const otp = $("#otp"); otp.classList.remove("is-checking"); otp.classList.add("is-bad"); buzz([40, 50, 40, 50, 60]);
+    await wait(reduced() ? 150 : 560);
+    otp.classList.remove("is-bad"); otp.classList.add("is-clearing");
+    await wait(reduced() ? 50 : 420);
+    $$("#otp input").forEach((i) => { i.value = ""; i.classList.remove("fill"); }); otp.classList.remove("is-clearing");
+  }
   let verifying = false;
   async function verifyCode() {
-    if (verifying) return; verifying = true; setBusy($("#codeNext"), true, "Continue");
+    if (verifying) return; verifying = true; setBusy($("#codeNext"), true, "Continue"); $("#otp").classList.add("is-checking");
     let data, error;
     if (phoneApi) {
       const r = await fetch("/api/auth/phone/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ phone: S.phone, code: otpValue() }) });
@@ -172,8 +201,9 @@
       if (r.ok && j.session) { const x = await sb.auth.setSession({ access_token: j.session.access_token, refresh_token: j.session.refresh_token }); data = x.data; error = x.error; }
       else error = { message: j.error || "That code isn't right." };
     } else ({ data, error } = await sb.auth.verifyOtp({ phone: S.phone, token: otpValue(), type: "sms" }));
-    verifying = false; setBusy($("#codeNext"), false, "Continue");
-    if (error) { $("#codeErr").textContent = friendly(error); $$("#otp input").forEach((i) => (i.value = "")); $$("#otp input")[0].focus(); $("#codeNext").disabled = true; return; }
+    setBusy($("#codeNext"), false, "Continue");
+    if (error) { $("#codeErr").textContent = friendly(error); $("#codeNext").disabled = true; await playBad(); verifying = false; $$("#otp input")[0].focus(); return; }
+    await playOk(); $("#otp").classList.remove("is-ok"); verifying = false;
     S.user = data.user;
     if (S.mode === "reset") { prepPass(); show("pass"); return; }
     if (phoneApi && S.mode === "signup") { prepName(); show("name"); return; } // brand-new account: no role yet, skip the lookup
@@ -237,7 +267,7 @@
   $("#passNext").addEventListener("click", async () => {
     const label = $("#passNext").textContent; setBusy($("#passNext"), true, label);
     if (S.mode !== "reset") { await finishProfile(label, $("#pass").value); return; } // password + profile are saved together
-    const { error } = await sb.auth.updateUser({ password: $("#pass").value });
+    const { error } = await savePassword($("#pass").value);
     if (error) { setBusy($("#passNext"), false, label); $("#passErr").textContent = friendly(error); return; }
     if (S.mode === "reset") { toast("Password updated."); const me = await loadMe(); setTimeout(() => (location.href = me?.role ? HOME : "auth.html?onboard=1"), 700); return; }
   });
@@ -259,7 +289,7 @@
     };
     setBusy(btn, true, label);
     // save the password and create the profile at the same time (a retry is safe: an existing profile row is accepted)
-    const [pw, ins] = await Promise.all([password ? sb.auth.updateUser({ password }) : Promise.resolve({}), sb.from(ROLES[S.role].table).insert({ id: user.id, ...rows[S.role] })]);
+    const [pw, ins] = await Promise.all([password ? savePassword(password) : Promise.resolve({}), sb.from(ROLES[S.role].table).insert({ id: user.id, ...rows[S.role] })]);
     const error = pw.error || (ins.error && ins.error.code !== "23505" ? ins.error : null);
     if (error) { setBusy(btn, false, label); const m = friendly(error); if (S.view === "pass") $("#passErr").textContent = m; else toast(m); return; }
     location.href = HOME;

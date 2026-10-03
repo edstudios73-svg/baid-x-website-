@@ -481,3 +481,39 @@ test("sms_broadcast: no console output and no key/number/message in any response
   const r = await run(admin, bReq(sendBody(3))); Object.assign(console, o);
   assert.deepEqual(out, []); assert.equal(r.json.status, "failed"); assert.equal(r.json.error_category, "AUTH"); assert.ok(!JSON.stringify(r.json).match(/FAKE_KEY|233\d{9}|02\d{8}|new jobs are live/));
 });
+
+/* ---------- set password after phone verification (server side) ---------- */
+const setpw = require("../api/auth/phone/password");
+const pwReq = (over = {}, headers = { authorization: "Bearer t" }) => ({ method: "POST", headers, body: { password: "Aadmin123.com", ...over } });
+const meRoute = [(u) => has(u, "/auth/v1/user"), reply(200, { id: "u-1" })];
+const unused = (rows = [{ otp_id: "77" }]) => [(u, o) => has(u, "sasusync_otp_requests?user_id=") && o.method === "GET", reply(200, rows)];
+const claimPw = (rows = [{ otp_id: "77" }]) => [(u, o) => has(u, "sasusync_otp_requests?otp_id=") && o.method === "PATCH", reply(200, rows)];
+const putUser = (okk = true) => [(u, o) => has(u, "/auth/v1/admin/users/u-1") && o.method === "PUT", okk ? reply(200, {}) : reply(500, {})];
+test("set password: flag off 503; no token 401; weak passwords 400; none of them touch the account", async () => {
+  env(); let calls = install([[() => true, reply(200, {})]]); assert.equal((await run(setpw, pwReq())).status, 503); assert.equal(calls.length, 0);
+  env(LIVE); calls = install([meRoute, rl(), unused(), claimPw(), putUser(), aud]); assert.equal((await run(setpw, pwReq({}, {}))).status, 401);
+  for (const weak of ["short1A", "alllowercase1", "NoNumbersHere!", "12345678", "abcdefgh", "x".repeat(80) + "A1", "", null]) assert.equal((await run(setpw, pwReq({ password: weak }))).status, 400, String(weak));
+  assert.ok(!calls.some((c) => c.method === "PUT"));
+});
+test("set password: a verified session sets the password via the admin API (no 'current password' needed), once only", async () => {
+  env(LIVE); const calls = install([meRoute, rl(), unused(), claimPw(), putUser(), aud]);
+  const r = await run(setpw, pwReq()); assert.equal(r.status, 200);
+  assert.deepEqual(calls.find((c) => c.method === "PUT").body, { password: "Aadmin123.com" });
+  assert.ok(calls.findIndex((c) => c.method === "PATCH" && has(c.url, "otp_id=")) < calls.findIndex((c) => c.method === "PUT"), "the one-time claim comes before the change");
+  assert.ok(has(calls.find((c) => c.method === "PATCH").url, "password_set_at=is.null"));
+  assert.ok(!JSON.stringify(r.json).includes("Aadmin") && !JSON.stringify(calls.filter((c) => has(c.url, "audit_logs"))).includes("Aadmin"));
+});
+test("set password: refused without a recent unused verification (403), or when the claim is lost (409); a failed change releases the claim", async () => {
+  env(LIVE); let calls = install([meRoute, rl(), unused([]), claimPw(), putUser(), aud]); assert.equal((await run(setpw, pwReq())).status, 403); assert.ok(!calls.some((c) => c.method === "PUT"));
+  calls = install([meRoute, rl(), unused(), claimPw([]), putUser(), aud]); assert.equal((await run(setpw, pwReq())).status, 409); assert.ok(!calls.some((c) => c.method === "PUT"));
+  const since = calls.find((c) => has(c.url, "verified_at=gte")); assert.ok(since && has(since.url, "status=eq.verified"));
+  calls = install([meRoute, rl(), unused(), claimPw(), putUser(false), aud]); assert.equal((await run(setpw, pwReq())).status, 502);
+  assert.ok(calls.some((c) => c.method === "PATCH" && c.body && c.body.password_set_at === null), "claim released so they can retry");
+  install([[(u) => has(u, "/auth/v1/user"), reply(401, {})], rl(), unused(), claimPw(), putUser()]); assert.equal((await run(setpw, pwReq())).status, 401);
+  install([meRoute, rl(false), unused(), claimPw(), putUser()]); assert.equal((await run(setpw, pwReq())).status, 429);
+});
+test("set password UI: phone accounts use the server route for sign-up AND reset; native updateUser only when phone auth is off", () => {
+  const a = require("node:fs").readFileSync(require.resolve("../js/auth.js"), "utf8");
+  assert.ok(/async function savePassword/.test(a) && a.includes("/api/auth/phone/password") && /if \(!phoneApi\) return sb\.auth\.updateUser\(\{ password \}\)/.test(a));
+  assert.equal((a.match(/sb\.auth\.updateUser\(\{ password/g) || []).length, 1, "only the fallback inside savePassword");
+});
