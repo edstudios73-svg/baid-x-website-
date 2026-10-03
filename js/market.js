@@ -106,7 +106,7 @@
   const supplierView = (kind) => async (c) => {
     const { head, empty } = U(), list = (await F().rpc(c, "supplier_catalog", { p_kind: kind }).catch(() => [])) || [], isEq = kind === "equipment";
     return head(isEq ? "Equipment" : "Materials") + `<p class="sub2">${isEq ? "Machines and tools you can rent or buy from suppliers." : "Materials from suppliers across Ghana."}</p>`
-      + (list.length ? list.map((i) => `<div class="dcard"><h4><span>${esc(i.name)}</span><span class="amb">${isEq ? (i.daily_rate ? money(i.daily_rate) + "/day" : i.sale_price ? money(i.sale_price) : "") : (i.price != null ? money(i.price) : "")}</span></h4><p class="cap2">${esc(i.business)} · ${esc(i.region || "Ghana")}${i.category ? " · " + esc(i.category) : ""}</p>${i.description ? `<p class="cap2">${esc(i.description)}</p>` : ""}<button class="btn-light sm" data-fx="message" data-id="${esc(i.business_id)}" data-name="${esc(i.business)}">Message supplier</button></div>`).join("")
+      + (list.length ? list.map((i) => `<div class="dcard"><h4><span>${esc(i.name)}</span><span class="amb">${isEq ? (i.daily_rate ? money(i.daily_rate) + "/day" : i.sale_price ? money(i.sale_price) : "") : (i.price != null ? money(i.price) : "")}</span></h4><p class="cap2">${esc(i.business)} · ${esc(i.region || "Ghana")}${i.category ? " · " + esc(i.category) : ""}</p>${i.description ? `<p class="cap2">${esc(i.description)}</p>` : ""}<div class="od-btns">${window.ORDERS ? window.ORDERS.buttons(i, isEq) : ""}<button class="btn-dark sm" data-fx="message" data-id="${esc(i.business_id)}" data-name="${esc(i.business)}">Message supplier</button></div></div>`).join("")
         : empty(isEq ? "equip" : "mat", `No ${isEq ? "equipment" : "materials"} listed yet`, "Suppliers list their products here. Check back soon, or find suppliers in Discover.", `<button class="btn-light sm" data-tab="discover">Find suppliers</button>`));
   };
 
@@ -160,8 +160,8 @@
       } else if (k === "add-item") {
         const eq = form.dataset.seg === "equipment", file = form.querySelector('[name="image"]').files[0];
         const img = file ? f.publicUrl(c, "listing-images", await f.upload(c, "listing-images", file, "item")) : null;
-        const row = eq ? { business_id: c.uid, name: d.name, category: d.category || null, daily_rate: d.daily_rate ? +d.daily_rate : null, sale_price: d.sale_price ? +d.sale_price : null, condition: d.condition, available: true, status: "active", image_urls: img ? [img] : [] }
-          : { business_id: c.uid, name: d.name, category: d.category || null, price: d.price ? +d.price : null, quantity: d.quantity ? +d.quantity : null, description: d.description || null, listing_type: "sale", available: true, status: "active", image_urls: img ? [img] : [] };
+        const row = eq ? { business_id: c.uid, name: d.name, category: d.category || null, daily_rate: d.daily_rate ? +d.daily_rate : null, sale_price: d.sale_price ? +d.sale_price : null, condition: d.condition, available: true, status: "available", image_urls: img ? [img] : [] }
+          : { business_id: c.uid, name: d.name, category: d.category || null, price: d.price ? +d.price : null, quantity: d.quantity ? +d.quantity : null, description: d.description || null, listing_type: "sale", available: true, status: "in_stock", image_urls: img ? [img] : [] };
         const { error } = await c.sb.from(eq ? "business_equipment" : "business_products").insert(row); if (error) throw error; f.closeSheet(); c.toast("Saved"); window.APP.route();
       }
     } catch (err) { f.fail(c, err); }
