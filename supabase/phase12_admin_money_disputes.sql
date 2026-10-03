@@ -1,0 +1,3 @@
+-- BAID X · Phase 12 (applied): admin_money_disputes() lists every job / order / milestone dispute whose money is frozen in escrow,
+-- with parties, amount, reason and the platform commission rate. Admin only. Settling uses admin_resolve_engagement / _order / _milestone.
+-- See migration phase12_admin_money_disputes (plus a follow-up that adds the commission rate to each row).

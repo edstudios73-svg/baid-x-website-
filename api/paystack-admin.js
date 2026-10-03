@@ -16,7 +16,9 @@ module.exports = async (req, res) => {
     const plans = await supa("/rest/v1/membership_plans?select=id,role,tier,billing_interval,price_minor,currency,is_founding,paystack_plan_code");
     const list = plans.json || [];
     if (action === "status") {
-      return res.status(200).json({ configured: configured(), mode: mode(), plans: list.length, plans_with_code: list.filter((p) => p.paystack_plan_code).length, webhook_url: `${req.headers.origin || "https://baid-x-website.vercel.app"}/api/paystack-webhook` });
+      // a harmless read-only call proves the secret key is accepted by Paystack (it never returns or logs the key)
+      let reachable = null; if (configured()) { const ping = await paystack("/balance").catch(() => null); reachable = ping ? (ping.ok ? "ok" : ping.status === 401 ? "key_rejected" : "error") : "unreachable"; }
+      return res.status(200).json({ reachable, configured: configured(), mode: mode(), plans: list.length, plans_with_code: list.filter((p) => p.paystack_plan_code).length, webhook_url: `${req.headers.origin || "https://baid-x-website.vercel.app"}/api/paystack-webhook` });
     }
     if (action === "create_plans") {
       if (!configured()) return res.status(503).json({ error: "Paystack keys are not set." });

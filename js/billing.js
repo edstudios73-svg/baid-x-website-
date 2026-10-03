@@ -112,6 +112,28 @@
   }
   window.BX_PAY = { goPaystack };
 
+  /* ---- coming back from Paystack: confirm the payment with the server, which asks Paystack itself ---- */
+  async function confirmReturn() {
+    const m = (location.href.match(/reference=(BXP-[A-Z0-9]{16})/) || location.href.match(/trxref=(BXP-[A-Z0-9]{16})/)); if (!m) return;
+    const ref = m[1], app = window.APP; if (!app?.state.me?.session) return setTimeout(confirmReturn, 400);
+    const dest = /wallet/.test(location.hash) ? "#/wallet" : "#/billing";
+    history.replaceState(null, "", location.pathname + dest);
+    const c = app.dashCtx(); c.toast("Confirming your payment…");
+    for (let i = 0; i < 6; i++) {
+      try {
+        const { data: { session } } = await c.sb.auth.getSession();
+        const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "verify", reference: ref }) });
+        const j = await r.json().catch(() => ({}));
+        if (j.status === "successful") { c.toast("Payment confirmed. Your purchase is active."); await app.refresh(); return; }
+        if (j.status === "failed") return c.toast("That payment didn't go through. Nothing was charged.");
+      } catch { /* retry */ }
+      await new Promise((ok) => setTimeout(ok, 2500));
+    }
+    c.toast("We're still waiting for Paystack to confirm. Your purchase activates as soon as it does.");
+  }
+  window.addEventListener("load", () => setTimeout(confirmReturn, 600));
+
+
   function currentCard(s) {
     if (!s.subscribed) return `<div class="dcard"><h4><span>Your plan</span><span class="pill ok">Access</span></h4><p class="cap2">You are on the free Access plan. Upgrade any time. Nothing is charged unless you confirm a checkout.</p></div>`;
     const live = ["active", "trialing", "grace_period", "past_due", "cancel_at_period_end"].includes(s.status);

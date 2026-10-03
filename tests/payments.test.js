@@ -56,3 +56,18 @@ test("not configured: payments report unavailable", async () => {
   const k = process.env.PAYSTACK_SECRET_KEY; delete process.env.PAYSTACK_SECRET_KEY;
   const res = mkRes(); await init({ method: "POST", headers: {}, body: {} }, res); assert.equal(res.code, 503); process.env.PAYSTACK_SECRET_KEY = k;
 });
+
+test("return-verify: asks Paystack, applies with the same dedupe key as the webhook, and only for the caller's own payment", async () => {
+  const REF = "BXP-AAAAAAAAAAAAAAAA", me = ["/auth/v1/user", () => ({ json: { id: "u-1", email: "a@b.co" } })];
+  stub([me, ["billing_payments?provider_reference", () => ({ json: [] })]]);
+  let res = mkRes(); await init({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "verify", reference: REF } }, res);
+  assert.equal(res.code, 404); assert.ok(!calls.some((x) => x.url.includes("billing_apply_charge")), "someone else's reference is never applied");
+  let n = 0;
+  stub([me, ["billing_payments?provider_reference", () => ({ json: [{ id: "p1", status: "pending" }] })], ["/transaction/verify/", () => ({ json: { data: { status: "success", reference: REF, amount: 3000, currency: "GHS", id: 77, customer: {}, authorization: {} } } })], ["billing_apply_charge", () => ({ json: { ok: true } })], ["billing_payments?id=eq.p1", () => ({ json: [{ status: n++ ? "successful" : "successful" }] })]]);
+  res = mkRes(); await init({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "verify", reference: REF } }, res);
+  assert.equal(res.code, 200); assert.equal(res.body.status, "successful");
+  const c = calls.find((x) => x.url.includes("billing_apply_charge")).body; assert.equal(c.p_dedupe_key, "charge.success:77"); assert.equal(c.p_amount_minor, 3000);
+  stub([me, ["billing_payments?provider_reference", () => ({ json: [{ id: "p1", status: "pending" }] })], ["/transaction/verify/", () => ({ json: { data: { status: "abandoned" } } })]]);
+  res = mkRes(); await init({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "verify", reference: REF } }, res);
+  assert.equal(res.body.status, "pending"); assert.ok(!calls.some((x) => x.url.includes("billing_apply_charge")), "an unpaid checkout is never activated");
+});
