@@ -308,6 +308,7 @@
         <div class="row2">${pill(j.live_allowed ? "Live enabled" : "Live disabled", j.live_allowed ? "ok" : "w")}${pill(j.mode === "live" ? "Live mode" : "Sandbox mode", "b")}${j.sender ? pill(`Sender “${j.sender_id}”: ${pretty(j.sender.status)}`, j.sender.status === "approved" ? "ok" : "w") : ""}${lvl && lvl !== "OK" ? pill(lvl === "EXHAUSTED" ? "Credits exhausted" : "Credits low", "w") : ""}${pill(j.phone_auth ? "Phone sign-in on" : "Phone sign-in off", j.phone_auth ? "ok" : "b")}${pill(o.sms_notifications_enabled ? "SMS alerts on" : "SMS alerts off", o.sms_notifications_enabled ? "ok" : "b")}</div>
         ${c ? kv("SMS you can still send", c.sms_sendable) + kv("Verification codes you can still send", c.otp_sendable) + (c.credits_per_otp ? kv("Credits per code", c.credits_per_otp) : "") + (c.main_balance !== undefined ? kv("Main balance", `${c.main_balance} ${c.currency || ""}`) : "") : `<p class="mut">${j.error ? "The provider couldn't be reached." : "Provider not configured."}</p>`}
         ${kv("Last delivery report received", o.last_webhook_at ? ago(o.last_webhook_at) : "None yet")}${kv("Deliveries (7 days)", Object.keys(d7).length ? Object.entries(d7).map(([k, v]) => `${k} ${v}`).join(" · ") : "None")}${kv("Codes requested / verified (24h)", `${o.otp_requests_24h ?? 0} / ${o.otp_verified_24h ?? 0}`)}
+        ${j.mode === "sandbox" && isSuper() ? `<div style="margin-top:12px"><button class="btn gh" data-sms-sandbox>Send Sandbox Test</button> <span class="pill b">SANDBOX — NO DELIVERY</span><div id="smsres" class="mut" style="margin-top:8px"></div></div>` : ""}
         <p class="mut" style="margin-top:8px">Live sending stays off until the sender ID is approved and the owner enables it in Vercel.</p></div>`;
     } catch { return ""; }
   }
@@ -372,6 +373,18 @@
     if ((el = q("[data-org]"))) { const susp = el.dataset.s === "SUSPENDED"; const r = await ask(susp ? "Suspend this organization?" : "Restore this organization?", susp ? "Members lose access to it immediately." : "Members regain access.", { field: susp, label: susp ? "Suspend" : "Restore", danger: susp, ph: "Reason (optional)" }); if (!r) return; return act("Organization", () => rpc("platform_set_org_status", { p_org: el.dataset.org, p_status: el.dataset.s, p_reason: r.value || null }), susp ? "Organization suspended" : "Organization restored"); }
     if ((el = q("[data-price]"))) { const r = await ask("Change price", "Enter the new price in cedis. It applies to new checkouts only.", { field: true, label: "Save price", ph: `Currently ${(el.dataset.v / 100).toFixed(2)}` }); if (!r) return; const v = Math.round(parseFloat(r.value) * 100); if (!(v >= 0)) return toast("Enter a valid amount."); return act("Price", () => rpc("admin_set_plan_price", { p_id: el.dataset.price, p_price_minor: v }), "Price updated"); }
     if (q("[data-founding]")) { if (!(await ask("Start the founding program?", "The 90-day clock starts now for all five account types. This cannot be undone.", { label: "Start" }))) return; return act("Founding", () => rpc("admin_start_founding"), "Founding program started"); }
+    if ((el = q("[data-sms-sandbox]"))) {
+      const a = await ask("SANDBOX — NO DELIVERY", "This calls SasuSync's sandbox only. Nothing is delivered to any phone and no credits are charged. Enter a Ghana mobile number to use as the test recipient.", { field: true, label: "Run sandbox test", ph: "0XX XXX XXXX" });
+      if (!a) return;
+      const out = document.getElementById("smsres"); el.disabled = true; if (out) out.textContent = "Running sandbox test…";
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "sandbox_test", sandbox_test: true, to: a.value.trim() }) });
+        const j = await r.json().catch(() => ({}));
+        if (out) out.innerHTML = r.ok && j.result ? `<b>${esc(j.result)}</b> · ${j.success ? "Accepted by sandbox" : `Failed (${esc(j.error_category || "error")}${j.http_status ? ` ${esc(j.http_status)}` : ""})`}${j.queued ? " · queued" : ""}${j.job_id ? ` · job ${esc(j.job_id)}` : ""} · ${j.delivered ? "delivered" : "not delivered"} · ${j.charged ? "charged" : "not charged"}` : esc(j.error || "The test could not run.");
+      } catch { if (out) out.textContent = "The test could not run."; }
+      el.disabled = false; return;
+    }
     if (q("[data-mkplans]")) { const b = q("[data-mkplans]"); b.disabled = true; b.textContent = "Creating…"; const r = await api("create_plans"); toast(r.ok ? `Created ${r.json.created} plans${r.json.failed ? `, ${r.json.failed} failed` : ""}` : r.json.error || "Failed"); return rerender(); }
     if ((el = q("[data-mfa]"))) { const on = el.dataset.mfa === "1"; if (!(await ask(on ? "Require two-step sign-in?" : "Turn two-step off?", on ? "Privileged roles will need an authenticator code. Make sure your own authenticator is set up first, or you can lock yourself out." : "Privileged roles will no longer need a code.", { label: on ? "Turn on" : "Turn off", danger: on }))) return; return act("MFA", () => rpc("admin_set_mfa", { p_on: on }), on ? "Two-step is now required" : "Two-step is off"); }
     if (q("[data-mfa-enrol]")) {
