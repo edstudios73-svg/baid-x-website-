@@ -176,3 +176,64 @@ test("security: nothing in any route logs (no console output) and responses neve
   Object.assign(console, o);
   assert.deepEqual(out, []); assert.ok(!JSON.stringify(r).includes("FAKE_KEY") && !JSON.stringify(r).includes("123456"));
 });
+
+/* ---------- staff sandbox SMS test action ---------- */
+const sbReq = (over = {}, headers = { authorization: "Bearer t" }) => ({ method: "POST", headers, body: { action: "sandbox_test", sandbox_test: true, to: "0552148347", ...over } });
+const staffOk = [(u) => has(u, "admin_sms_overview"), reply(200, {})];
+const who = (can) => [(u) => has(u, "platform_whoami"), reply(200, { can })];
+const sandboxSend = [(u) => has(u, "/smssandbox/v1/send"), reply(200, { success: true, balance: { deducted: 0, remaining: 400 }, data: { status: "queued", job_id: 321 } })];
+const aud = [(u) => has(u, "audit_logs"), reply(201)];
+
+test("sandbox test: authorized staff succeeds, labelled SANDBOX — NO DELIVERY, only /smssandbox/v1/send is called", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); const calls = install([staffOk, who(["finance:ADMINISTER"]), sandboxSend, aud]);
+  const r = await run(admin, sbReq());
+  assert.equal(r.status, 200); assert.equal(r.json.result, "SANDBOX — NO DELIVERY"); assert.equal(r.json.success, true); assert.equal(r.json.job_id, "321"); assert.equal(r.json.delivered, false); assert.equal(r.json.charged, false);
+  const provider = calls.filter((c) => has(c.url, "sms.test")); assert.equal(provider.length, 1); assert.ok(provider[0].url.endsWith("/smssandbox/v1/send"));
+  assert.equal(provider[0].body.recipients[0], "233552148347"); // normalized with the shared utility
+  assert.ok(!JSON.stringify(r.json).includes("233552148347") && !JSON.stringify(r.json).includes("sandbox test message"));
+});
+test("sandbox test: unauthorized rejected (no token 401, non-admin 403, admin without finance:ADMINISTER 403) and no provider call", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); let calls = install([]);
+  assert.equal((await run(admin, sbReq({}, {}))).status, 401);
+  calls = install([[(u) => has(u, "admin_sms_overview"), reply(403, {})]]);
+  assert.equal((await run(admin, sbReq())).status, 403);
+  calls = install([staffOk, who(["support:READ"]), sandboxSend]);
+  assert.equal((await run(admin, sbReq())).status, 403);
+  assert.ok(!calls.some((c) => has(c.url, "sms.test")));
+});
+test("sandbox test: refused unless SASUSYNC_MODE is exactly sandbox (unset, live, anything else) and unless explicitly flagged", async () => {
+  for (const mode of [undefined, "live", "Sandbox ", "prod"]) {
+    env(); if (mode !== undefined) process.env.SASUSYNC_MODE = mode;
+    const calls = install([staffOk, who(["finance:ADMINISTER"]), sandboxSend, aud]);
+    assert.equal((await run(admin, sbReq())).status, 409, String(mode)); assert.ok(!calls.some((c) => has(c.url, "sms.test")));
+  }
+  env({ SASUSYNC_MODE: "sandbox" }); const calls = install([staffOk, who(["finance:ADMINISTER"]), sandboxSend, aud]);
+  assert.equal((await run(admin, sbReq({ sandbox_test: undefined }))).status, 400); assert.equal((await run(admin, sbReq({ sandbox_test: "true" }))).status, 400);
+  assert.equal((await run(admin, sbReq({ to: "123" }))).status, 400); assert.ok(!calls.some((c) => has(c.url, "sms.test")));
+});
+test("sandbox test: the live endpoint can never be selected, even with live env vars forced on", async () => {
+  const { sendSandboxSms } = require("../api/_lib/sasusync/sms");
+  env({ SASUSYNC_MODE: "live", SASUSYNC_SENDER_APPROVED: "true" }); let calls = install([sandboxSend]);
+  await sendSandboxSms({ to: "0552148347", message: "x" }); assert.ok(calls.every((c) => !has(c.url, "/api/v1/send")) && calls[0].url.endsWith("/smssandbox/v1/send"));
+  // and through the route: live mode is rejected before any provider call
+  calls = install([staffOk, who(["finance:ADMINISTER"]), [(u) => has(u, "/api/v1/send"), reply(200, { success: true })], sandboxSend, aud]);
+  assert.equal((await run(admin, sbReq())).status, 409); assert.equal(calls.filter((c) => has(c.url, "sms.test")).length, 0);
+  const fs = require("node:fs"); assert.ok(!/api\/v1\/send/.test(fs.readFileSync(require.resolve("../api/sasusync-admin"), "utf8").replace(/\/\/.*$/gm, "")));
+});
+test("sandbox test: provider errors are handled safely (typed category, 200 with success:false, no secrets, still labelled)", async () => {
+  for (const [st, kind] of [[401, "AUTH"], [402, "INSUFFICIENT_CREDIT"], [403, "FORBIDDEN"], [422, "VALIDATION"]]) {
+    env({ SASUSYNC_MODE: "sandbox" }); const calls = install([staffOk, who(["finance:ADMINISTER"]), [(u) => has(u, "/smssandbox/v1/send"), reply(st, { detail: "ss_FAKE_KEY_FOR_TESTS 233552148347" })], aud]);
+    const r = await run(admin, sbReq());
+    assert.equal(r.json.result, "SANDBOX — NO DELIVERY"); assert.equal(r.json.success, false); assert.equal(r.json.error_category, kind);
+    assert.ok(!JSON.stringify(r.json).includes("FAKE_KEY") && !JSON.stringify(r.json).includes("233552148347"));
+    assert.equal(calls.filter((c) => has(c.url, "sms.test")).length, 1); // 4xx: never retried
+  }
+});
+test("sandbox test: no console output, and audit entries hold no full phone, message or key", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); const out = []; const o = { l: console.log, e: console.error, w: console.warn }; console.log = console.error = console.warn = (...a) => out.push(a.join(" "));
+  const calls = install([staffOk, who(["finance:ADMINISTER"]), sandboxSend, aud]);
+  await run(admin, sbReq()); Object.assign(console, o);
+  assert.deepEqual(out, []);
+  const a = JSON.stringify(calls.filter((c) => has(c.url, "audit_logs")).map((c) => c.body));
+  assert.ok(a.includes("sms.sandbox_test") && !a.includes("233552148347") && !a.includes("sandbox test message") && !a.includes("FAKE_KEY"));
+});
