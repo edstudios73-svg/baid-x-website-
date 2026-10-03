@@ -108,3 +108,11 @@ body.auth { min-height: 100dvh; }
 .sheet button span:last-child { margin-left: auto; color: var(--muted); }
 @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 [hidden] { display: none !important; }
+
+/* Account chooser */
+.acc-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.acc-opt { display: flex; align-items: center; gap: 13px; width: 100%; text-align: left; padding: 13px 14px; border-radius: 18px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12); color: inherit; }
+.acc-opt:hover, .acc-opt:active { border-color: #fff; }
+.acc-opt .av { width: 46px; height: 46px; border-radius: 50%; flex: none; display: grid; place-items: center; font-weight: 800; background: linear-gradient(145deg,#2a2a2a,#111) center/cover; border: 1px solid rgba(255,255,255,.25); color: #fff; }
+.acc-opt .tx { flex: 1; min-width: 0; } .acc-opt b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .acc-opt small { display: block; color: var(--muted, #8c8c8c); font-size: 12.5px; margin-top: 2px; }
+.acc-opt .st { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: rgba(255,255,255,.08); color: #ddd; white-space: nowrap; } .acc-opt .st.on { background: #fff; color: #000; }

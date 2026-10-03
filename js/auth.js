@@ -61,6 +61,7 @@
     S.mode = "signup"; resetPhoneView(); show("phone");
   });
   $("#goSignin").addEventListener("click", () => {
+    if (!S.skipChooser && ACCS().length && params.get("add") !== "1") { openChooser(); return; }
     S.mode = "signin";
     $("#signinSub").textContent = S.intent ? `Signing in as ${ROLES[S.role].label}.` : "Sign in to your BAID X account.";
     $("#siErr").textContent = "";
@@ -283,13 +284,9 @@
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}${location.pathname}` });
     if (error) $("#siErr").textContent = friendly(error); else toast("Password reset link sent. Check your email.");
   });
-  $("#google").addEventListener("click", async () => {
-    const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: new URL("index.html", location.href).href } });
-    if (error) $("#siErr").textContent = friendly(error);
-  });
   $$("[data-legal]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); toast("Terms and Privacy pages are coming soon."); }));
 
-  /* ---------- onboarding for signed-in users with no role (e.g. Google) ---------- */
+  /* ---------- onboarding for signed-in users with no role yet ---------- */
   function startOnboard() { S.mode = "onboard"; S.history = ["type"]; S.view = "type"; renderTypes(); $("#goSignin").hidden = true; $("#goSignup").textContent = "Continue"; show("type", { push: false }); }
 
   // Sign in from the guest page: pick the account type first, then the credentials step follows.
@@ -303,6 +300,43 @@
     show("type", { push: false });
   }
 
+  /* ---------- Continue with: accounts remembered on this device ---------- */
+  const ACCS = () => window.BX.accounts.list();
+  const maskPhone = (p) => { const d = String(p || "").replace(/\D/g, ""); return d ? `+${d.slice(0, 3)} ••• ${d.slice(-3)}` : ""; };
+  function renderChoose() {
+    $("#accList").innerHTML = ACCS().map((a) => {
+      const role = ROLES[a.role]?.account || "Account", where = a.phone ? maskPhone(a.phone) : a.email || "";
+      const av = a.photo ? `style="background-image:url('${esc(a.photo)}')"` : "";
+      return `<button class="acc-opt" data-acc="${esc(a.id)}"><span class="av" ${av}>${a.photo ? "" : esc(String(a.name).trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase())}</span><span class="tx"><b>${esc(a.name)}</b><small>${esc(role)}${where ? " · " + esc(where) : ""}</small></span><span class="st ${a.r ? "on" : ""}">${a.r ? "Continue" : "Password"}</span></button>`;
+    }).join("");
+  }
+  function openChooser() { S.mode = "signin"; S.history = ["choose"]; S.view = "choose"; renderChoose(); show("choose", { push: false }); }
+  function prefillSignin(a) {
+    S.intent = false; S.mode = "signin";
+    if (a.phone) {
+      const d = String(a.phone).replace(/\D/g, ""), c = COUNTRIES.find((x) => d.startsWith(x.d)); if (c) S.country = c;
+      $$("[data-cc]").forEach((x) => { x.firstChild.textContent = `${S.country.f} `; x.querySelector("span").textContent = `+${S.country.d}`; });
+      S.siMode = "phone"; $("#siPhone").value = d;
+    } else if (a.email) { S.siMode = "email"; $("#siEmail").value = a.email; }
+    $$("#seg button").forEach((x) => x.classList.toggle("on", x.dataset.m === S.siMode));
+    $("#siPhoneRow").hidden = S.siMode !== "phone"; $("#siEmail").hidden = S.siMode !== "email";
+    $("#signinSub").textContent = `Welcome back, ${a.name}. Enter your password to continue.`; $("#siErr").textContent = ""; $("#siPass").value = "";
+    show("signin");
+  }
+  $("#accList").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-acc]"); if (!b) return;
+    const a = ACCS().find((x) => x.id === b.dataset.acc); if (!a) return;
+    if (a.r) {
+      b.disabled = true; b.querySelector(".st").textContent = "…";
+      const r = await window.BX.accounts.switchTo(a.id);
+      if (r.ok) { location.href = HOME; return; }
+      b.disabled = false; renderChoose(); toast("Please enter your password to continue.");
+    }
+    prefillSignin(a);
+  });
+  $("#useOther").addEventListener("click", () => { S.skipChooser = true; S.history = ["choose"]; signinIntent(); S.history = ["choose", "type"]; });
+  $("#chooseNew").addEventListener("click", () => { S.mode = "signup"; S.history = ["type"]; renderTypes(); $("#goSignin").hidden = false; show("type", { push: false }); });
+
   /* ---------- boot ---------- */
   if (GROUP) { $("#typeTitle").textContent = GROUP.title; $("#typeSub").textContent = GROUP.sub; }
   renderTypes();
@@ -310,8 +344,10 @@
   (async () => {
     const me = await loadMe();
     if (window.BX_RECOVERY) return; // the PASSWORD_RECOVERY event below opens the "set a new password" step
-    if (me?.role && S.mode !== "reset") { location.replace(HOME); return; }
-    if (me && !me.role) { startOnboard(); return; }
-    if (params.get("mode") === "signin") signinIntent();
+    const adding = params.get("add") === "1"; // "Add another account" from the profile: stay here even though someone is signed in
+    if (me?.role && S.mode !== "reset" && !adding) { location.replace(HOME); return; }
+    if (me && !me.role && !adding) { startOnboard(); return; }
+    if (params.get("mode") === "signin") { if (ACCS().length && !adding) openChooser(); else signinIntent(); }
   })();
+
 })();

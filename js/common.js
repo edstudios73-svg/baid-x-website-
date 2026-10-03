@@ -189,6 +189,34 @@
     }
   }
 
+  /* ---------- Remembered accounts on this device (account chooser + switching) ---------- */
+  const ACC_KEY = "baidx_accounts_v1";
+  const accRead = () => { try { const l = JSON.parse(localStorage.getItem(ACC_KEY) || "[]"); return Array.isArray(l) ? l : []; } catch { return []; } };
+  const accWrite = (l) => { try { localStorage.setItem(ACC_KEY, JSON.stringify(l.slice(0, 6))); } catch { /* private mode */ } };
+  const accounts = {
+    list: accRead,
+    // called whenever we know who is signed in; keeps their latest tokens so switching back is instant
+    remember(session, role, profile) {
+      const u = session?.user; if (!u) return;
+      const p = profile || {}, r = ROLES[role];
+      const entry = { id: u.id, role, name: (r && p[r.nameKey]) || "BAID X account", photo: p.profile_photo_url || p.company_logo_url || p.logo_url || "", phone: u.phone || "", email: u.email || "", a: session.access_token, r: session.refresh_token, at: Date.now() };
+      accWrite([entry, ...accRead().filter((x) => x.id !== u.id)]);
+    },
+    updateTokens(session) {
+      const u = session?.user; if (!u) return; const l = accRead(), i = l.findIndex((x) => x.id === u.id);
+      if (i >= 0) { l[i].a = session.access_token; l[i].r = session.refresh_token; accWrite(l); }
+    },
+    signedOut(id) { const l = accRead(), i = l.findIndex((x) => x.id === id); if (i >= 0) { delete l[i].a; delete l[i].r; accWrite(l); } },
+    forget(id) { accWrite(accRead().filter((x) => x.id !== id)); },
+    async switchTo(id) {
+      const e = accRead().find((x) => x.id === id); if (!e || !e.r) return { ok: false, needsPassword: true };
+      const { error } = await sb.auth.setSession({ access_token: e.a, refresh_token: e.r });
+      if (error) { accounts.signedOut(id); return { ok: false, needsPassword: true }; }
+      return { ok: true };
+    },
+  };
+  sb.auth.onAuthStateChange((ev, sess) => { if (sess && (ev === "TOKEN_REFRESHED" || ev === "SIGNED_IN")) accounts.updateTokens(sess); });
+
   /* ---------- Session ---------- */
   async function loadMe() {
     const { data: { session } } = await sb.auth.getSession();
@@ -199,6 +227,7 @@
     // own full row via a server function (so other members' private columns can be locked down later); falls back to a direct read
     let { data: profile } = await sb.rpc("my_profile");
     if (!profile) ({ data: profile } = await sb.from(ROLES[role].table).select("*").eq("id", session.user.id).maybeSingle());
+    accounts.remember(session, role, profile);
     return { session, role, profile: profile || {} };
   }
   function checklistState(role, profile) {
@@ -299,5 +328,5 @@
     return new Date(iso).toLocaleDateString("en-GH", { day: "numeric", month: "short" });
   };
 
-  window.BX = { ICONS, icon, NAV, COMMON_ROUTES, ROLE_ROUTES, money, ago, sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
+  window.BX = { accounts, ICONS, icon, NAV, COMMON_ROUTES, ROLE_ROUTES, money, ago, sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
 })();

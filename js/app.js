@@ -238,7 +238,7 @@
       "individual-employer": [["Edit profile", "Update profile details.", "edit-profile"], ["Post a job", "Hire a professional for your home.", "post-job"], ["My hires", "Keep a record of people you have hired.", "hires"], ["Verification documents", "Verify your identity.", "verification"]],
     };
     $("#accMenu").innerHTML = [billRow, orgRow, ...menus[me.role]].map(([t, d, to]) => row(t, d, to)).join("");
-    $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account.", null, "add-email"), row("Change phone", "Update the mobile number linked to this account.", null, "change-phone"), row("Change password", "Set a new password for sign-in.", null, "change-password")].join("");
+    $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account.", null, "add-email"), row("Change phone", "Update the mobile number linked to this account.", null, "change-phone"), row("Switch account", "Use another account on this device.", null, "switch-account"), row("Change password", "Set a new password for sign-in.", null, "change-password")].join("");
     $("#accInfo").innerHTML = [row("User guide", "How to use BAID X, step by step, for every role.", null, "open-docs"), row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", null, "open-terms"), row("Privacy policy", "Read how we handle your information.", null, "open-privacy"), row("About BAID X", "Product and company information.", null, "open-about")].join("");
   }
 
@@ -312,7 +312,7 @@
     if (t.closest("[data-back]")) { if (history.length > 1) history.back(); else go("home"); return; }
     const chip = t.closest("[data-chip]"); if (chip) { state.filter = chip.dataset.chip; state.f.type = "all"; state.f.cat = null; renderChips(); renderFeed(); return; }
     const pick = t.closest("[data-pick]"); if (pick) return openPicker(pick.dataset.pick);
-    if (t.closest("#logout")) { await sb.auth.signOut(); location.hash = "#/home"; location.reload(); return; }
+    if (t.closest("#logout")) { const me = state.me?.session?.user?.id; if (me) window.BX.accounts.signedOut(me); await sb.auth.signOut(); location.hash = "#/home"; location.reload(); return; }
     if (t.closest("[data-soon]")) return toast("This screen is built in the next stage.");
     const sign = t.closest("[data-action='join'],[data-action='signin']");
     if (sign) { const gr = sign.dataset.group; const mode = sign.dataset.action === "signin" ? "signin" : "signup"; return void (location.href = `auth.html?mode=${mode}${gr ? `&group=${gr}` : ""}`); }

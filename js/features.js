@@ -215,6 +215,7 @@
   }
 
   const FX = {
+    "switch-account": (c) => accountSheet(c),
     "open-docs": () => { window.open("docs.html", "_blank", "noopener"); },
     "open-terms": () => { window.open("terms.html", "_blank", "noopener"); },
     "open-privacy": () => { window.open("privacy.html", "_blank", "noopener"); },
@@ -235,6 +236,22 @@
   window.FX = Object.assign(window.FX || {}, FX);
 
   /* profile card sheet for Discover (works for guests too) */
+  /* ---------- Switch account (accounts remembered on this device) ---------- */
+  function accountSheet(c) {
+    const me = c.uid, list = window.BX.accounts.list();
+    const row = (a) => `<div class="row acct" data-acc="${esc(a.id)}"><span class="av" ${a.photo ? `style="background-image:url('${esc(a.photo)}')"` : ""}>${a.photo ? "" : esc(initials(a.name))}</span><span class="tx"><b>${esc(a.name)}</b><small>${esc(ROLES[a.role]?.account || "Account")}${a.id === me ? " · signed in now" : a.r ? " · tap to switch" : " · password needed"}</small></span>${a.id === me ? `<span class="pill ok">Active</span>` : `<button class="btn-dark xs" data-acc-forget="${esc(a.id)}">Remove</button>`}</div>`;
+    openSheet("Accounts on this device", `<p class="cap2">Switch between the accounts you've used here. Removing one only forgets it on this device.</p><div id="accRows">${list.map(row).join("")}</div><button class="btn-light" style="width:100%;margin-top:12px" data-acc-add>Add another account</button>`);
+  }
+  document.addEventListener("click", async (e) => {
+    const add = e.target.closest("[data-acc-add]"); if (add) { location.href = "auth.html?mode=signin&add=1"; return; }
+    const fg = e.target.closest("[data-acc-forget]"); if (fg) { e.stopPropagation(); window.BX.accounts.forget(fg.dataset.accForget); fg.closest(".row").remove(); return; }
+    const r = e.target.closest(".row.acct"); if (!r) return;
+    const id = r.dataset.acc, me = window.APP?.state.me?.session?.user?.id; if (id === me) return;
+    const a = window.BX.accounts.list().find((x) => x.id === id); if (!a) return;
+    if (!a.r) { location.href = "auth.html?mode=signin"; return; }
+    const res = await window.BX.accounts.switchTo(id);
+    if (res.ok) { location.hash = "#/home"; location.reload(); } else window.BX.toast("Please sign in to that account again.");
+  });
   async function openCard(kind, id) {
     const c = window.APP.state.me?.role ? window.APP.dashCtx() : null, src = { company: "companies", worker: "professionals", pm: "managers", business: "businesses" }[kind], S = window.APP.sources[src];
     const { data } = await window.BX.sb.from(S.table).select(S.cols).eq("id", id).maybeSingle();
