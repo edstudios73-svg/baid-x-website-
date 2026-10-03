@@ -1,11 +1,11 @@
 // POST /api/auth/phone/verify { phone, code } -> verifies with SasuSync (verified === true only), then returns a Supabase session.
 // A session is minted only for a brand-new number (signup) or the account's own number (reset). The temporary password used to
 // mint it is random, discarded and never returned. Supabase's native Phone provider is not used (synthetic-email identity).
-const { cfg } = require("../../_lib/sasusync/config");
-const { normalizeGhanaPhone, maskPhone } = require("../../_lib/sasusync/phone");
-const { verifyOtp } = require("../../_lib/sasusync/otp");
-const { ip, audit, rpc, supa } = require("../../_lib/sasusync/route");
-const id = require("../../_lib/sasusync/identity");
+const { cfg } = require("../sasusync/config");
+const { normalizeGhanaPhone, maskPhone } = require("../sasusync/phone");
+const { verifyOtp } = require("../sasusync/otp");
+const { ip, audit, rpc, supa } = require("../sasusync/route");
+const id = require("../sasusync/identity");
 
 const MSG = { wrong_code: "That code isn't right.", expired: "That code expired. Request a new one.", no_pending_code: "No code is waiting for this number. Request a new one.", already_verified: "That code was already used." };
 

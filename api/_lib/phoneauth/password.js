@@ -4,9 +4,9 @@
 //   * the caller's session is valid,
 //   * that same user verified a SasuSync code in the last 30 minutes, and
 //   * that verification has not already been used to set a password (one use only).
-const { cfg } = require("../../_lib/sasusync/config");
-const id = require("../../_lib/sasusync/identity");
-const { audit, rpc, supa } = require("../../_lib/sasusync/route");
+const { cfg } = require("../sasusync/config");
+const id = require("../sasusync/identity");
+const { audit, rpc, supa } = require("../sasusync/route");
 
 // 8+ characters (<= 72 bytes), a letter, a number, and a capital letter or a symbol: the same rules the page shows.
 const strong = (p) => typeof p === "string" && p.length >= 8 && Buffer.byteLength(p) <= 72 && /[A-Za-z]/.test(p) && /\d/.test(p) && (/[A-Z]/.test(p) || /[^A-Za-z0-9]/.test(p));

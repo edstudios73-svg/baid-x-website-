@@ -1,10 +1,10 @@
 // GET  /api/auth/phone/start            -> { enabled }   (lets the app know whether to use phone codes)
 // POST /api/auth/phone/start { phone, purpose: "signup"|"reset" } -> sends a code through SasuSync.
 // Behind SASUSYNC_PHONE_AUTH (default OFF). BAID X never sees or stores the code; only the provider's otp_id is kept.
-const { cfg } = require("../../_lib/sasusync/config");
-const { normalizeGhanaPhone, maskPhone } = require("../../_lib/sasusync/phone");
-const { generateOtp } = require("../../_lib/sasusync/otp");
-const { ip, audit, rpc, supa } = require("../../_lib/sasusync/route");
+const { cfg } = require("../sasusync/config");
+const { normalizeGhanaPhone, maskPhone } = require("../sasusync/phone");
+const { generateOtp } = require("../sasusync/otp");
+const { ip, audit, rpc, supa } = require("../sasusync/route");
 
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");

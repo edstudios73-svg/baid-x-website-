@@ -4,8 +4,8 @@ const crypto = require("node:crypto");
 const { Readable } = require("node:stream");
 const { install, reply, env, run } = require("./_mock");
 const { parseEvent } = require("../api/_lib/sasusync/webhook-events");
-const start = require("../api/auth/phone/start");
-const verify = require("../api/auth/phone/verify");
+const start = require("../api/_lib/phoneauth/start");
+const verify = require("../api/_lib/phoneauth/verify");
 const notify = require("../api/sms-notify");
 const admin = require("../api/sasusync-admin");
 const webhook = require("../api/webhooks/sasusync");
@@ -343,7 +343,7 @@ test("live test: no console output; audit holds masked number, no message, no ke
 });
 
 /* ---------- phone + password login (no Supabase phone provider) ---------- */
-const login = require("../api/auth/phone/login");
+const login = require("../api/_lib/phoneauth/login");
 test("login: OFF by default (503, no calls); invalid input 400; rate limited 429", async () => {
   env(); let calls = install([[() => true, reply(200, {})]]); assert.equal((await post(login, { phone: "0552148347", password: "x" })).status, 503); assert.equal(calls.length, 0);
   env(LIVE); install([rl(), [() => true, reply(200, {})]]); assert.equal((await post(login, { phone: "12", password: "x" })).status, 400); assert.equal((await post(login, { phone: "0552148347", password: "" })).status, 400);
@@ -483,7 +483,7 @@ test("sms_broadcast: no console output and no key/number/message in any response
 });
 
 /* ---------- set password after phone verification (server side) ---------- */
-const setpw = require("../api/auth/phone/password");
+const setpw = require("../api/_lib/phoneauth/password");
 const pwReq = (over = {}, headers = { authorization: "Bearer t" }) => ({ method: "POST", headers, body: { password: "Aadmin123.com", ...over } });
 const meRoute = [(u) => has(u, "/auth/v1/user"), reply(200, { id: "u-1" })];
 const unused = (rows = [{ otp_id: "77" }]) => [(u, o) => has(u, "sasusync_otp_requests?user_id=") && o.method === "GET", reply(200, rows)];
@@ -516,4 +516,14 @@ test("set password UI: phone accounts use the server route for sign-up AND reset
   const a = require("node:fs").readFileSync(require.resolve("../js/auth.js"), "utf8");
   assert.ok(/async function savePassword/.test(a) && a.includes("/api/auth/phone/password") && /if \(!phoneApi\) return sb\.auth\.updateUser\(\{ password \}\)/.test(a));
   assert.equal((a.match(/sb\.auth\.updateUser\(\{ password/g) || []).length, 1, "only the fallback inside savePassword");
+});
+
+test("phone-auth dispatcher: one function serves start/verify/login/password; unknown ops 404; inherited keys are not handlers", async () => {
+  const d = require("../api/auth/phone/[op]");
+  env(); install([[() => true, reply(200, {})]]);
+  assert.equal((await run(d, { method: "GET", query: { op: "start" } })).json.enabled, false);        // reaches start.js
+  assert.equal((await run(d, { method: "POST", query: { op: "verify" }, body: {} })).status, 503);     // phone auth is off -> verify.js answers
+  for (const op of ["nope", "constructor", "__proto__", "toString", undefined, ""]) assert.equal((await run(d, { method: "POST", query: { op }, body: {} })).status, 404, String(op));
+  const fs = require("node:fs"); const fns = []; (function walk(dir) { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = dir + "/" + e.name; if (e.isDirectory()) { if (!e.name.startsWith("_")) walk(p); } else if (p.endsWith(".js")) fns.push(p); } })(require("node:path").join(__dirname, "../api"));
+  assert.ok(fns.length <= 12, `Vercel Hobby allows at most 12 functions, found ${fns.length}: ${fns.join(", ")}`);
 });
