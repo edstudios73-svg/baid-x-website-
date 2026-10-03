@@ -237,3 +237,29 @@ test("sandbox test: no console output, and audit entries hold no full phone, mes
   const a = JSON.stringify(calls.filter((c) => has(c.url, "audit_logs")).map((c) => c.body));
   assert.ok(a.includes("sms.sandbox_test") && !a.includes("233552148347") && !a.includes("sandbox test message") && !a.includes("FAKE_KEY"));
 });
+
+/* ---------- read-only delivery lookup ---------- */
+const lookReq = (over = {}, headers = { authorization: "Bearer t" }) => ({ method: "POST", headers, body: { action: "sms_status", job_id: "sandbox_46f63165bc13", ...over } });
+const statusRoute = (body, st = 200) => [(u) => has(u, "/api/v1/status/"), reply(st, body)];
+test("lookup: staff gets provider message ids matched to webhook state and the notification log; read-only GETs only", async () => {
+  env({ SASUSYNC_MODE: "sandbox" });
+  const calls = install([staffOk, statusRoute({ success: true, status: "completed", delivery_status: "delivered", sandbox: true, messages: [{ message_id: "m-1", status: "delivered" }] }),
+    [(u) => has(u, "sasusync_message_state"), reply(200, [{ message_id: "m-1", status: "delivered" }])], [(u) => has(u, "notification_logs"), reply(200, [{ id: "log-1", status: "sent" }])]]);
+  const r = await run(admin, lookReq());
+  assert.equal(r.status, 200); assert.equal(r.json.delivery_status, "delivered"); assert.deepEqual(r.json.messages, [{ message_id: "m-1", provider_status: "delivered", webhook_state: "delivered" }]); assert.deepEqual(r.json.matched_log, { id: "log-1", status: "sent" });
+  assert.ok(calls.every((c) => c.method === "GET" || has(c.url, "admin_sms_overview"))); // no writes, no sends
+  assert.ok(!calls.some((c) => has(c.url, "/send") || has(c.url, "/otp/")));
+});
+test("lookup: unauthorized rejected; invalid job id rejected; no provider call in either case", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); let calls = install([]);
+  assert.equal((await run(admin, lookReq({}, {}))).status, 401);
+  calls = install([[(u) => has(u, "admin_sms_overview"), reply(403, {})]]); assert.equal((await run(admin, lookReq())).status, 403);
+  calls = install([staffOk]); assert.equal((await run(admin, lookReq({ job_id: "1/../../x" }))).status, 400); assert.equal((await run(admin, lookReq({ job_id: "a b" }))).status, 400);
+  assert.ok(!calls.some((c) => has(c.url, "sms.test")));
+});
+test("lookup: provider error handled safely (category only, no secrets); unknown job reports unknown", async () => {
+  env({ SASUSYNC_MODE: "sandbox" }); install([staffOk, statusRoute({ detail: "ss_FAKE_KEY_FOR_TESTS" }, 401)]);
+  const r = await run(admin, lookReq()); assert.equal(r.json.error_category, "AUTH"); assert.ok(!JSON.stringify(r.json).includes("FAKE_KEY"));
+  install([staffOk, statusRoute({ success: true, delivery_status: "unknown", messages: [] }), [(u) => has(u, "notification_logs"), reply(200, [])]]);
+  const u = await run(admin, lookReq()); assert.equal(u.json.delivery_status, "unknown"); assert.deepEqual(u.json.messages, []); assert.equal(u.json.matched_log, null);
+});
