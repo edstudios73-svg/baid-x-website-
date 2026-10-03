@@ -85,9 +85,9 @@
      Workspace
      ====================================================================== */
   const WS_TABS = {
-    company: [["overview", "Overview"], ["team", "Team"], ["tasks", "Tasks"], ["reports", "Reports"], ["finance", "Finance"], ["activity", "Activity"]],
-    pm: [["overview", "Overview"], ["team", "Team"], ["tasks", "Tasks"], ["reports", "Reports"], ["finance", "Finance"], ["messages", "Messages"]],
-    worker: [["overview", "Overview"], ["mytasks", "My Tasks"], ["updates", "Updates"], ["messages", "Messages"]],
+    company: [["overview", "Overview"], ["team", "Team"], ["tasks", "Tasks"], ["reports", "Reports"], ["finance", "Finance"], ["milestones", "Milestones"], ["activity", "Activity"]],
+    pm: [["overview", "Overview"], ["team", "Team"], ["tasks", "Tasks"], ["reports", "Reports"], ["finance", "Finance"], ["milestones", "Milestones"], ["messages", "Messages"]],
+    worker: [["overview", "Overview"], ["mytasks", "My Tasks"], ["milestones", "Milestones"], ["updates", "Updates"], ["messages", "Messages"]],
   };
 
   async function wsView(c, arg) {
@@ -102,7 +102,7 @@
     const tab = tabs.some(([k]) => k === arg) ? arg : "overview";
     const switcher = list.length > 1 ? `<select class="proj-pick" id="projPick">${list.map((x) => `<option value="${esc(x.id)}" ${x.id === pid ? "selected" : ""}>${esc(x.name)} · ${esc(x.public_code)}</option>`).join("")}</select>` : "";
     const ctx = { c, ov, role, pid };
-    const TAB = { overview: overviewTab, team: teamTab, tasks: tasksTab, mytasks: myTasksTab, updates: updatesTab, reports: reportsTab, finance: financeTab, activity: activityTab, messages: messagesTab };
+    const TAB = { overview: overviewTab, team: teamTab, tasks: tasksTab, mytasks: myTasksTab, updates: updatesTab, reports: reportsTab, finance: financeTab, milestones: (x) => window.MILESTONES.tab(x), activity: activityTab, messages: messagesTab };
     const content = await TAB[tab](ctx);
     return `<div class="d-head"><div><h1>${esc(ov.name)}</h1><p class="sub"><button class="code-chip" data-act="copy-code" data-code="${esc(ov.public_code)}" title="Copy Project ID">${esc(ov.public_code)}</button> ${pill(ov.status)} ${esc([ov.city_town, ov.region].filter(Boolean).join(", "))}</p></div></div>${switcher}`
       + `<div class="ws-tabs">${segs(tabs.map(([k, l]) => [k, l, `ws/${k}`]), tab)}</div>` + content;
