@@ -64,9 +64,11 @@
   const ssSet = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* private mode */ } };
   function runSplash() {
     const el = $("#splash");
+    // First visit this session: the full sequence. Any refresh after that: the same sequence, very fast and a little soft.
     const seen = ssGet("baidx_splash"), calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (seen) { el.classList.add("hide", "instant"); return; }
-    setTimeout(() => { el.classList.add("leave"); ssSet("baidx_splash", "1"); setTimeout(() => el.classList.add("hide"), 750); }, calm ? 900 : 3300);
+    if (seen) el.classList.add("quick");
+    const hold = calm ? 700 : seen ? 1050 : 3300, out = seen ? 360 : 750;
+    setTimeout(() => { el.classList.add("leave"); ssSet("baidx_splash", "1"); setTimeout(() => el.classList.add("hide"), out); }, hold);
   }
 
   /* ---------- Routing ---------- */
