@@ -1,0 +1,23 @@
+/* Role, region and trade pages */
+.crumbs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font: 600 11.5px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; color: #8a8a8a; margin-bottom: 22px; }
+.crumbs a { color: #bdbdbd; text-decoration: none; } .crumbs a:hover { color: #fff; } .crumbs i { font-style: normal; opacity: .4; } .crumbs [aria-current] { color: #fff; }
+.seo-hero { padding-bottom: 20px; } .seo-hero h1 { font-size: clamp(34px, 6vw, 62px); } .seo-hero h1 em { font-style: normal; }
+.seo-hero .meta-row { gap: 14px; align-items: center; }
+.ghost { color: #fff !important; font-weight: 700; font-size: 14px; padding: 10px 18px; border: 1px solid rgba(255,255,255,.28); border-radius: 99px; text-decoration: none !important; } .ghost:hover { background: rgba(255,255,255,.08); }
+.sh { font-size: clamp(22px, 3.2vw, 32px); letter-spacing: -.02em; margin: 0 0 14px; font-weight: 800; }
+.sub { color: #a3a3a3; margin: 6px 0 12px; } .sub a { color: #fff; }
+.wrap > section { padding: 26px 0; position: relative; z-index: 1; }
+.pillrow a, .pillrow span { padding: 9px 16px; border-radius: 99px; background: rgba(255,255,255,.05); border: 1px solid var(--line); font-weight: 600; font-size: 14px; color: #e6e6e6; text-decoration: none; } .pillrow a:hover { background: #fff; color: #000; }
+a.card.lk { text-decoration: none; display: block; color: inherit; } a.card.lk h3 { margin-top: 0; color: #fff; } a.card.lk:hover h3 { text-decoration: underline; text-underline-offset: 4px; }
+.card .ic { width: 40px; height: 40px; border-radius: 13px; }
+.f-in nav { gap: 14px 22px; }
+/* Guest home: readable intro under the directory (also what search engines read first) */
+.intro { max-width: 1120px; margin: 46px auto 0; padding: 34px 14px 10px; border-top: 1px solid rgba(255,255,255,.08); }
+.intro h1 { font-size: clamp(26px, 5vw, 40px); letter-spacing: -.03em; line-height: 1.1; margin: 0 0 12px; font-weight: 800; max-width: 820px; }
+.intro p { color: #a9a9a9; max-width: 760px; line-height: 1.65; margin: 0 0 14px; }
+.intro .i-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 22px 0 8px; }
+.intro .i-card { padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); text-decoration: none; color: inherit; display: block; } .intro .i-card:hover { border-color: rgba(255,255,255,.5); }
+.intro .i-card b { display: block; font-size: 15px; margin-bottom: 4px; color: #fff; } .intro .i-card span { font-size: 13px; color: #9a9a9a; line-height: 1.45; }
+.intro .i-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; } .intro .i-links a { font-size: 12.5px; color: #cfcfcf; padding: 7px 13px; border-radius: 99px; border: 1px solid rgba(255,255,255,.12); text-decoration: none; } .intro .i-links a:hover { background: #fff; color: #000; }
+.intro small { display: block; margin-top: 26px; color: #6f6f6f; font: 600 10.5px/1.6 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .14em; text-transform: uppercase; }
+body.is-member .intro { display: none; }

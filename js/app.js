@@ -93,6 +93,8 @@
     } catch { /* private mode */ }
     if (!allowed(name)) name = "home";
     state.route = { name, arg };
+    const T = { home: "Ghana's work network", discover: "Discover verified professionals", jobs: "Job marketplace", work: "Work", projects: "Projects", ws: "Project workspace", chats: "Chats", chat: "Chat", profile: "Profile", notifications: "Notifications", wallet: "Wallet", invites: "Invitations", approvals: "Approvals", orgs: "Organizations", billing: "Plans & billing", catalog: "Catalog", inquiries: "Inquiries", hires: "Hires" };
+    document.title = name === "home" ? "BAID X · Ghana's work network" : `${T[name] || "BAID X"} · BAID X`;
     const member = !!R();
     let screen;
     if (!member) screen = name === "home" ? "directory" : name;
@@ -201,6 +203,7 @@
   /* ---------- Member shell: account screen, chats ---------- */
   function paintMember() {
     const me = state.me, member = !!me?.role;
+    document.body.classList.toggle("is-member", member);
     $("#joinBtn").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member;
     if (member) { $("#dirBell").innerHTML = bellInner(); $$("[data-appbar]").forEach((el) => { el.innerHTML = appbar(); }); }
     $("#chatsGuest").hidden = member; $("#chatsMember").hidden = !member;

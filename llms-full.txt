@@ -1,0 +1,80 @@
+# BAID X: full reference
+
+BAID X is Ghana's work network, built and powered by Baiden Creatives. Canonical site: https://baid-x-website.vercel.app/
+
+## What BAID X does
+BAID X lets people and businesses in Ghana find verified professionals, hire them, run construction and technical projects, communicate securely, and record payments, in one mobile-first web app.
+
+## Roles
+### Workers
+Build a verified profile, get found by companies and clients, apply for jobs, join real projects and get paid to your mobile money wallet.
+What you get: Verified badge; Job marketplace; Project teams; Wallet & payouts; Career growth; Secure messaging.
+Steps: Create your account -> Complete your profile -> Get verified -> Apply and join projects.
+Page: https://baid-x-website.vercel.app/for/workers/
+
+### Companies
+BAID X gives construction and service companies one place to find verified workers and project managers, assign tasks, review reports and approve every payment.
+What you get: Verified workforce; Project control; Approval rules; Reports & tasks; Payments & records; Organizations.
+Steps: Create your company account -> Create a project -> Invite a project manager and workers -> Approve and pay.
+Page: https://baid-x-website.vercel.app/for/companies/
+
+### Project managers
+Get linked to a company by invitation or join code, build your crew, assign tasks, file reports and request materials, all from your phone.
+What you get: Company links; Build your crew; Tasks; Reports; Requests; Reputation.
+Steps: Create your account -> Get verified -> Link to a company -> Deliver the project.
+Page: https://baid-x-website.vercel.app/for/project-managers/
+
+### Suppliers
+List building materials, tools and equipment, answer inquiries in chat and reach the companies and project managers who buy for live projects.
+What you get: Catalog; Inquiries; Service areas; Verified business; Cover & logo; Wallet.
+Steps: Create your business account -> Build your catalog -> Get verified -> Win orders.
+Page: https://baid-x-website.vercel.app/for/suppliers/
+
+### Individual clients
+Whether you need an electrician, plumber, painter or handyman, find verified professionals near you and agree the job in one secure chat.
+What you get: Post a job; Find a trade; Message first; Hires record; Verified people; Clear and private.
+Steps: Create your account -> Post a job or browse -> Agree details -> Hire and record.
+Page: https://baid-x-website.vercel.app/for/clients/
+
+## Linking a company and a project manager
+1. Invitation: the company creates a project, then invites a verified project manager from the project's Team tab. The project manager accepts, declines or asks a question.
+2. Join code: the company creates a one-time code (valid 30 days) under Profile, Team and join code. The project manager enters it under Profile, Link a company. The company approves the link.
+3. Organization: the company invites staff into an organization with role-based access.
+
+## Adding workers to a project
+Company or project manager invites a verified worker from the project's Team tab with trade, rate and duration. The worker accepts. Per project, the company chooses Automatic (in-plan workers join on accept) or Company approval (every worker waits). Anything outside the plan, and all money (expenses, materials, equipment, payments), always needs company approval.
+
+## Trust and safety
+Verification uses a Ghana Card and photos for individuals, and registration, TIN and documents for businesses, reviewed by BAID X staff. The Verified badge is never sold. Messages and files are end-to-end encrypted (device keys, optional passphrase backup). Presence is visible only to people you chat with.
+
+## Trades (50)
+- Structural & concrete: Mason / Block Layer, Steel Bender / Iron Bender, Concrete Worker / Pourer, Carpenter (Structural / Formwork), Scaffolder, Excavator Operator, Bulldozer / Grader Operator, Site Foreman / Supervisor, Borehole Driller, Land Surveyor Assistant
+- Electrical & mechanical: Electrician, AC / HVAC Technician, Generator Technician, Solar Panel Installer, Elevator / Lift Technician, CCTV / Security Systems Installer, Network / Structured Cabling Technician, Fire Safety Systems Installer, Satellite Dish / TV Aerial Installer, Swimming Pool Technician
+- Plumbing & water: Plumber, Borehole Pump Mechanic, Septic Tank / Soakaway Constructor, Waterproofing Specialist, Gutter Installer
+- Finishing & interior: Painter, Tiler, POP / Ceiling Installer, Screeder, Terrazzo / Granite Fixer, Interior Decorator, Wallpaper Installer, Cabinetmaker / Kitchen Cabinet Installer, Wardrobe / Closet Installer, Wood Polisher / Varnisher, Upholsterer, Curtain / Blinds Installer, Glass Tinting Technician, Aluminium & Glazing Installer, Locksmith
+- Exterior & compound: Roofer, Welder / Metal Fabricator, Fence Wall Builder, Gate Fabricator / Installer, Interlock / Paving Block Layer, Landscaper / Gardener, Fumigation / Pest Control Technician
+- Support & general: Furniture Assembler, Post-Construction Cleaner, General Handyman (Repairs & Maintenance)
+
+## Regions
+- Greater Accra Region (capital Accra); towns: Accra, Tema, Madina, Ashaiman, Dodowa. https://baid-x-website.vercel.app/ghana/greater-accra/
+- Ashanti Region (capital Kumasi); towns: Kumasi, Obuasi, Ejisu, Konongo, Mampong. https://baid-x-website.vercel.app/ghana/ashanti/
+- Central Region (capital Cape Coast); towns: Cape Coast, Kasoa, Winneba, Mankessim, Assin Fosu. https://baid-x-website.vercel.app/ghana/central/
+- Eastern Region (capital Koforidua); towns: Koforidua, Nkawkaw, Suhum, Akim Oda, Nsawam. https://baid-x-website.vercel.app/ghana/eastern/
+- Western Region (capital Sekondi-Takoradi); towns: Sekondi-Takoradi, Tarkwa, Axim, Prestea, Half Assini. https://baid-x-website.vercel.app/ghana/western/
+- Western North Region (capital Sefwi Wiawso); towns: Sefwi Wiawso, Bibiani, Enchi, Juaboso, Essam. https://baid-x-website.vercel.app/ghana/western-north/
+- Volta Region (capital Ho); towns: Ho, Keta, Aflao, Hohoe, Sogakope. https://baid-x-website.vercel.app/ghana/volta/
+- Oti Region (capital Dambai); towns: Dambai, Kete Krachi, Nkwanta, Jasikan, Kadjebi. https://baid-x-website.vercel.app/ghana/oti/
+- Northern Region (capital Tamale); towns: Tamale, Yendi, Savelugu, Bimbilla, Gushegu. https://baid-x-website.vercel.app/ghana/northern/
+- Savannah Region (capital Damongo); towns: Damongo, Bole, Salaga, Buipe, Sawla. https://baid-x-website.vercel.app/ghana/savannah/
+- North East Region (capital Nalerigu); towns: Nalerigu, Walewale, Gambaga, Chereponi, Bunkpurugu. https://baid-x-website.vercel.app/ghana/north-east/
+- Upper East Region (capital Bolgatanga); towns: Bolgatanga, Bawku, Navrongo, Zebilla, Sandema. https://baid-x-website.vercel.app/ghana/upper-east/
+- Upper West Region (capital Wa); towns: Wa, Tumu, Lawra, Jirapa, Nandom. https://baid-x-website.vercel.app/ghana/upper-west/
+- Bono Region (capital Sunyani); towns: Sunyani, Berekum, Dormaa Ahenkro, Wenchi, Sampa. https://baid-x-website.vercel.app/ghana/bono/
+- Bono East Region (capital Techiman); towns: Techiman, Kintampo, Atebubu, Nkoranza, Yeji. https://baid-x-website.vercel.app/ghana/bono-east/
+- Ahafo Region (capital Goaso); towns: Goaso, Bechem, Kenyasi, Duayaw Nkwanta, Hwidiem. https://baid-x-website.vercel.app/ghana/ahafo/
+
+## Pricing and money
+Currency is Ghana cedis (GH₵). Paid plans unlock capacity and tools and never change verification. Payments are processed by Paystack. Workers withdraw to mobile money.
+
+## Contact and legal
+Terms: https://baid-x-website.vercel.app/terms.html . Privacy: https://baid-x-website.vercel.app/privacy.html (Ghana Data Protection Act, 2012, Act 843).

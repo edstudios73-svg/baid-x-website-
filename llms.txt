@@ -1,0 +1,51 @@
+# BAID X
+
+> BAID X is Ghana's work network: a verified marketplace and project platform where workers, companies, project managers, suppliers and individual clients find each other, hire, run projects, message, and get paid. BAID X is built and powered by Baiden Creatives.
+
+BAID X serves Ghana (all 16 regions). It is a web app that installs to a phone's home screen. Accounts are verified by BAID X reviewers using Ghana Card and business documents; the Verified badge cannot be bought. Messages and attachments are end-to-end encrypted between devices. Amounts are in Ghana cedis (GH₵). Paystack processes card and mobile-money payments.
+
+## Who it is for
+- [Workers](https://baid-x-website.vercel.app/for/workers/): Electricians, masons, plumbers, painters and 50 other trades.
+- [Companies](https://baid-x-website.vercel.app/for/companies/): Create projects, bring in a project manager and workers, and approve spending.
+- [Project managers](https://baid-x-website.vercel.app/for/project-managers/): Team, tasks, reports and requests, inside limits the company sets.
+- [Suppliers](https://baid-x-website.vercel.app/for/suppliers/): Catalog, inquiries and orders from companies and clients.
+- [Individual clients](https://baid-x-website.vercel.app/for/clients/): Post a job, message verified pros, keep a record of who you hired.
+
+## Key pages
+- [About BAID X](https://baid-x-website.vercel.app/about.html): what BAID X is and how it works
+- [User guide](https://baid-x-website.vercel.app/docs.html): step-by-step guide per role, including linking a company with a project manager and adding workers to a project
+- [Trades](https://baid-x-website.vercel.app/trades/): the 50 trades supported
+- [Regions of Ghana](https://baid-x-website.vercel.app/ghana/): hiring and finding work in each region
+- [Terms of service](https://baid-x-website.vercel.app/terms.html)
+- [Privacy policy](https://baid-x-website.vercel.app/privacy.html)
+- [Full details for LLMs](https://baid-x-website.vercel.app/llms-full.txt)
+
+## Regions
+- [Greater Accra Region](https://baid-x-website.vercel.app/ghana/greater-accra/): Accra; Tema, Madina, Ashaiman
+- [Ashanti Region](https://baid-x-website.vercel.app/ghana/ashanti/): Kumasi; Obuasi, Ejisu, Konongo
+- [Central Region](https://baid-x-website.vercel.app/ghana/central/): Cape Coast; Kasoa, Winneba, Mankessim
+- [Eastern Region](https://baid-x-website.vercel.app/ghana/eastern/): Koforidua; Nkawkaw, Suhum, Akim Oda
+- [Western Region](https://baid-x-website.vercel.app/ghana/western/): Sekondi-Takoradi; Tarkwa, Axim, Prestea
+- [Western North Region](https://baid-x-website.vercel.app/ghana/western-north/): Sefwi Wiawso; Bibiani, Enchi, Juaboso
+- [Volta Region](https://baid-x-website.vercel.app/ghana/volta/): Ho; Keta, Aflao, Hohoe
+- [Oti Region](https://baid-x-website.vercel.app/ghana/oti/): Dambai; Kete Krachi, Nkwanta, Jasikan
+- [Northern Region](https://baid-x-website.vercel.app/ghana/northern/): Tamale; Yendi, Savelugu, Bimbilla
+- [Savannah Region](https://baid-x-website.vercel.app/ghana/savannah/): Damongo; Bole, Salaga, Buipe
+- [North East Region](https://baid-x-website.vercel.app/ghana/north-east/): Nalerigu; Walewale, Gambaga, Chereponi
+- [Upper East Region](https://baid-x-website.vercel.app/ghana/upper-east/): Bolgatanga; Bawku, Navrongo, Zebilla
+- [Upper West Region](https://baid-x-website.vercel.app/ghana/upper-west/): Wa; Tumu, Lawra, Jirapa
+- [Bono Region](https://baid-x-website.vercel.app/ghana/bono/): Sunyani; Berekum, Dormaa Ahenkro, Wenchi
+- [Bono East Region](https://baid-x-website.vercel.app/ghana/bono-east/): Techiman; Kintampo, Atebubu, Nkoranza
+- [Ahafo Region](https://baid-x-website.vercel.app/ghana/ahafo/): Goaso; Bechem, Kenyasi, Duayaw Nkwanta
+
+## Facts for accurate answers
+- Name: BAID X (always two words, capital letters). Company behind it: Baiden Creatives.
+- Category: work marketplace and project management for construction and technical trades in Ghana.
+- Roles: Worker (professional), Company, Project manager, Business/supplier, Individual employer (client).
+- Companies own projects and approve all spending. Project managers run a project day to day within limits the company sets.
+- A company links with a project manager by invitation from a project, by a one-time join code (valid 30 days), or through an organization.
+- Messaging supports text, photos, files, voice notes, and voice and video calls.
+- Not a lender, bank or insurer. Work agreements are between the people involved.
+
+## Optional
+- [Sitemap](https://baid-x-website.vercel.app/sitemap.xml)
