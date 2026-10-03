@@ -277,3 +277,23 @@ body { background-image: radial-gradient(800px 380px at 80% -140px, rgba(255,255
 .splash.quick { --k: .24; }
 .splash.quick.leave { animation: spOutQuick .3s cubic-bezier(.7,0,.2,1) forwards; }
 @keyframes spOutQuick { to { opacity: 0; transform: scale(1.05); } }
+
+/* ====== Guest profile: glassmorphism ====== */
+#profileGuest { position: relative; isolation: isolate; }
+.pg-art { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.pg-art i { position: absolute; display: block; }
+.pg-art .o1 { width: 210px; height: 210px; border-radius: 50%; right: -70px; top: 300px; background: linear-gradient(135deg, #fff, #6d6d6d); opacity: .6; }
+.pg-art .o2 { width: 170px; height: 170px; border-radius: 52px; left: -60px; top: 400px; background: #fff; opacity: .55; transform: rotate(18deg); }
+.pg-art .ring { width: 250px; height: 250px; border-radius: 50%; left: 50%; top: 92px; margin-left: -125px; border: 24px solid rgba(255,255,255,.28); }
+#profileGuest .page-title.center { letter-spacing: .02em; }
+.guest-avatar { position: relative; width: 132px; height: 132px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.07)); border: 1.5px solid rgba(255,255,255,.5); box-shadow: 0 24px 60px rgba(0,0,0,.55), inset 0 1.5px 0 rgba(255,255,255,.7), 0 0 0 10px rgba(255,255,255,.06); backdrop-filter: blur(22px) saturate(1.5); }
+.guest-avatar img { width: 84px; height: 84px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.guest-avatar .ga-ring { position: absolute; inset: -16px; border-radius: 50%; border: 1px dashed rgba(255,255,255,.4); animation: gaSpin 28s linear infinite; }
+@keyframes gaSpin { to { transform: rotate(360deg); } }
+#profileGuest .opt { background: linear-gradient(135deg, rgba(14,14,14,.6), rgba(14,14,14,.32) 55%, rgba(255,255,255,.14)); border: 1.5px solid rgba(255,255,255,.3); box-shadow: 0 18px 50px rgba(0,0,0,.45), inset 0 1.5px 0 rgba(255,255,255,.5); backdrop-filter: blur(28px) saturate(1.6); border-radius: 22px; padding: 16px; }
+#profileGuest .opt:hover, #profileGuest .opt:active { border-color: rgba(255,255,255,.7); transform: translateY(-1px); }
+#profileGuest .opt .ic { background: #fff; color: #000; border-radius: 14px; width: 46px; height: 46px; }
+#profileGuest .opt b { font-size: 15.5px; } #profileGuest .opt small { color: #cfcfcf; }
+#profileGuest .legal { color: #cfcfcf; text-shadow: 0 1px 8px rgba(0,0,0,.8); } #profileGuest .legal a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .guest-avatar .ga-ring { animation: none; } }
+#profileGuest .opt .chev { color: #fff; opacity: .85; }
