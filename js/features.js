@@ -151,6 +151,98 @@
     await save(c, patch);
   }
 
+
+  /* ======================================================================
+     Checklist steps: every checklist row opens its own screen with only its own questions.
+     ====================================================================== */
+  const DOCB = { ghana_card_front_url: "ghana-cards", ghana_card_back_url: "ghana-cards", "ps.ghana_card_front": "ghana-cards", "ps.ghana_card_back": "ghana-cards", contact_ghana_card_url: "ghana-cards", business_registration_doc_url: "business-docs" };
+  const EXTRA = { email: ["email", "Email address", "text"], contact_email: ["contact_email", "Email address", "text"], ghana_card_number: ["ghana_card_number", "Ghana Card number", "text", { ph: "GHA-000000000-0" }], "ps.ghana_card_number": ["ps.ghana_card_number", "Ghana Card number", "text", { ph: "GHA-000000000-0" }],
+    rgd_registration_number: ["rgd_registration_number", "Registrar General (RGD) number", "text"], tin_number: ["tin_number", "Tax Identification Number (TIN)", "text"], contact_ghana_card_number: ["contact_ghana_card_number", "Contact person's Ghana Card number", "text"],
+    contact_person_name: ["contact_person_name", "Contact person", "text"], contact_person_title: ["contact_person_title", "Contact title", "text"], years_managing_projects: ["years_managing_projects", "Years managing projects", "number"], projects_managed_count: ["projects_managed_count", "Projects managed", "number"],
+    "ps.need_category": ["ps.need_category", "Trade you hire for most", "select", { opts: [["", "Choose"], ...["Mason", "Electrician", "Plumber", "Carpenter", "Painter", "Tiler", "Roofer", "AC / HVAC Technician", "Welder", "General Handyman"].map((n) => [n, n])] }] };
+  const FILES = { ghana_card_front_url: "Ghana Card, front", ghana_card_back_url: "Ghana Card, back", "ps.ghana_card_front": "Ghana Card, front", "ps.ghana_card_back": "Ghana Card, back", contact_ghana_card_url: "Contact person's Ghana Card", business_registration_doc_url: "Business registration document" };
+  const CARD = (c) => (c.role === "individual-employer" ? ["ps.ghana_card_number", "ps.ghana_card_front", "ps.ghana_card_back"] : ["ghana_card_number", "ghana_card_front_url", "ghana_card_back_url"]);
+  // checklist title -> { cols: [...], photo?, phone?, go?, blurb }
+  const STEPS = (c) => ({
+    "Phone number": { phone: true },
+    "Email": { cols: [c.role === "company" || c.role === "business" ? "contact_email" : "email"], blurb: "We use this for account notices and receipts." },
+    "Basic profile": { photo: true, cols: [ROLES[c.role].nameKey], blurb: c.role === "company" || c.role === "business" ? "Your name and logo are what people see first." : "Your name and photo are what people see first." },
+    "Trade category": { cols: ["primary_job_category_id", "has_own_tools"], blurb: "Pick the trade clients should find you under." },
+    "Specialization": { cols: ["specialization", "specialization_tags"] },
+    "Industry": { cols: ["industry_sector", "company_size"] },
+    "Supply category": { cols: ["specialty", "entity_type"] },
+    "What you hire for": { cols: ["ps.need_category"] },
+    "About you": { cols: ["short_bio"], blurb: "One or two lines in your own words." },
+    "About your company": { cols: ["company_overview"] },
+    "About your business": { cols: ["short_bio"] },
+    "Portfolio": { go: "portfolio", goLabel: "Open portfolio", blurb: "Add photos of finished work. They are public on your profile." },
+    "Past projects": { go: "portfolio", goLabel: "Open past projects", blurb: "Add projects you have delivered." },
+    "Certification": { go: "certs", goLabel: "Open certifications", blurb: "Upload a project management certificate if you have one." },
+    "Location": { cols: c.role === "worker" ? ["region", "city_town", "specific_area", "willing_to_travel_km"] : c.role === "company" || c.role === "business" ? ["region", "city_town", "physical_address"] : ["region", "city_town"], blurb: "Where clients should look for you." },
+    "Years of experience": { cols: ["years_of_experience"] },
+    "Experience": { cols: ["years_managing_projects", "projects_managed_count"] },
+    "Daily rate": { cols: ["daily_rate_ghs", "availability_type"], blurb: "What you charge per day. You can change it any time." },
+    "Ghana Card": { cols: [CARD(c)[0]], files: [CARD(c)[1], CARD(c)[2]], blurb: "Private. Only you and BAID X reviewers can open it." },
+    "Contact person": { cols: ["contact_person_name", "contact_person_title"] },
+    "Contact Ghana Card": { cols: ["contact_ghana_card_number"], files: ["contact_ghana_card_url"], blurb: "Private. Only you and BAID X reviewers can open it." },
+    "Registration documents": { cols: ["rgd_registration_number", "tin_number"], files: ["business_registration_doc_url"], blurb: "Enter your registration number or upload the certificate." },
+    "Payout details": { cols: ["payout_method", "payout_account", "payout_account_name"], blurb: "Where you get paid. Withdrawals always need your password." },
+  });
+  const defOf = (role, col) => EXTRA[col] || (FIELDS[role] || []).find((f) => f[0] === col);
+  const stepVal = (p, col) => (col.startsWith("ps.") ? (p.profile_sections || {})[col.slice(3)] : p[col]);
+  const maskPhone = (v) => { const d = String(v || "").replace(/[^\d+]/g, ""); return d.length > 6 ? `${d.slice(0, d.startsWith("+") ? 6 : 3)} ••• ${d.slice(-4)}` : d; };
+
+  async function stepView(c, arg) {
+    const { head, empty } = U(), list = ROLES[c.role].checklist, idx = Math.max(0, Math.min(list.length - 1, parseInt(arg, 10) || 0)), [title, desc, test] = list[idx];
+    const spec = STEPS(c)[title] || { go: "edit-profile", goLabel: "Open", blurb: desc }, p = c.profile, done = !!test(p);
+    const bar = `<div class="mk-step"><span>Step ${idx + 1} of ${list.length}</span><i style="--w:${Math.round(((idx + 1) / list.length) * 100)}%"></i></div>`;
+    const top = head(title, `<button class="btn-dark sm" data-go="checklist">Checklist</button>`) + bar + (spec.blurb || desc ? `<p class="sub2">${esc(spec.blurb || desc)}</p>` : "");
+    if (spec.phone) return top + `<div class="fs"><h3>Your number</h3><div class="mk-phone"><b>${esc(maskPhone(p[ROLES[c.role].phoneKey]) || "Not set")}</b>${done ? `<span class="pill ok">Verified</span>` : ""}</div><p class="cap2">This number signs you in and receives your one-time codes. It was confirmed when you created your account.</p></div><button class="btn-dark" style="width:100%" data-fx="change-phone">Change number</button><button class="mk-skip" data-go="checklist">Back to checklist</button>`;
+    if (spec.go) return top + `<button class="btn-light" style="width:100%" data-go="${spec.go}">${esc(spec.goLabel || "Open")}</button><button class="mk-skip" data-go="checklist">Back to checklist</button>`;
+    const [pcol, , plabel] = PHOTO[c.role], cats = JOB_CATS.map((j) => [j.id, j.name]);
+    const field = (col) => {
+      const d = defOf(c.role, col); if (!d) return "";
+      const [, label, kind, x = {}] = d, v = stepVal(p, col);
+      if (kind === "text") return fld(label, inp(col, { val: v, ph: x.ph }));
+      if (kind === "area") return fld(label, area(col, { val: v, ph: x.ph, max: x.max }));
+      if (kind === "number") return fld(label, inp(col, { type: "number", val: v, min: 0, step: "any" }));
+      if (kind === "select") return fld(label, sel(col, x.opts, v));
+      if (kind === "jobcat") return fld(label, sel(col, [["", "Choose a trade"], ...cats], v));
+      if (kind === "list") return fld(label, inp(col, { val: (v || []).join(", ") }));
+      if (kind === "bool") return chk(col, label, !!v);
+      return "";
+    };
+    const photo = spec.photo ? `<div class="fs"><h3>${esc(plabel)}</h3><div class="photo-row"><span class="av lg" ${p[pcol] ? `style="background-image:url('${esc(p[pcol])}')"` : ""}>${p[pcol] ? "" : esc(initials(p[ROLES[c.role].nameKey]))}</span><label class="btn-dark sm filebtn">Choose photo<input type="file" name="photo" accept="image/*" hidden /></label></div></div>` : "";
+    const files = (spec.files || []).map((col) => `<div class="doc"><span class="tx"><b>${esc(FILES[col])}</b><small>${stepVal(p, col) ? "Uploaded. Choose a file to replace it." : "Required"}</small></span>${stepVal(p, col) ? `<span class="pill ok">Uploaded</span>` : ""}<label class="btn-dark sm filebtn">${stepVal(p, col) ? "Replace" : "Upload"}<input type="file" name="file:${esc(col)}" accept="image/*,application/pdf" hidden /></label></div>`).join("");
+    return top + `<form class="pform" data-fx-form="step" data-idx="${idx}" autocomplete="off">${photo}<div class="fs"><h3>${esc(title)}</h3>${(spec.cols || []).map(field).join("")}${files}</div><button class="btn-light" type="submit" style="width:100%">Save and continue</button><button class="mk-skip" type="button" data-go="checklist">I'll do this later</button></form>`;
+  }
+
+  async function submitStep(c, form) {
+    const list = ROLES[c.role].checklist, idx = +form.dataset.idx, spec = STEPS(c)[list[idx][0]] || {}, d = new FormData(form), patch = {}, ps = { ...(c.profile.profile_sections || {}) };
+    let usePs = false;
+    for (const col of spec.cols || []) {
+      const def = defOf(c.role, col); if (!def) continue; const kind = def[2];
+      let val;
+      if (kind === "bool") val = form.querySelector(`[name="${col}"]`).checked;
+      else { const raw = String(d.get(col) ?? "").trim(); val = kind === "number" ? (raw === "" ? null : Number(raw)) : kind === "list" ? (raw ? raw.split(",").map((s) => s.trim()).filter(Boolean) : []) : raw === "" ? null : raw; }
+      if (col.startsWith("ps.")) { ps[col.slice(3)] = val; usePs = true; } else patch[col] = val;
+    }
+    for (const req of ["full_name", "company_name", "business_name"]) if (req in patch && !patch[req]) throw new Error("Name can't be empty.");
+    const photo = form.querySelector('[name="photo"]')?.files[0];
+    if (photo) { const [col, bucket] = PHOTO[c.role]; patch[col] = publicUrl(c, bucket, await upload(c, bucket, photo, "photo")); }
+    for (const col of spec.files || []) {
+      const file = form.querySelector(`[name="file:${col}"]`).files[0]; if (!file) continue;
+      const path = await upload(c, DOCB[col], file, col.replace(/\W/g, "")); if (col.startsWith("ps.")) { ps[col.slice(3)] = path; usePs = true; } else patch[col] = path;
+    }
+    if (usePs) patch.profile_sections = ps;
+    if (!Object.keys(patch).length) throw new Error("Fill in this step first.");
+    await save(c, patch);
+    await refreshMe();
+    const me = window.APP.state.me, next = ROLES[c.role].checklist.findIndex(([, , t], i) => i > idx && !t(me.profile || {}));
+    c.toast("Saved");
+    c.go(next >= 0 ? `step/${next}` : "checklist");
+  }
+
   /* ======================================================================
      Portfolio (photos for workers and businesses, past projects for project managers)
      ====================================================================== */
@@ -287,6 +379,7 @@
     busyBtn(btn, true);
     try {
       if (k === "edit-profile") { await submitEditProfile(c, form); c.toast("Profile saved"); await refreshMe(); c.go("profile"); }
+      else if (k === "step") { await submitStep(c, form); }
       else if (k === "verification") { await submitVerification(c, form); c.toast("Submitted for review"); await refreshMe(); }
       else if (k === "add-past") { await save(c, { past_projects_json: [...(c.profile.past_projects_json || []), { name: d.name, client: d.client, year: d.year, description: d.description }] }); closeSheet(); await refreshMe(); }
       else if (k === "add-cert") { const file = form.querySelector('[name="doc"]').files[0]; const path = await upload(c, "trade-licenses", file, "cert"); const { error } = await c.sb.from("worker_certifications").insert({ worker_id: c.uid, cert_name: d.name, issuing_body: d.issuer || null, document_url: path }); if (error) throw error; closeSheet(); c.toast("Certification added"); window.APP.route(); }
@@ -301,6 +394,7 @@
   window.addEventListener("hashchange", closeSheet);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheet(); });
 
+  window.DASH.register("step", stepView);
   window.DASH.register("edit-profile", editProfileView);
   window.DASH.register("verification", verificationView);
   window.DASH.register("portfolio", portfolioView);

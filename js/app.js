@@ -94,7 +94,7 @@
     if (!allowed(name)) name = "home";
     state.route = { name, arg };
     document.body.classList.toggle("g-on", !!R() && ["chats", "chat", "notifications"].includes(name));
-    const T = { home: "Ghana's work network", discover: "Discover verified professionals", jobs: "Job marketplace", work: "Work", projects: "Projects", ws: "Project workspace", chats: "Chats", chat: "Chat", profile: "Profile", notifications: "Notifications", wallet: "Wallet", invites: "Invitations", approvals: "Approvals", orgs: "Organizations", billing: "Plans & billing", catalog: "Catalog", inquiries: "Inquiries", hires: "Hires", applicants: "Applicants", engagement: "Engagement" };
+    const T = { home: "Ghana's work network", discover: "Discover verified professionals", jobs: "Job marketplace", work: "Work", projects: "Projects", ws: "Project workspace", chats: "Chats", chat: "Chat", profile: "Profile", notifications: "Notifications", wallet: "Wallet", invites: "Invitations", approvals: "Approvals", orgs: "Organizations", billing: "Plans & billing", catalog: "Catalog", inquiries: "Inquiries", hires: "Hires", applicants: "Applicants", step: "Complete your profile", engagement: "Engagement" };
     document.title = name === "home" ? "BAID X · Ghana's work network" : `${T[name] || "BAID X"} · BAID X`;
     const member = !!R();
     let screen;
@@ -250,7 +250,7 @@
     const cl = checklistState(me.role, me.profile), pct = Math.round((cl.done / cl.total) * 100);
     $("#ckStatus").textContent = statusLabel(me.profile?.verification_status);
     $("#ckDone").textContent = `${cl.done} of ${cl.total} completed`; $("#ckPct").textContent = `${pct}%`; $("#ckBar").style.width = `${pct}%`;
-    $("#ckList").innerHTML = cl.items.map((i) => `<button class="ck-item" data-go="${/card|document|licen|registr|certif|tin|verif|identity|insurance|id\b/i.test(i.title) ? "verification" : "edit-profile"}"><span class="ic ${i.done ? "ok" : "warn"}">${i.done ? CHECK : HOURGLASS}</span>
+    $("#ckList").innerHTML = cl.items.map((i, n) => `<button class="ck-item" data-go="step/${n}"><span class="ic ${i.done ? "ok" : "warn"}">${i.done ? CHECK : HOURGLASS}</span>
       <span class="tx"><b>${esc(i.title)}</b><small>${esc(i.desc)}</small></span><span class="st ${i.done ? "ok" : "warn"}">${i.done ? "Done" : "Pending"}</span>
       <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>`).join("");
   }
