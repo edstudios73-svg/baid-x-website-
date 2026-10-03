@@ -152,7 +152,7 @@
       const chips = [["", "All Users"], ["worker", "Workers"], ["company", "Companies"], ["business", "Businesses"], ["project-manager", "Project Managers"], ["individual-employer", "Clients"]];
       return `<div class="chips">${chips.map(([k, l]) => `<button class="${k === S.role ? "on" : ""}" data-role="${k}">${l}</button>`).join("")}</div>
         <form class="row2" id="uq" style="margin-bottom:14px"><input class="in" style="flex:1;min-width:200px" id="uqi" placeholder="Search name, BAID ID, email, phone…" value="${esc(S.q)}" /><button class="btn-or" type="submit">Search</button></form>
-        ${table(["User", "Role", "Verification", "Plan", "Account", "Actions"], list.map((u, i) => `<tr><td>${avatar(u.name, u.photo)}<b>${esc(u.name)}</b><div class="mono">${esc(u.baid || "")}${u.phone ? " · " + esc(u.phone) : ""}</div>${u.email ? `<div class="mono">${esc(u.email)}</div>` : ""}</td><td>${esc(pretty(u.role))}</td><td>${stPill(u.verification || "unverified")}</td><td><span class="pill">${esc(pretty(u.plan))}</span></td><td>${stPill(u.account_status || "active")}</td><td><button class="btn gh" data-prof="${i}">Profile</button>${(u.account_status || "active") === "active" ? `<button class="btn gh w" data-acct="suspended" data-i="${i}">Suspend</button>` : `<button class="btn gh ok" data-acct="active" data-i="${i}">Reactivate</button>`}${u.account_status !== "disabled" ? `<button class="btn gh b" data-acct="disabled" data-i="${i}">Ban</button>` : ""}<button class="btn gh" data-msg="${esc(u.id)}">Message</button></td></tr>`), "No users match.")}`;
+        ${table(["User", "Role", "Verification", "Plan", "Account", "Actions"], list.map((u, i) => `<tr><td>${avatar(u.name, u.photo)}<b>${esc(u.name)}</b><div class="mono">${esc(u.baid || "")}${u.phone ? " · " + esc(u.phone) : ""}</div>${u.email ? `<div class="mono">${esc(u.email)}</div>` : ""}</td><td>${esc(pretty(u.role))}</td><td>${stPill(u.verification || "unverified")}</td><td><span class="pill">${esc(pretty(u.plan))}</span></td><td>${stPill(u.account_status || "active")}</td><td><button class="btn gh" data-rv="${esc(u.role)}|${esc(u.id)}">Review</button>${(u.account_status || "active") === "active" ? `<button class="btn gh w" data-acct="suspended" data-i="${i}">Suspend</button>` : `<button class="btn gh ok" data-acct="active" data-i="${i}">Reactivate</button>`}${u.account_status !== "disabled" ? `<button class="btn gh b" data-acct="disabled" data-i="${i}">Ban</button>` : ""}<button class="btn gh" data-msg="${esc(u.id)}">Message</button></td></tr>`), "No users match.")}`;
     },
 
     async verification() {
@@ -291,7 +291,77 @@
     return `<div class="c"><div class="row2">${avatar(x.name)}<div><b>${esc(x.name || "Unnamed")}</b><div class="mono">${esc(ROLE_NAME[x.role] || x.role)} · ${esc(x.phone || "")}${x.region ? " · " + esc(x.region) : ""}</div></div><span class="ml">${stPill(x.status)}</span></div>
       <div style="margin-top:12px">${docs.map(([k, v]) => (BUCKET[k] || /^https?:/.test(v)) ? `<div class="doc"><span>${esc(label(k))}</span><button class="btn gh" data-doc="${esc(BUCKET[k] || "")}" data-path="${esc(v)}">View</button></div>` : `<div class="doc"><span>${esc(label(k))}</span><b>${esc(v)}</b></div>`).join("") || '<div class="mut">No documents on file.</div>'}</div>
       ${x.rejection_reason ? `<div class="kv"><span>Last note</span><span>${esc(x.rejection_reason)}</span></div>` : ""}
-      <div style="margin-top:12px">${f !== "verified" ? `<button class="btn ap" data-vd="verified" data-s="${f}" data-i="${i}">Approve</button>` : ""}<button class="btn rs" data-vd="resubmit_required" data-s="${f}" data-i="${i}">Resubmit</button>${f !== "rejected" ? `<button class="btn rj" data-vd="rejected" data-s="${f}" data-i="${i}">Reject</button>` : ""}${f === "verified" ? `<button class="btn gh" data-vd="pending_verification" data-s="${f}" data-i="${i}">Reset to review</button>` : ""}</div></div>`;
+      <div style="margin-top:12px"><button class="btn rv-open" data-rv="${esc(x.role)}|${esc(x.id)}">Review full profile</button>${f !== "verified" ? `<button class="btn ap" data-vd="verified" data-s="${f}" data-i="${i}">Approve</button>` : ""}<button class="btn rs" data-vd="resubmit_required" data-s="${f}" data-i="${i}">Resubmit</button>${f !== "rejected" ? `<button class="btn rj" data-vd="rejected" data-s="${f}" data-i="${i}">Reject</button>` : ""}${f === "verified" ? `<button class="btn gh" data-vd="pending_verification" data-s="${f}" data-i="${i}">Reset to review</button>` : ""}</div></div>`;
+  }
+  /* ---------------- member review drawer: everything about one member, then decide ---------------- */
+  const SKIP = new Set(["id", "phone_number", "contact_phone", "region", "city_town", "ghana_card_number", "email", "contact_email", "created_at", "updated_at", "verification_status", "account_status", "rejection_reason", "profile_status", "badge_tier", "search_vector", "profile_sections", "xp_total", "rank_tier", "trust_score", "baid_worker_id", "baid_company_id", "baid_pm_id", "baid_business_id", "baid_employer_id"]);
+  const PHOTO_COL = ["profile_photo_url", "company_logo_url", "logo_url"];
+  const NAME_COL = ["full_name", "company_name", "business_name"];
+  const fieldVal = (v) => Array.isArray(v) ? v.filter((x) => typeof x !== "object").join(", ") : typeof v === "boolean" ? (v ? "Yes" : "No") : String(v);
+  const isImg = (u) => /^https?:\/\/.+\.(png|jpe?g|webp|gif)(\?|$)/i.test(u) || /\/storage\/v1\/object\/public\//.test(u);
+  async function openReview(role, id) {
+    const d = document.createElement("div"); closeReview(); d.className = "rvw"; d.id = "rvw";
+    d.innerHTML = `<div class="rv-bg" data-rv-close></div><aside class="rv"><div class="rv-load"><span class="spin"></span>Loading the full profile…</div></aside>`;
+    document.body.appendChild(d); requestAnimationFrame(() => d.classList.add("on"));
+    let x; try { x = await rpc("admin_user_detail", { p_role: role, p_id: id }); } catch (e) { d.querySelector(".rv").innerHTML = `<div class="rv-load"><b>Couldn't load this member</b>${esc(e.message || "")}<button class="btn gh" data-rv-close style="margin-top:12px">Close</button></div>`; return; }
+    S.rv = x; d.querySelector(".rv").innerHTML = reviewHtml(x);
+  }
+  function closeReview() { document.getElementById("rvw")?.remove(); }
+  function reviewHtml(x) {
+    const p = x.profile || {}, a = x.auth || {}, w = x.wallet || {}, c = x.counts || {}, ps = p.profile_sections && typeof p.profile_sections === "object" ? p.profile_sections : {};
+    const name = NAME_COL.map((k) => p[k]).find(Boolean) || "Unnamed", photo = PHOTO_COL.map((k) => p[k]).find(Boolean), vs = p.verification_status || "unverified", ac = p.account_status || "active";
+    const phone = a.phone ? "+" + String(a.phone).replace(/^\+/, "") : p.phone_number || p.contact_phone || "";
+    const baid = Object.keys(p).filter((k) => k.startsWith("baid_") && p[k]).map((k) => p[k])[0] || "";
+    // documents: private ones open through a signed link, public images preview inline
+    const docs = Object.entries({ ...p, ...Object.fromEntries(Object.entries(ps).map(([k, v]) => [k, v])) }).filter(([k, v]) => typeof v === "string" && v && (BUCKET[k] || /_url$/.test(k)) && !PHOTO_COL.includes(k) && k !== "cover_url");
+    const docHtml = docs.length ? docs.map(([k, v]) => { const pub = /^https?:/.test(v); return `<div class="rv-doc">${pub && isImg(v) ? `<span class="th" style="background-image:url('${esc(v)}')"></span>` : `<span class="th f">${pub ? "LINK" : "PRIVATE"}</span>`}<span class="tx"><b>${esc(pretty(k.replace(/_url$/, "")))}</b><small>${pub ? "Public file" : "Private document"}</small></span><button class="btn gh" data-doc="${esc(BUCKET[k] || "")}" data-path="${esc(v)}">Open</button></div>`; }).join("") : `<p class="mut">No documents uploaded yet.</p>`;
+    const gallery = (p.portfolio_photo_urls || []).filter(Boolean);
+    const biz = ["company", "business"].includes(x.role);
+    const checks = [["Phone", !!phone], ["Email confirmed", !!(a.email && a.email_confirmed)], ["Photo or logo", !!photo], ["Ghana Card number", !!(p.ghana_card_number || ps.ghana_card_number)], ["Ghana Card front", !!(p.ghana_card_front_url || ps.ghana_card_front || p.contact_ghana_card_url)], ["Ghana Card back", !!(p.ghana_card_back_url || ps.ghana_card_back || p.contact_ghana_card_url)], ...(biz ? [["Business registration", !!(p.business_registration_doc_url || p.rgd_registration_number)]] : []), ["Location", !!(p.region || p.city_town)]];
+    const ready = checks.filter(([, v]) => v).length;
+    const shown = (k, v) => !SKIP.has(k) && !k.startsWith("baid_") && !/_urls?$/.test(k) && !NAME_COL.includes(k) && v !== null && v !== "" && (Array.isArray(v) ? v.length > 0 : typeof v !== "object");
+    const fields = Object.entries(p).filter(([k, v]) => shown(k, v)).concat(Object.entries(ps).filter(([k, v]) => !/^ghana_card/.test(k) && shown(k, v)));
+    const tile = (k, v, warn) => `<div class="rv-t ${warn ? "w" : ""}"><small>${esc(k)}</small><b>${esc(v)}</b></div>`;
+    const hist = [...(x.reviews || []).map((r) => `<div class="rv-h"><span class="dot ${r.decision === "approved" ? "ok" : r.decision === "rejected" ? "b" : "w"}"></span><div><b>${esc(pretty(r.decision))}</b>${r.by ? ` by ${esc(r.by)}` : ""}<small>${esc(when(r.at))}${r.reason ? ` · ${esc(r.reason)}` : ""}</small></div></div>`),
+      ...(x.requests || []).map((r) => `<div class="rv-h"><span class="dot"></span><div><b>${esc(pretty(r.type))} verification request</b> · ${esc(pretty(r.status))}<small>${esc(when(r.at))}${r.paid ? ` · paid ${minor(r.paid)}` : ""}</small></div></div>`),
+      ...(x.logins || []).map((l) => `<div class="rv-h"><span class="dot"></span><div><b>${esc(pretty(l.type))}</b><small>${esc(when(l.at))}</small></div></div>`)].join("");
+    const isSuper = S.me?.role === "super_admin";
+    return `<header class="rv-hd"><button class="rv-x" data-rv-close aria-label="Close">×</button>
+        <div class="rv-id"><span class="rv-av" ${photo ? `style="background-image:url('${esc(photo)}')"` : ""}>${photo ? "" : esc(initials(name))}</span><div><h2>${esc(name)}</h2><div class="mono">${esc(ROLE_NAME[x.role] || x.role)}${baid ? " · " + esc(baid) : ""}</div><div class="rv-pills">${stPill(vs)}${stPill(ac)}${x.plan ? `<span class="pill">${esc(pretty(x.plan.tier))} plan</span>` : ""}${p.badge_tier ? `<span class="pill ok">${esc(pretty(p.badge_tier))} badge</span>` : ""}</div></div></div>
+        <div class="rv-meta"><span>Joined <b>${esc(day(a.created_at || p.created_at))}</b></span><span>Last sign-in <b>${esc(a.last_sign_in_at ? ago(a.last_sign_in_at) : "—")}</b></span><span>Profile updated <b>${esc(ago(p.updated_at))}</b></span></div></header>
+      <div class="rv-body">
+        ${p.rejection_reason ? `<div class="rv-note"><b>Last reviewer note</b>${esc(p.rejection_reason)}</div>` : ""}
+        <section><h4>Readiness <span class="mut">${ready} of ${checks.length}</span></h4><div class="bar"><i style="width:${Math.round((ready / Math.max(1, checks.length)) * 100)}%"></i></div><div class="rv-checks">${checks.map(([k, v]) => `<span class="${v ? "ok" : "no"}">${v ? "✓" : "✕"} ${esc(k)}</span>`).join("")}</div></section>
+        <section><h4>Identity and contact</h4><div class="rv-grid">${tile("Phone", phone || "—")}${tile("Email", a.email ? a.email + (a.email_confirmed ? " ✓" : " (unconfirmed)") : "Not added")}${tile("Ghana Card number", p.ghana_card_number || ps.ghana_card_number || "—")}${tile("Location", [p.city_town, p.region].filter(Boolean).join(", ") || "—")}</div></section>
+        <section><h4>Documents</h4>${docHtml}</section>
+        ${gallery.length ? `<section><h4>Portfolio</h4><div class="rv-gal">${gallery.map((u) => `<button class="th" data-doc="" data-path="${esc(u)}" style="background-image:url('${esc(u)}')"></button>`).join("")}</div></section>` : ""}
+        <section><h4>Profile details</h4>${fields.length ? fields.map(([k, v]) => `<div class="kv"><span>${esc(pretty(k))}</span><b>${esc(fieldVal(v))}</b></div>`).join("") : `<p class="mut">Nothing else filled in.</p>`}</section>
+        <section><h4>Money and activity</h4><div class="rv-grid">${tile("Wallet available", cedi(w.available), Number(w.available) > 0)}${tile("Wallet pending", cedi(w.pending), Number(w.pending) > 0)}${tile("Held in escrow", cedi(x.escrow_held), Number(x.escrow_held) > 0)}${tile("Lifetime earned", cedi(w.earned))}${tile("Jobs posted", c.jobs_posted)}${tile("Applications", c.applications)}${tile("Hires", c.engagements)}${tile("Orders", c.orders)}${tile("Projects", c.projects)}${tile("Messages sent", c.messages)}${tile("Reports against", c.reports_against, c.reports_against > 0)}${tile("Reports made", c.reports_made)}</div></section>
+        <section><h4>History</h4>${hist || `<p class="mut">No reviews, requests or sign-ins recorded yet.</p>`}</section>
+      </div>
+      <footer class="rv-ft">
+        <div class="rv-dec">${vs !== "verified" ? `<button class="btn ap" data-rv-dec="verified">Approve</button>` : ""}<button class="btn rs" data-rv-dec="resubmit_required">Resubmit</button>${vs !== "rejected" ? `<button class="btn rj" data-rv-dec="rejected">Reject</button>` : ""}</div>
+        <div class="rv-more"><button class="btn gh" data-msg="${esc(p.id)}">Message</button>${ac === "active" ? `<button class="btn gh w" data-rv-acct="suspended">Suspend</button>` : `<button class="btn gh ok" data-rv-acct="active">Reactivate</button>`}${isSuper ? `<button class="btn rm" data-rv-remove>Remove account</button>` : ""}</div>
+      </footer>`;
+  }
+  async function removeMember() {
+    const x = S.rv, p = x.profile || {}, name = NAME_COL.map((k) => p[k]).find(Boolean) || "this member";
+    const d = modal(`<h3>Remove ${esc(name)} from BAID X?</h3><p class="d">Their account, profile, documents, listings, applications, chats and notifications are deleted. They will no longer be able to sign in, and their phone number can register again as a new account. This can't be undone.</p>
+      ${Number(x.wallet?.available) + Number(x.wallet?.pending) > 0 || Number(x.escrow_held) > 0 ? `<div class="rv-note" style="margin-bottom:12px"><b>Money first</b>This member still has money in their wallet or in escrow. Settle it before removing the account.</div>` : ""}
+      <label class="fl"><span>Type REMOVE to confirm</span><input class="in" id="rmIn" autocomplete="off" placeholder="REMOVE" /></label>
+      <div class="acts"><button class="btn gh" data-closem>Cancel</button><button class="btn rj" id="rmGo" disabled>Remove permanently</button></div>`);
+    const i = d.querySelector("#rmIn"), b = d.querySelector("#rmGo");
+    i.addEventListener("input", () => { b.disabled = i.value.trim() !== "REMOVE"; });
+    b.onclick = async () => {
+      b.disabled = true; b.textContent = "Removing…";
+      try {
+        const { data: s } = await sb.auth.getSession();
+        const r = await fetch("/api/admin-users", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${s.session?.access_token || ""}` }, body: JSON.stringify({ action: "remove", role: x.role, id: p.id, confirm: i.value.trim() }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) { b.disabled = false; b.textContent = "Remove permanently"; return toast(j.error || "Couldn't remove this account."); }
+        closeModal(); closeReview(); toast(`${j.name || name} was removed from BAID X`); refreshBadges(); rerender();
+      } catch { b.disabled = false; b.textContent = "Remove permanently"; toast("Couldn't reach the server."); }
+    };
   }
   function recon(r) {
     const sec = (title, rows, heads, cells) => `<h2 class="sec">${title} (${rows.length})</h2>` + (rows.length ? table(heads, rows.map(cells)) : `<div class="c mut" style="padding:12px 16px">All clear.</div>`);
@@ -412,9 +482,24 @@
     if ((el = q("[data-proj]"))) { if (!(await ask(`Set project to ${pretty(el.dataset.proj)}?`, "", { label: "Update" }))) return; return act("Project", () => rpc("admin_set_project_status", { p_id: el.dataset.id, p_status: el.dataset.proj }), "Project updated"); }
     if ((el = q("[data-rep]"))) { const st = el.dataset.rep; const r = st === "reviewing" ? { value: "" } : await ask(`${pretty(st)} this report?`, "", { field: true, label: pretty(st), ph: "Resolution note" }); if (!r) return; return act("Report", () => rpc("admin_resolve_report", { p_id: el.dataset.id, p_status: st, p_notes: r.value || null }), "Report updated"); }
     if ((el = q("[data-acct]"))) { const u = S.ulist[+el.dataset.i], st = el.dataset.acct; if (!(await ask(`${st === "active" ? "Reactivate" : st === "suspended" ? "Suspend" : "Ban"} ${u.name}?`, st === "active" ? "They can use BAID X again." : "They lose access immediately and are notified.", { label: st === "active" ? "Reactivate" : st === "suspended" ? "Suspend" : "Ban", danger: st === "disabled" }))) return; return act("Account", () => rpc("admin_set_account_status", { p_role: u.role, p_id: u.id, p_status: st }), "Account updated"); }
+    if ((el = q("[data-rv]"))) { const [r, id] = el.dataset.rv.split("|"); return openReview(r, id); }
+    if (q("[data-rv-close]")) return closeReview();
+    if ((el = q("[data-rv-dec]"))) {
+      const x = S.rv, st = el.dataset.rvDec; let reason = null;
+      if (st !== "verified") { const r = await ask(st === "rejected" ? "Reject this verification?" : "Ask them to resubmit?", "The member will see your note.", { field: true, label: st === "rejected" ? "Reject" : "Send request", danger: st === "rejected", ph: "What should they fix?" }); if (!r) return; reason = r.value; }
+      try { await rpc("admin_decide_verification", { p_role: x.role, p_id: x.profile.id, p_status: st, p_reason: reason || null }); toast("Decision saved. The member was notified."); refreshBadges(); rerender(); openReview(x.role, x.profile.id); } catch (e) { toast(e.message || "Decision failed"); }
+      return;
+    }
+    if ((el = q("[data-rv-acct]"))) {
+      const x = S.rv, st = el.dataset.rvAcct;
+      if (!(await ask(st === "active" ? "Reactivate this account?" : "Suspend this account?", st === "active" ? "They can use BAID X again." : "They lose access immediately and are notified.", { label: st === "active" ? "Reactivate" : "Suspend", danger: st !== "active" }))) return;
+      try { await rpc("admin_set_account_status", { p_role: x.role, p_id: x.profile.id, p_status: st }); toast("Account updated"); rerender(); openReview(x.role, x.profile.id); } catch (e) { toast(e.message || "Update failed"); }
+      return;
+    }
+    if (q("[data-rv-remove]")) return removeMember();
     if ((el = q("[data-prof]"))) { const u = S.ulist[+el.dataset.prof]; return modal(`<div class="row2">${avatar(u.name, u.photo)}<div><h3 style="margin:0">${esc(u.name)}</h3><div class="mono">${esc(u.baid || "")}</div></div></div><div style="margin-top:12px"><div class="kv"><span>Role</span><b>${esc(pretty(u.role))}</b></div><div class="kv"><span>Phone</span><b>${esc(u.phone || "—")}</b></div><div class="kv"><span>Email</span><b>${esc(u.email || "—")}</b></div><div class="kv"><span>Verification</span>${stPill(u.verification || "unverified")}</div><div class="kv"><span>Plan</span><b>${esc(pretty(u.plan))}</b></div><div class="kv"><span>Account</span>${stPill(u.account_status || "active")}</div><div class="kv"><span>Joined</span><b>${esc(day(u.created_at))}</b></div></div><div class="acts"><button class="btn gh" data-closem>Close</button><button class="btn ap" data-msg="${esc(u.id)}">Message</button></div>`); }
     if (q("[data-closem]")) return closeModal();
-    if ((el = q("[data-msg]"))) { closeModal(); try { const cid = await rpc("start_conversation", { p_other: el.dataset.msg, p_subject: null }); S.msgConv = cid; if (S.page === "messages") rerender(); else go("messages"); } catch (er) { toast(er.message); } return; }
+    if ((el = q("[data-msg]"))) { closeModal(); closeReview(); try { const cid = await rpc("start_conversation", { p_other: el.dataset.msg, p_subject: null }); S.msgConv = cid; if (S.page === "messages") rerender(); else go("messages"); } catch (er) { toast(er.message); } return; }
     if ((el = q("[data-conv]"))) return openConv(el.dataset.conv);
     if ((el = q("[data-org]"))) { const susp = el.dataset.s === "SUSPENDED"; const r = await ask(susp ? "Suspend this organization?" : "Restore this organization?", susp ? "Members lose access to it immediately." : "Members regain access.", { field: susp, label: susp ? "Suspend" : "Restore", danger: susp, ph: "Reason (optional)" }); if (!r) return; return act("Organization", () => rpc("platform_set_org_status", { p_org: el.dataset.org, p_status: el.dataset.s, p_reason: r.value || null }), susp ? "Organization suspended" : "Organization restored"); }
     if ((el = q("[data-price]"))) { const r = await ask("Change price", "Enter the new price in cedis. It applies to new checkouts only.", { field: true, label: "Save price", ph: `Currently ${(el.dataset.v / 100).toFixed(2)}` }); if (!r) return; const v = Math.round(parseFloat(r.value) * 100); if (!(v >= 0)) return toast("Enter a valid amount."); return act("Price", () => rpc("admin_set_plan_price", { p_id: el.dataset.price, p_price_minor: v }), "Price updated"); }
@@ -475,7 +560,7 @@
     if ((el = q("[data-job-cancel]"))) { if (!(await ask("Cancel this scheduled message?", "It will not be sent.", { label: "Cancel it", danger: true }))) return; const r = await smsCall({ action: "sms_job_cancel", job_id: el.dataset.jobCancel }); toast(r.ok ? "Cancelled" : r.json.error || "Couldn't cancel"); return rerender(); }
     if ((el = q("[data-ch]"))) return el.classList.toggle("on");
     if ((el = q("[data-mres]"))) { try { const cid = await rpc("start_conversation", { p_other: el.dataset.mres, p_subject: null }); S.msgConv = cid; rerender(); } catch (er) { toast(er.message); } return; }
-    if ((el = q("[data-gs]"))) { document.getElementById("gres").classList.remove("on"); const u = S.gsr[+el.dataset.gs]; S.ulist = [u]; return modal(`<div class="row2">${avatar(u.name, u.photo)}<div><h3 style="margin:0">${esc(u.name)}</h3><div class="mono">${esc(u.baid || "")}</div></div></div><div style="margin-top:12px"><div class="kv"><span>Role</span><b>${esc(pretty(u.role))}</b></div><div class="kv"><span>Verification</span>${stPill(u.verification || "unverified")}</div><div class="kv"><span>Account</span>${stPill(u.account_status || "active")}</div></div><div class="acts"><button class="btn gh" data-closem>Close</button><button class="btn ap" data-msg="${esc(u.id)}">Message</button></div>`); }
+    if ((el = q("[data-gs]"))) { document.getElementById("gres").classList.remove("on"); const u = S.gsr[+el.dataset.gs]; return openReview(u.role, u.id); }
     if (!q(".srch")) document.getElementById("gres")?.classList.remove("on");
   });
 
@@ -552,7 +637,7 @@
       gt = setTimeout(async () => { try { const l = (await rpc("admin_users", { p_role: null, p_q: v })).slice(0, 5); box.innerHTML = l.map((u) => `<button class="cv" data-mres="${esc(u.id)}" style="padding:8px 4px">${avatar(u.name, u.photo)}<span><b>${esc(u.name)}</b><small>${esc(pretty(u.role))}</small></span></button>`).join(""); } catch { /* ignore */ } }, 250);
     }
   });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { if (document.getElementById("mo")) closeModal(); else closeReview(); } });
   window.addEventListener("hashchange", route);
   boot();
 })();

@@ -110,7 +110,7 @@
   async function loadPresence() { const ids = [...new Set(S.convs.map((c) => c.peer_id).filter(Boolean))]; if (!ids.length) return; const { data } = await sb.from("user_presence").select("user_id,status,last_seen_at").in("user_id", ids); (data || []).forEach((r) => { S.pres[r.user_id] = r; }); paintPresence(); }
   function paintPresence() {
     document.querySelectorAll("[data-pres]").forEach((el) => el.classList.toggle("on", isOn(el.dataset.pres)));
-    const h = document.getElementById("chSub"), T = S.th; if (h && T) h.innerHTML = `<span class="${isOn(T.peer.id) ? "on-line" : ""}">${esc(seenText(T.peer.id))}</span> · ${si("lock", 11)} ${T.noKey ? "Not encrypted yet" : "Encrypted"}`;
+    const h = document.getElementById("chSub"), T = S.th; if (h && T && T.peer.admin) h.textContent = "BAID X support · messages only"; else if (h && T) h.innerHTML = `<span class="${isOn(T.peer.id) ? "on-line" : ""}">${esc(seenText(T.peer.id))}</span> · ${si("lock", 11)} ${T.noKey ? "Not encrypted yet" : "Encrypted"}`;
   }
   let beatT = null;
   function startPresence() {
@@ -164,7 +164,7 @@
      Chats list
      ====================================================================== */
   let listBox = null;
-  function rowHtml(x) { const prev = S.previews[x.id] || x.preview || "No messages yet"; return `<button class="row chat" data-go="chat/${esc(x.id)}">${avp(x.peer_name, x.peer_photo, x.peer_id)}<span class="tx"><b>${esc(x.peer_name)}</b><small>${esc(prev)}</small></span><span class="meta2">${x.last_message_at ? esc(hhmmShort(x.last_message_at)) : ""}</span>${x.unread ? `<span class="badge">${x.unread}</span>` : ""}</button>`; }
+  function rowHtml(x) { const prev = S.previews[x.id] || x.preview || "No messages yet"; return `<button class="row chat" data-go="chat/${esc(x.id)}">${avp(x.peer_name, x.peer_photo, x.peer_id)}<span class="tx"><b>${esc(x.peer_name)}${x.peer_admin ? ` <i class="offi">Official</i>` : ""}</b><small>${esc(prev)}</small></span><span class="meta2">${x.last_message_at ? esc(hhmmShort(x.last_message_at)) : ""}</span>${x.unread ? `<span class="badge">${x.unread}</span>` : ""}</button>`; }
   const hhmmShort = (iso) => { const d = new Date(iso), n = new Date(); return d.toDateString() === n.toDateString() ? hhmm(iso) : d.toLocaleDateString("en-GH", { day: "numeric", month: "short" }); };
   function renderList() {
     if (!listBox || !document.body.contains(listBox)) return;
@@ -199,8 +199,9 @@
     const peer = data.peer || {}, u = me();
     const T = { id, peer, msgs: [], pending: new Map(), peerReadAt: peer.last_read_at ? new Date(peer.last_read_at).getTime() : 0, typingT: null, lastTypingSent: 0, noKey: false, recording: null, oldest: null, atEnd: true };
     S.th = T; let readT = null;
-    const headHtml = `<button class="icon-btn" data-go="chats" aria-label="Back">${si("back", 22)}</button>${avp(peer.name, peer.photo, peer.id)}<span class="tx"><b>${esc(peer.name || "Chat")}</b><small id="chSub">${esc(String(peer.role || "").replace(/[_-]/g, " "))}</small></span><button class="icon-btn" id="callA" aria-label="Voice call">${si("phone")}</button><button class="icon-btn" id="callV" aria-label="Video call">${si("video")}</button>`;
+    const headHtml = `<button class="icon-btn" data-go="chats" aria-label="Back">${si("back", 22)}</button>${avp(peer.name, peer.photo, peer.id)}<span class="tx"><b>${esc(peer.name || "Chat")}${peer.admin ? ` <i class="offi">Official</i>` : ""}</b><small id="chSub">${peer.admin ? "BAID X support · messages only" : esc(String(peer.role || "").replace(/[_-]/g, " "))}</small></span>${peer.admin ? "" : `<button class="icon-btn" id="callA" aria-label="Voice call">${si("phone")}</button><button class="icon-btn" id="callV" aria-label="Video call">${si("video")}</button>`}`;
     document.getElementById("chHead").innerHTML = headHtml;
+    document.getElementById("comp").classList.toggle("adm", !!peer.admin);
     document.getElementById("comp").innerHTML = `<div class="comp-sec" id="compSec" hidden></div><div class="comp-row" id="compRow"><label class="ib" title="Attach">${si("clip")}<input type="file" id="fileIn" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.zip,.txt" multiple hidden /></label><textarea id="msgIn" rows="1" placeholder="Message" maxlength="4000" enterkeyhint="send"></textarea><button class="ib mic" id="micBtn" aria-label="Voice note">${si("mic")}</button><button class="ib send" id="sendBtn" aria-label="Send" hidden>${si("send")}</button></div>`;
     const area = document.getElementById("msgArea"), input = document.getElementById("msgIn"), sendBtn = document.getElementById("sendBtn"), micBtn = document.getElementById("micBtn");
 
@@ -302,7 +303,7 @@
         m.status = "sending"; refreshOne(m);
         try {
           const payload = { t: type, x: text || "" }; let attach = [];
-          const pk = (await peerKeys(peer.id, true))[0]; T.noKey = !pk; banner();
+          const pk = peer.admin ? null : (await peerKeys(peer.id, true))[0]; // the support team reads replies in the admin console T.noKey = !pk; banner();
           if (file || blob) {
             let f = blob || file; if (type === "image") f = await shrink(f);
             const { ct, key, iv } = await encryptBytes(await f.arrayBuffer()), path = `${u}/${uid4()}`;
@@ -337,7 +338,7 @@
     });
 
     /* ---- calls ---- */
-    document.getElementById("callA").onclick = () => startCall(T, false); document.getElementById("callV").onclick = () => startCall(T, true);
+    if (!peer.admin) { document.getElementById("callA").onclick = () => startCall(T, false); document.getElementById("callV").onclick = () => startCall(T, true); }
 
     T.destroy = () => { document.removeEventListener("visibilitychange", visH); try { sb.removeChannel(T.tch); } catch { /* ignore */ } clearTimeout(readT); };
     // safety net: if realtime is not connected, catch up every few seconds
@@ -354,6 +355,7 @@
   function callUI(html) { let o = document.getElementById("callUI"); if (!o) { o = document.createElement("div"); o.id = "callUI"; o.className = "callui"; document.body.appendChild(o); } o.innerHTML = html; return o; }
   function endUI() { document.getElementById("callUI")?.remove(); ring(false); }
   async function startCall(T, video) {
+    if (T.peer.admin) return toast("BAID X Admin can only be messaged.");
     if (CALL) return toast("You're already in a call.");
     if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) return toast("Calls aren't supported in this browser.");
     const callId = uid4(); let stream;
