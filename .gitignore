@@ -3,3 +3,6 @@ node_modules
 .env
 .env.*
 !.env.example
+
+# brag video sources (bundled music licence unchecked)
+brag-output/composition/
