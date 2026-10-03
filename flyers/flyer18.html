@@ -1,0 +1,45 @@
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="common.css">
+<style>
+.fl { background: #050505; }
+.img { position: absolute; left: 0; top: 0; width: 1080px; height: 1350px; background: url(key-ref.jpg) 0 0/100% 100% no-repeat; filter: grayscale(1) sepia(.85) saturate(1.7) hue-rotate(-8deg) contrast(1.08) brightness(.95); -webkit-mask-image: linear-gradient(180deg, #000 0, #000 740px, transparent 835px); mask-image: linear-gradient(180deg, #000 0, #000 740px, transparent 835px); }
+.top { position: absolute; left: 0; right: 0; top: 0; height: 236px; background: linear-gradient(180deg, #050505 0, #050505 196px, transparent); }
+.glow1 { position: absolute; width: 1100px; height: 700px; left: -20px; top: 180px; background: radial-gradient(ellipse, rgba(232,196,106,.2), transparent 65%); }
+.frame { z-index: 5; }
+.logo { left: 70px; top: 62px; width: 230px; }
+.pill { position: absolute; right: 70px; top: 66px; height: 66px; padding: 0 34px; border: 2px solid #e8c46a; border-radius: 99px; display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 31px; color: #fff; background: rgba(232,196,106,.08); }
+.pill svg { color: #e8c46a; }
+.bub { position: absolute; left: 712px; top: 322px; width: 316px; padding: 24px 26px 26px; background: linear-gradient(135deg, #f1d58a, #d9b24f); color: #14110a; border-radius: 34px 34px 34px 6px; box-shadow: 0 24px 50px -12px rgba(0,0,0,.7); }
+.bub small { display: block; font-size: 17px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; opacity: .7; }
+.bub b { display: block; font-size: 33px; line-height: 1.08; font-weight: 800; letter-spacing: -.02em; margin-top: 6px; }
+.bub span { display: block; font-size: 20px; font-weight: 600; margin-top: 8px; line-height: 1.25; }
+h1 { position: absolute; left: 70px; right: 70px; top: 790px; font-weight: 800; font-size: 80px; line-height: .98; letter-spacing: -.04em; color: #fff; }
+h1 span { background: linear-gradient(90deg, #e8c46a, #b8860b 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.st { position: absolute; left: 70px; right: 70px; top: 962px; display: flex; align-items: center; gap: 16px; font-weight: 800; font-size: 20px; letter-spacing: .3em; text-transform: uppercase; color: #e8c46a; } .st::after { content: ""; flex: 1; height: 1.5px; background: linear-gradient(90deg, rgba(232,196,106,.7), transparent); }
+.cards { position: absolute; left: 70px; right: 70px; top: 1004px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.c { position: relative; height: 196px; padding: 18px 16px; border: 1.5px solid rgba(232,196,106,.55); border-radius: 18px; background: linear-gradient(180deg, rgba(232,196,106,.14), rgba(255,255,255,.03)); }
+.c:first-child { background: linear-gradient(160deg, #f1d58a, #cfa646); border-color: #f1d58a; color: #14110a; box-shadow: 0 0 40px rgba(232,196,106,.35); }
+.n { width: 38px; height: 38px; border-radius: 50%; background: #e8c46a; color: #14110a; font-weight: 800; font-size: 21px; display: grid; place-items: center; } .c:first-child .n { background: #14110a; color: #e8c46a; }
+.c h3 { font-size: 24px; font-weight: 800; margin-top: 12px; letter-spacing: -.01em; line-height: 1.05; }
+.c p { font-size: 17.5px; line-height: 1.3; margin-top: 7px; color: #d9d9d9; font-weight: 400; } .c:first-child p { color: #2a2310; font-weight: 600; }
+.bar { z-index: 6; position: absolute; left: 0; right: 0; bottom: 0; height: 118px; background: #0a0a0a; border-top: 2px solid #b8860b; }
+.ft { z-index: 7; position: absolute; left: 70px; right: 70px; bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+.ft b { font-size: 36px; font-weight: 800; display: block; } .ft small { font-size: 17px; color: #c9c9c9; }
+.btn { background: linear-gradient(90deg, #d9b24f, #e8c46a); color: #14110a; font-weight: 800; font-size: 25px; padding: 15px 30px; border-radius: 99px; }
+</style>
+<div class="fl">
+<div class="img"></div><div class="glow1"></div><div class="top"></div>
+<div class="frame"></div>
+<img class="logo" src="logo.png">
+<div class="pill"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>baidx.com</div>
+<div class="bub"><small>Free to post</small><b>Create your project in minutes</b><span>Verified pros and Project Managers are waiting.</span></div>
+<h1>Build It Right.<br><span>Manage It On BAID X.</span></h1>
+<div class="st">Create your project in 4 steps</div>
+<div class="cards">
+<div class="c"><div class="n">1</div><h3>Post it free</h3><p>Describe the job, set a budget, add photos.</p></div>
+<div class="c"><div class="n">2</div><h3>Get proposals</h3><p>Verified professionals apply. Compare and shortlist.</p></div>
+<div class="c"><div class="n">3</div><h3>Hire and manage</h3><p>Appoint a pro and a Project Manager.</p></div>
+<div class="c"><div class="n">4</div><h3>Pay safely</h3><p>Escrow holds the money. Release it per approved milestone.</p></div>
+</div>
+<div class="bar"></div>
+<div class="ft"><span><b>baidx.com</b><small>Verified. Approved. Paid safely.</small></span><div class="btn">Post your project free</div></div>
+</div>
