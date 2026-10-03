@@ -1,0 +1,43 @@
+/* Sign-in / sign-up: glassmorphism (black & white). Loaded after auth.css. */
+body.auth { background: #050505; }
+.auth-art { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.auth-art::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 44px 44px; -webkit-mask-image: radial-gradient(ellipse at 50% 35%, #000 0, transparent 75%); mask-image: radial-gradient(ellipse at 50% 35%, #000 0, transparent 75%); }
+.auth-art i { position: absolute; display: block; }
+.auth-art .o1 { width: 250px; height: 250px; border-radius: 50%; right: -120px; top: 46%; background: linear-gradient(135deg, #fff, #6d6d6d); opacity: .36; }
+.auth-art .o2 { width: 190px; height: 190px; border-radius: 58px; left: -90px; top: 64%; background: #fff; opacity: .3; transform: rotate(18deg); }
+.auth-art .ring { width: 300px; height: 300px; border-radius: 50%; left: 50%; top: 40px; margin-left: -150px; border: 26px solid rgba(255,255,255,.18); }
+.auth-shell { position: relative; z-index: 1; }
+
+/* brand frame */
+.auth-brand { display: flex; justify-content: center; padding: 6px 0 0; }
+body.auth:not([data-view="type"]):not([data-view="signin"]):not([data-view="choose"]) .auth-brand { display: none; }
+.ab-frame { position: relative; width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.07)); border: 1.5px solid rgba(255,255,255,.5); box-shadow: 0 20px 50px rgba(0,0,0,.55), inset 0 1.5px 0 rgba(255,255,255,.7), 0 0 0 8px rgba(255,255,255,.06); backdrop-filter: blur(22px) saturate(1.5); }
+.ab-frame img { width: 58px; height: 58px; border-radius: 17px; box-shadow: 0 8px 22px rgba(0,0,0,.45); }
+.ab-ring { position: absolute; inset: -13px; border-radius: 50%; border: 1px dashed rgba(255,255,255,.4); animation: abSpin 28s linear infinite; }
+@keyframes abSpin { to { transform: rotate(360deg); } }
+.auth-head.hide + .auth-brand { padding-top: 22px; }
+
+/* glass surfaces */
+.icon-btn { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(14px); }
+.progress { background: rgba(255,255,255,.12); }
+.type, .field, .field-row, .seg, .otp input, .acc-opt, .btn-ghost {
+  background: linear-gradient(135deg, rgba(14,14,14,.62), rgba(14,14,14,.34) 55%, rgba(255,255,255,.14));
+  border: 1.5px solid rgba(255,255,255,.3);
+  box-shadow: 0 14px 40px rgba(0,0,0,.4), inset 0 1.5px 0 rgba(255,255,255,.45);
+  backdrop-filter: blur(26px) saturate(1.6);
+}
+.type { border-radius: 22px; }
+.type.on { border-color: #fff; background: linear-gradient(135deg, rgba(255,255,255,.3), rgba(255,255,255,.1)); box-shadow: 0 14px 40px rgba(0,0,0,.4), inset 0 1.5px 0 rgba(255,255,255,.7), 0 0 0 1px #fff; }
+.field, .field-row { border-radius: 16px; } .field:focus, .field-row:focus-within, .otp input:focus { border-color: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.12), inset 0 1.5px 0 rgba(255,255,255,.45); }
+.seg { border-radius: 18px; padding: 4px; } .seg button.on { background: #fff; color: #000; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+.btn-primary, .btn-light { background: linear-gradient(180deg, #fff, #dcdcdc); color: #000; box-shadow: 0 1px 0 #fff inset, 0 14px 34px -12px rgba(255,255,255,.55); }
+.btn-primary:disabled { background: rgba(255,255,255,.12); color: rgba(255,255,255,.4); box-shadow: none; border: 1px solid rgba(255,255,255,.18); }
+.btn-ghost { color: #fff; }
+.acc-opt { border-radius: 22px; } .acc-opt .av { background: linear-gradient(145deg, rgba(255,255,255,.25), rgba(255,255,255,.06)) center/cover; }
+.h1 { text-shadow: 0 2px 24px rgba(0,0,0,.5); } .sub, .type-blurb { color: #d0d0d0; text-shadow: 0 1px 10px rgba(0,0,0,.7); } .btn-text, .foot { text-shadow: 0 1px 10px rgba(0,0,0,.7); }
+.browse { color: #fff; opacity: .85; }
+a { color: #fff; }
+.sheet { background: rgba(24,24,24,.72); backdrop-filter: blur(30px) saturate(1.5); border-top: 1px solid rgba(255,255,255,.3); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.4); }
+.sheet-bg { background: rgba(0,0,0,.55); backdrop-filter: blur(4px); }
+.err { color: #ff9a8f; }
+@media (prefers-reduced-motion: reduce) { .ab-ring { animation: none; } }

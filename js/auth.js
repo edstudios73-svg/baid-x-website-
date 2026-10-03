@@ -26,7 +26,7 @@
   function show(view, { push = true } = {}) {
     $$(".view").forEach((v) => v.classList.toggle("active", v.id === `v-${view}`));
     if (push && S.view !== view) S.history.push(view);
-    S.view = view;
+    S.view = view; document.body.dataset.view = view;
     const flow = FLOWS[S.mode] || [];
     const idx = flow.indexOf(view);
     $("#head").classList.toggle("hide", view === "type");

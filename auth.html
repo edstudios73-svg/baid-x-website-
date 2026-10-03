@@ -38,9 +38,11 @@
   <meta name="twitter:image" content="https://baid-x-website.vercel.app/assets/og-image.png?v=4" />
   <link rel="stylesheet" href="css/app.css" />
   <link rel="stylesheet" href="css/auth.css" />
+  <link rel="stylesheet" href="css/auth-glass.css" />
 <meta name="robots" content="noindex, follow" />
 </head>
 <body class="auth">
+  <div class="auth-art" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="ring"></i></div>
   <div class="auth-shell">
 
     <!-- Header: back + progress (hidden on the first screen) -->
@@ -49,6 +51,8 @@
       <div class="progress" id="progress" aria-hidden="true"><i id="bar"></i></div>
       <span class="step-label" id="stepLabel"></span>
     </header>
+
+    <div class="auth-brand" aria-hidden="true"><span class="ab-frame"><span class="ab-ring"></span><img src="assets/favicon.png" alt="" /></span></div>
 
     <!-- 0. Choose type -->
     <section class="view active" id="v-type">
