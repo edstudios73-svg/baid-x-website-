@@ -318,7 +318,7 @@
     company: ["discover", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials", "wallet", "team-link", "hires", "post-job"],
     "project-manager": ["discover", "projects", "ws", "invites", "wallet", "portfolio", "certs", "team-link"],
     business: ["discover", "catalog", "inquiries", "wallet", "portfolio"],
-    "individual-employer": ["discover", "hires", "post-job"],
+    "individual-employer": ["discover", "hires", "post-job", "wallet"],
   };
   const money = (n) => { const v = Number(n) || 0; return `${v < 0 ? "-" : ""}GH₵${Math.abs(v).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
   const ago = (iso) => {

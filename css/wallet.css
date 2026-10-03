@@ -1,0 +1,31 @@
+/* BAID X wallet and billing services: solid, classic dark cards (no glass). */
+.wl-card { padding: 22px; border-radius: 24px; background: radial-gradient(240px 140px at 92% 0, rgba(125,211,252,.2), transparent 70%), linear-gradient(145deg, #1b1b1b, #0b0b0b); border: 1px solid rgba(255,255,255,.16); margin-bottom: 4px; }
+.wl-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; } .wl-top small { color: #bdbdbd; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+.wl-chip { display: inline-flex; gap: 6px; align-items: center; padding: 6px 11px; border-radius: 99px; font-size: 11.5px; font-weight: 700; background: rgba(125,211,252,.12); border: 1px solid rgba(125,211,252,.35); color: #c9ecff; white-space: nowrap; }
+.wl-amt { margin: 10px 0 14px; font-size: 38px; font-weight: 800; letter-spacing: -.03em; } .wl-amt s { text-decoration: none; font-size: 17px; color: #bbb; font-weight: 600; margin-right: 4px; }
+.wl-sub { display: flex; gap: 22px; flex-wrap: wrap; color: #cfcfcf; font-size: 12.5px; } .wl-sub b { display: block; font-size: 15px; color: #fff; }
+.wl-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; } .wl-acts.one { grid-template-columns: 1fr; }
+.wl-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 50px; border-radius: 999px; font-weight: 800; font-size: 15px; border: 0; cursor: pointer; background: linear-gradient(180deg, #fff, #dcdcdc); color: #000; box-shadow: 0 14px 30px -14px rgba(255,255,255,.55); transition: transform .15s, opacity .2s; }
+.wl-btn.ghost { background: rgba(255,255,255,.07); color: #fff; border: 1px solid rgba(255,255,255,.2); box-shadow: none; }
+.wl-btn:active:not(:disabled) { transform: scale(.98); } .wl-btn:disabled { opacity: .45; cursor: not-allowed; } .wl-btn.busy { opacity: .7; pointer-events: none; }
+.wl-note { display: flex; gap: 10px; padding: 13px 14px; border-radius: 16px; font-size: 12.5px; line-height: 1.45; color: #cfcfcf; background: rgba(125,211,252,.07); border: 1px solid rgba(125,211,252,.25); margin: 8px 0; } .wl-note svg { flex: none; color: #7dd3fc; margin-top: 1px; }
+.wl-note.wait { background: rgba(251,191,36,.08); border-color: rgba(251,191,36,.35); } .wl-note.wait svg { color: #fbbf24; }
+.wl-row { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 13px 14px; margin-bottom: 8px; border-radius: 18px; background: var(--surface), var(--card); border: 1px solid var(--line); color: inherit; }
+button.wl-row { cursor: pointer; } button.wl-row:hover { border-color: rgba(255,255,255,.3); }
+.wl-row .ic { width: 40px; height: 40px; border-radius: 13px; background: #fff; color: #000; display: grid; place-items: center; flex: none; } .wl-row .tx { min-width: 0; flex: 1; } .wl-row .tx b { display: block; font-size: 14px; } .wl-row .tx small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.wl-row .amt { margin-left: auto; font-weight: 800; font-size: 14px; white-space: nowrap; } .wl-row .amt.p { color: #7ef0bd; }
+.wl-s { margin: 0 0 12px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.wl-in { display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 10px 0 4px; } .wl-in s { text-decoration: none; font-size: 20px; color: #aaa; font-weight: 700; }
+.wl-in input { width: 7ch; max-width: 60%; background: none; border: 0; outline: 0; color: #fff; font-size: 44px; font-weight: 800; letter-spacing: -.03em; text-align: left; font-family: inherit; }
+.wl-chips { display: flex; gap: 8px; justify-content: center; margin: 6px 0 14px; flex-wrap: wrap; } .wl-chips button { padding: 9px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.18); color: #fff; } .wl-chips button.on { background: #fff; color: #000; }
+.wl-kv { display: flex; justify-content: space-between; gap: 12px; padding: 10px 2px; border-top: 1px solid var(--line); font-size: 13.5px; } .wl-kv span { color: var(--muted); } .wl-kv b { font-weight: 700; text-align: right; overflow-wrap: anywhere; } .wl-kv b .g { color: #7ef0bd; }
+.wl-q { min-height: 130px; } .wl-err { color: #ff7a6b; font-size: 12.5px; min-height: 18px; margin: 4px 2px; } .wl-fine { text-align: center; color: #777; font-size: 11.5px; margin: 10px 0 0; }
+.wl-trk { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; } .wl-trk small { color: var(--muted); } .wl-trk b { display: block; font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+.wl-steps { display: flex; justify-content: space-between; position: relative; margin: 6px 4px 18px; } .wl-steps::before { content: ""; position: absolute; left: 14px; right: 14px; top: 13px; height: 2px; background: #2a2a2a; }
+.wl-step { position: relative; text-align: center; font-size: 10.5px; color: var(--muted); width: 25%; } .wl-step i { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 6px; background: #1b1b1b; border: 2px solid #333; position: relative; z-index: 1; }
+.wl-step.done i { background: linear-gradient(135deg, #bff3d9, #34d399); border-color: transparent; color: #04222f; } .wl-step.now i { border-color: #7dd3fc; box-shadow: 0 0 14px rgba(125,211,252,.6); } .wl-step.done, .wl-step.now { color: #fff; }
+/* billing: tabs + services */
+.segs.three { display: grid; grid-template-columns: repeat(3, 1fr); } .segs.three button { padding: 9px 6px; font-size: 12.5px; }
+.dcard.svc { display: flex; gap: 12px; align-items: center; padding: 14px; margin-bottom: 8px; } .dcard.svc .ic { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; flex: none; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); }
+.dcard.svc .tx { flex: 1; min-width: 0; } .dcard.svc .tx b { display: block; font-size: 14px; } .dcard.svc .tx small { color: var(--muted); font-size: 12px; }
+.dcard.svc .pr { margin-left: auto; text-align: right; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; } .dcard.svc .pr b { font-size: 15px; } .dcard.svc .pr small { max-width: 110px; }
