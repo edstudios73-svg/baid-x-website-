@@ -1,0 +1,40 @@
+/* BAID X · iOS / small-screen fit. Loaded LAST on every page. It only adds safe-area padding, size limits and iOS fixes:
+   nothing is hidden or restyled. All safe-area use goes through the variables below so it can be checked at any inset. */
+:root { --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); --sar: env(safe-area-inset-right, 0px); }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+body { overflow-x: clip; padding-left: var(--sal); padding-right: var(--sar); }
+img, svg, video, canvas { max-width: 100%; }
+button, a, [role="button"], input, select, textarea { touch-action: manipulation; }
+
+/* the status bar / notch / Control Center zone: bars that stick to the top now start below it */
+.auth-shell { padding-top: var(--sat); }
+.topbar { padding-top: calc(12px + var(--sat)); }
+.sub-head { padding-top: calc(12px + var(--sat)); }
+header.nav { padding-top: var(--sat); }
+.sheet, .sx { max-height: calc(100dvh - var(--sat) - 16px); overflow-y: auto; overscroll-behavior: contain; }
+.chat-wrap { height: calc(100dvh - var(--sat) - 24px); max-height: calc(100dvh - var(--sat)); }
+.lightbox, .callui { padding: var(--sat) var(--sar) var(--sab) var(--sal); }
+.sp, .splash { padding-top: var(--sat); padding-bottom: var(--sab); }
+
+/* iOS zooms the page when a field is under 16px, which looks like a broken, overlapping layout */
+@media (max-width: 820px) {
+  input, select, textarea, .field, .field-row input, .otp input { font-size: 16px; }
+  .otp input { font-size: 21px; }
+}
+/* the six code boxes shrink to fit narrow phones instead of overflowing */
+.otp { gap: clamp(6px, 2.4vw, 10px); padding: 0 2px; }
+.otp input { flex: 1 1 0; min-width: 0; max-width: 52px; width: auto; }
+
+/* small phones (iPhone SE / mini and anything under 375px) */
+@media (max-width: 374px) {
+  .h1, h1 { font-size: 1.55rem; }
+  .auth-shell { padding-left: 14px; padding-right: 14px; }
+  .btn-primary, .btn-light, .btn-ghost { font-size: 15px; }
+  .rules { gap: 8px 12px; }
+}
+/* long words / numbers never push the page wider than the screen */
+.row b, .row small, .nt b, .nt p, .job h3, .tile b, .tile small { overflow-wrap: anywhere; }
+.tb { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* bottom bars sit above the home indicator */
+.nav { padding-bottom: calc(6px + var(--sab)); }
+.foot { padding-bottom: calc(10px + var(--sab)); }
