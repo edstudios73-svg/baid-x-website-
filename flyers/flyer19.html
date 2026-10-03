@@ -1,0 +1,46 @@
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="common.css">
+<style>
+.fl { background: #050505; }
+.glow1 { position: absolute; width: 1200px; height: 800px; left: -60px; top: -250px; background: radial-gradient(ellipse, rgba(232,196,106,.25), transparent 65%); }
+.logo { left: 70px; top: 62px; width: 210px; }
+.eb { position: absolute; right: 70px; top: 76px; font-weight: 800; font-size: 19px; letter-spacing: .3em; text-transform: uppercase; color: #e8c46a; border: 1.5px solid rgba(232,196,106,.6); padding: 11px 20px; border-radius: 99px; }
+h1 { position: absolute; left: 70px; right: 70px; top: 168px; font-weight: 800; font-size: 90px; line-height: .98; letter-spacing: -.045em; color: #fff; }
+h1 span { background: linear-gradient(90deg, #e8c46a, #b8860b 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sub { position: absolute; left: 70px; right: 70px; top: 368px; font-size: 25px; line-height: 1.35; color: #d6d6d6; font-weight: 400; } .sub b { color: #fff; font-weight: 800; }
+.grid { position: absolute; left: 70px; right: 70px; top: 462px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.p { position: relative; height: 248px; border-radius: 16px; overflow: hidden; border: 1.5px solid rgba(232,196,106,.7); background-size: cover; background-position: center; filter: contrast(1.05) saturate(.9); }
+.p::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.82)); }
+.p i { position: absolute; z-index: 2; left: 16px; bottom: 14px; font-style: normal; font-weight: 800; font-size: 23px; color: #fff; letter-spacing: -.01em; } .p i::before { content: ""; display: inline-block; width: 12px; height: 12px; background: #e8c46a; transform: rotate(45deg); margin-right: 10px; }
+.st { position: absolute; left: 70px; right: 70px; top: 984px; display: flex; align-items: center; gap: 16px; font-weight: 800; font-size: 20px; letter-spacing: .3em; text-transform: uppercase; color: #e8c46a; } .st::after { content: ""; flex: 1; height: 1.5px; background: linear-gradient(90deg, rgba(232,196,106,.7), transparent); }
+.cards { position: absolute; left: 70px; right: 70px; top: 1022px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.c { height: 196px; padding: 18px 16px; border: 1.5px solid rgba(232,196,106,.55); border-radius: 18px; background: linear-gradient(180deg, rgba(232,196,106,.14), rgba(255,255,255,.03)); }
+.c:first-child { background: linear-gradient(160deg, #f1d58a, #cfa646); border-color: #f1d58a; color: #14110a; box-shadow: 0 0 40px rgba(232,196,106,.35); }
+.n { width: 38px; height: 38px; border-radius: 50%; background: #e8c46a; color: #14110a; font-weight: 800; font-size: 21px; display: grid; place-items: center; } .c:first-child .n { background: #14110a; color: #e8c46a; }
+.c h3 { font-size: 24px; font-weight: 800; margin-top: 12px; letter-spacing: -.01em; line-height: 1.05; }
+.c p { font-size: 17.5px; line-height: 1.3; margin-top: 7px; color: #d9d9d9; } .c:first-child p { color: #2a2310; font-weight: 600; }
+.bar { z-index: 6; position: absolute; left: 0; right: 0; bottom: 0; height: 112px; background: #0a0a0a; border-top: 2px solid #b8860b; }
+.ft { z-index: 7; position: absolute; left: 70px; right: 70px; bottom: 28px; display: flex; justify-content: space-between; align-items: center; }
+.ft b { font-size: 36px; font-weight: 800; display: block; } .ft small { font-size: 17px; color: #c9c9c9; }
+.btn { background: linear-gradient(90deg, #d9b24f, #e8c46a); color: #14110a; font-weight: 800; font-size: 25px; padding: 15px 30px; border-radius: 99px; }
+</style>
+<div class="fl">
+<div class="glow1"></div><div class="frame" style="z-index:5"></div>
+<img class="logo" src="logo.png"><div class="eb">For the workforce</div>
+<h1>The Workforce<br><span>Behind Every Build.</span></h1>
+<div class="sub">Builders, artisans, engineers and site managers: <b>get found, get verified, get hired and get paid safely.</b></div>
+<div class="grid">
+<div class="p" style="background-image:url(w1.jpg)"><i>Steel and rebar crews</i></div>
+<div class="p" style="background-image:url(w2.jpg)"><i>Concrete and casting teams</i></div>
+<div class="p" style="background-image:url(w3.jpg)"><i>Roof and formwork crews</i></div>
+<div class="p" style="background-image:url(w4.jpg)"><i>Finishing and fit-out hands</i></div>
+</div>
+<div class="st">How the workforce wins on BAID X</div>
+<div class="cards">
+<div class="c"><div class="n">1</div><h3>Join free</h3><p>Sign up with your phone. Show your trade and your work.</p></div>
+<div class="c"><div class="n">2</div><h3>Get verified</h3><p>Earn a badge clients can see and trust.</p></div>
+<div class="c"><div class="n">3</div><h3>Get hired</h3><p>Apply to projects, or lead them as a Project Manager.</p></div>
+<div class="c"><div class="n">4</div><h3>Get paid safely</h3><p>Escrow holds the pay. Released per approved milestone.</p></div>
+</div>
+<div class="bar"></div>
+<div class="ft"><span><b>baidx.com</b><small>Verified. Approved. Paid safely.</small></span><div class="btn">Join the workforce free</div></div>
+</div>
