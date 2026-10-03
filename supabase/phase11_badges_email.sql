@@ -1,0 +1,5 @@
+-- BAID X · Phase 11 (applied): verification badge tiers + real member emails.
+-- badge_tier on every profile table (identity / professional / advanced), set only by trigger from the highest 'verified' verification_requests row
+-- (identity|standard -> identity, professional -> professional, advanced|enhanced -> advanced). Members cannot write it (trg_protect_profile_fields).
+-- worker_profiles.email added; the internal sign-in placeholder address (*.invalid) is cleared from profiles and never shown.
+-- See migrations phase11_badge_columns, phase11_badge_functions, member_email_real_only.

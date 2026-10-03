@@ -29,3 +29,14 @@ button.wl-row { cursor: pointer; } button.wl-row:hover { border-color: rgba(255,
 .dcard.svc { display: flex; gap: 12px; align-items: center; padding: 14px; margin-bottom: 8px; } .dcard.svc .ic { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; flex: none; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); }
 .dcard.svc .tx { flex: 1; min-width: 0; } .dcard.svc .tx b { display: block; font-size: 14px; } .dcard.svc .tx small { color: var(--muted); font-size: 12px; }
 .dcard.svc .pr { margin-left: auto; text-align: right; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; } .dcard.svc .pr b { font-size: 15px; } .dcard.svc .pr small { max-width: 110px; }
+
+/* billing: badge legend, tier tags, plan benefits */
+.lg { background: #101010; border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin-bottom: 10px; } .lg-h b { display: block; font-size: 14px; } .lg-h small { color: var(--muted); font-size: 12px; }
+.lg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; text-align: center; } .lg-grid div { display: flex; flex-direction: column; align-items: center; gap: 4px; } .lg-grid b { font-size: 11.5px; } .lg-grid small { font-size: 10px; color: var(--muted); line-height: 1.25; }
+.tagc { display: inline-block; margin-top: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: 1px solid; border-radius: 99px; padding: 2px 8px; }
+.bd-cur { display: flex; gap: 12px; align-items: center; margin-top: 6px; } .bd-cur b { display: block; font-size: 15px; } .bd-cur small { color: var(--muted); font-size: 12px; }
+.dcard.plan .prow { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; } .more { background: none; border: 0; color: #e8d9a8; font-weight: 700; font-size: 13px; cursor: pointer; padding: 6px 0; }
+.bn { display: flex; gap: 12px; align-items: center; background: #171717; border: 1px solid #2a2a2a; border-radius: 16px; padding: 12px; color: #e8d9a8; } .bn b { display: block; color: #f6f6f7; font-size: 16px; } .bn small { color: var(--muted); font-size: 12px; }
+.bsec { margin-top: 14px; } .bsec > small { color: var(--muted); font-size: 10.5px; font-weight: 700; letter-spacing: .1em; } .bsec p { margin: 5px 0 0; font-size: 13px; color: #cfcfcf; line-height: 1.45; }
+.bi2 { display: flex; gap: 11px; margin-top: 10px; } .bic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: rgba(232,217,168,.1); color: #e8d9a8; flex: none; } .bi2 b { display: block; font-size: 13.5px; } .bi2 small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+.dcard.svc .ic { color: #e8d9a8; border-color: rgba(232,217,168,.28); background: rgba(232,217,168,.08); }

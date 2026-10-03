@@ -10,7 +10,8 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const pretty = (s) => String(s || "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const real = (v) => !!v && String(v).trim() !== "" && String(v).toLowerCase() !== "pending";
+  const real = (v) => !!v && String(v).trim() !== "" && String(v).toLowerCase() !== "pending" && !/\.invalid$/i.test(String(v).trim());
+  const isPlaceholderEmail = (v) => /\.invalid$/i.test(String(v || "").trim());
 
   let toastTimer;
   function toast(msg) {
@@ -125,6 +126,7 @@
   };
   ROLES.worker.checklist = [
     ["Phone number", "Your verified mobile number.", (p) => real(p.phone_number)],
+    ["Email", "Add your own email so you can also sign in with it.", (p) => real(p.email)],
     ["Basic profile", "Add your name and account photo so clients can identify you.", (p) => real(p.full_name) && real(p.profile_photo_url)],
     ["Trade category", "Choose your profession and specialties.", (p) => !!p.primary_job_category_id],
     ["About you", "Add a short description of your work.", (p) => real(p.short_bio)],
@@ -227,6 +229,9 @@
     // own full row via a server function (so other members' private columns can be locked down later); falls back to a direct read
     let { data: profile } = await sb.rpc("my_profile");
     if (!profile) ({ data: profile } = await sb.from(ROLES[role].table).select("*").eq("id", session.user.id).maybeSingle());
+    // once a member confirms their own email, mirror it on their profile (the internal placeholder is never copied)
+    const col = { worker: "email", company: "contact_email", "project-manager": "email", business: "contact_email", "individual-employer": "email" }[role], ue = session.user.email;
+    if (profile && col && ue && !/\.invalid$/i.test(ue) && profile[col] !== ue) { profile[col] = ue; sb.from(ROLES[role].table).update({ [col]: ue }).eq("id", session.user.id).then(() => {}, () => {}); }
     accounts.remember(session, role, profile);
     return { session, role, profile: profile || {} };
   }
@@ -268,6 +273,10 @@
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.500M12 19.500V22M2 12h2.500M19.500 12H22M4.900 4.900l1.800 1.800M17.300 17.300l1.800 1.800M4.900 19.100l1.800-1.800M17.300 6.700l1.800-1.800"/>',
     sunset: '<path d="M7 17a5 5 0 0 1 10 0M12 4v4M4.500 9.500l1.800 1.800M19.500 9.500l-1.800 1.800M2 17h20M6 21h12"/>',
     moon: '<path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500z"/>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    id: '<rect x="3" y="5" width="18" height="14" rx="2.500"/><circle cx="9" cy="11" r="2"/><path d="M6.500 16c.6-1.600 1.600-2.200 2.500-2.200s1.900.6 2.500 2.200M14 10h4M14 13.500h3"/>',
+    mega: '<path d="M3 11v2a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M18 9.500a3.500 3.500 0 0 1 0 5"/>',
+    crown: '<path d="M3 8l4.500 4L12 5l4.500 7L21 8l-2 11H5z"/>',
     seal: '<path d="M12 2.500 14.600 4.400 17.800 4.300 18.800 7.300 21.400 9.200 20.400 12.200 21.400 15.200 18.800 17.100 17.800 20.100 14.600 20 12 21.900 9.400 20 6.200 20.100 5.200 17.100 2.600 15.200 3.600 12.200 2.600 9.200 5.200 7.300 6.200 4.300 9.400 4.400z" fill="currentColor" stroke="none"/><path d="m8.300 12.200 2.600 2.600 4.800-5.200" stroke="#06121c" stroke-width="2.200"/>',
     phone: '<path d="M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
     cal: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
@@ -324,6 +333,10 @@
     business: ["discover", "catalog", "inquiries", "orders", "order", "wallet", "portfolio"],
     "individual-employer": ["discover", "hires", "post-job", "wallet", "applicants", "engagement", "equipment", "materials", "orders", "order"],
   };
+
+  // Verification badge colours: blue = reviewed by BAID X (free); green / purple / gold = paid verification tiers.
+  const BADGES = { verified: ["#38bdf8", "Verified", "Reviewed by BAID X"], identity: ["#34d399", "Identity verified", "ID document checked"], professional: ["#a78bfa", "Professional verified", "Trade and ID checked"], advanced: ["#e8c46a", "Advanced verified", "Full background check"] };
+  const badge = (tier, size = 17) => { const k = BADGES[tier] ? tier : "verified", [col, label] = BADGES[k]; return `<span class="vbadge t-${k}" style="color:${col}" title="${label}">${icon("seal", size)}</span>`; };
   const money = (n) => { const v = Number(n) || 0; return `${v < 0 ? "-" : ""}GH₵${Math.abs(v).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
   const ago = (iso) => {
     const s = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
@@ -332,5 +345,5 @@
     return new Date(iso).toLocaleDateString("en-GH", { day: "numeric", month: "short" });
   };
 
-  window.BX = { accounts, ICONS, icon, NAV, COMMON_ROUTES, ROLE_ROUTES, money, ago, sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
+  window.BX = { BADGES, badge, isPlaceholderEmail, accounts, ICONS, icon, NAV, COMMON_ROUTES, ROLE_ROUTES, money, ago, sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
 })();

@@ -10,9 +10,9 @@
   const SOURCES = {
     companies: {
       label: "Companies", role: "company", table: "company_profiles",
-      cols: "id,company_name,industry_sector,company_size,city_town,region,company_logo_url,cover_url,company_overview,trust_score,verification_status",
+      cols: "id,company_name,industry_sector,company_size,city_town,region,company_logo_url,cover_url,company_overview,trust_score,verification_status,badge_tier",
       map: (r) => ({
-        kind: "company", id: r.id, name: r.company_name, image: r.company_logo_url, cover: r.cover_url || null,
+        kind: "company", badge: r.badge_tier, id: r.id, name: r.company_name, image: r.company_logo_url, cover: r.cover_url || null,
         desc: r.company_overview || "Verified company on BAID X.", tag: pretty(r.industry_sector), place: place(r),
         catId: r.industry_sector, region: r.region,
         stats: [[num(r.trust_score, 1), "Trust"], [pretty(r.company_size) || "—", "Size"]],
@@ -20,11 +20,11 @@
     },
     professionals: {
       label: "Professionals", role: "worker", table: "worker_profiles",
-      cols: "id,full_name,specialty,short_bio,primary_job_category_id,years_of_experience,daily_rate_ghs,city_town,region,profile_photo_url,cover_url,portfolio_photo_urls,rank_tier,verification_status",
+      cols: "id,full_name,specialty,short_bio,primary_job_category_id,years_of_experience,daily_rate_ghs,city_town,region,profile_photo_url,cover_url,portfolio_photo_urls,rank_tier,verification_status,badge_tier",
       map: (r) => {
         const trade = JOB_CAT_BY_ID[r.primary_job_category_id]?.name || r.specialty;
         return {
-          kind: "worker", id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
+          kind: "worker", badge: r.badge_tier, id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
           desc: r.short_bio || (trade ? `${trade} based in ${r.city_town || "Ghana"}.` : "Skilled professional on BAID X."),
           tag: trade || pretty(r.rank_tier) || "Professional", place: place(r), catId: r.primary_job_category_id, region: r.region,
           stats: [[r.daily_rate_ghs ? `GH₵${num(r.daily_rate_ghs)}` : "On request", "Daily rate"], [r.years_of_experience ? `${pretty(r.years_of_experience)}${/^\d/.test(String(r.years_of_experience)) ? " yrs" : ""}` : "New", "Experience"]],
@@ -33,9 +33,9 @@
     },
     managers: {
       label: "Project Managers", role: "project-manager", table: "project_manager_profiles",
-      cols: "id,full_name,specialization,specialization_tags,years_managing_projects,projects_managed_count,city_town,region,profile_photo_url,cover_url,verification_status",
+      cols: "id,full_name,specialization,specialization_tags,years_managing_projects,projects_managed_count,city_town,region,profile_photo_url,cover_url,verification_status,badge_tier",
       map: (r) => ({
-        kind: "pm", id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || null,
+        kind: "pm", badge: r.badge_tier, id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || null,
         desc: (r.specialization_tags || []).slice(0, 3).join(" · ") || "Project manager on BAID X.",
         tag: pretty(r.specialization) || "Project Manager", place: place(r), catId: r.specialization, region: r.region,
         stats: [[r.projects_managed_count ?? 0, "Projects"], [r.years_managing_projects ?? 0, "Years"]],
@@ -43,9 +43,9 @@
     },
     businesses: {
       label: "Businesses", role: "business", table: "business_profiles",
-      cols: "id,business_name,specialty,short_bio,years_in_operation,crew_size,city_town,region,logo_url,cover_url,portfolio_photo_urls,verification_status",
+      cols: "id,business_name,specialty,short_bio,years_in_operation,crew_size,city_town,region,logo_url,cover_url,portfolio_photo_urls,verification_status,badge_tier",
       map: (r) => ({
-        kind: "business", id: r.id, name: r.business_name, image: r.logo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
+        kind: "business", badge: r.badge_tier, id: r.id, name: r.business_name, image: r.logo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
         desc: r.short_bio || "Supplier of products, equipment and materials.", tag: r.specialty || "Supplier", place: place(r),
         catId: r.specialty, region: r.region,
         stats: [[r.crew_size ?? 0, "Crew"], [r.years_in_operation ?? 0, "Years"]],
@@ -160,14 +160,14 @@
   const PIN = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 21s7-6.200 7-11.500A7 7 0 0 0 5 9.500C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>';
   const BAG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7"/></svg>';
   const KIND_LABEL = { worker: "Professional", company: "Company", pm: "Project manager", business: "Supplier" };
-  const SEAL = () => `<span class="vbadge" title="Verified">${icon("seal", 17)}</span>`;
+  const SEAL = (tier) => window.BX.badge(tier, 17);
   function cardHTML(it) {
     const role = R(), canInvite = (role === "company" && ["worker", "pm"].includes(it.kind)) || (role === "project-manager" && it.kind === "worker");
     const cover = `<div class="c-cover k-${esc(it.kind)} ${it.cover ? "has" : ""}" ${it.cover ? `style="background-image:url('${esc(it.cover)}')"` : ""}><span class="c-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span></div>`;
     const av = `<div class="c-av" ${it.image ? `style="background-image:url('${esc(it.image)}')"` : ""}>${it.image ? "" : esc(initials(it.name))}</div>`;
     const msg = role ? `<button class="b2" data-fx="message" data-id="${esc(it.id)}" data-name="${esc(it.name)}">Message</button>` : "";
     return `<article class="card c2" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">${cover}
-      <div class="c-head">${av}<div class="c-id"><h3><span class="nm">${esc(it.name)}</span>${SEAL()}</h3><div class="c-tag">${esc(it.tag)}</div></div></div>
+      <div class="c-head">${av}<div class="c-id"><h3><span class="nm">${esc(it.name)}</span>${SEAL(it.badge)}</h3><div class="c-tag">${esc(it.tag)}</div></div></div>
       <div class="c-body"><div class="c-loc">${PIN.replace('width="20" height="20"', 'width="15" height="15"')}<span>${esc(it.place)}</span></div><p class="desc">${esc(it.desc)}</p></div>
       <div class="c-stats">${it.stats.map(([v, l]) => `<div class="c-stat"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div>
       <div class="c-foot"><button class="b1">${canInvite ? "Invite to project" : "View profile"}</button>${msg}</div></article>`;
@@ -212,20 +212,20 @@
     if (!member) return;
     const role = ROLES[me.role], p = me.profile || {}, cl = checklistState(me.role, p);
     state.cl = cl;
-    const name = p[role.nameKey] || "Your account", phone = p[role.phoneKey] || me.session.user.phone || me.session.user.email || "";
+    const name = p[role.nameKey] || "Your account", phone = p[role.phoneKey] || me.session.user.phone || (window.BX.isPlaceholderEmail(me.session.user.email) ? "" : me.session.user.email) || "";
     const photo = p.profile_photo_url || p.company_logo_url || p.logo_url;
     $("#accAvatar").style.backgroundImage = photo ? `url('${photo.replace(/'/g, "%27")}')` : "";
     $("#accAvatar").textContent = photo ? "" : initials(name);
     const verified = p.verification_status === "verified";
     $("#accCover").style.backgroundImage = p.cover_url ? `url('${p.cover_url.replace(/'/g, "%27")}')` : "";
     $("#accName").textContent = name; $("#accPhone").textContent = phone ? (/^\d/.test(phone) ? `+${phone}` : phone) : "";
-    $("#accSeal").hidden = !verified; $("#accSeal").innerHTML = verified ? SEAL() : "";
+    $("#accSeal").hidden = !verified; $("#accSeal").innerHTML = verified ? window.BX.badge(p.badge_tier, 17) : "";
     $("#accRole").textContent = role.account;
-    $("#accStatus").className = verified ? "vt" : ""; $("#accStatus").innerHTML = verified ? `${icon("seal", 14)} Verified` : esc(statusLabel(p.verification_status));
+    $("#accStatus").className = verified ? "vt" : ""; $("#accStatus").innerHTML = verified ? `<span style="color:${(window.BX.BADGES[p.badge_tier] || window.BX.BADGES.verified)[0]}">${icon("seal", 14)}</span> ${esc((window.BX.BADGES[p.badge_tier] || window.BX.BADGES.verified)[1])}` : esc(statusLabel(p.verification_status));
     // verified members don't need the checklist any more: show the badge instead
     document.querySelector(".acc-card.check").hidden = verified;
     $("#accVerified").hidden = !verified;
-    $("#accVerified").innerHTML = verified ? `<div class="verified-card"><span class="vc-ic">${icon("seal", 26)}</span><span><b>Verified ${esc(role.account.toLowerCase())}</b><small>BAID X has confirmed your identity. The badge shows on your profile and cards.</small></span></div>` : "";
+    $("#accVerified").innerHTML = verified ? (() => { const [col, label, sub] = window.BX.BADGES[p.badge_tier] || window.BX.BADGES.verified; return `<div class="verified-card" style="border-color:${col}55"><span class="vc-ic" style="color:${col};background:${col}1f">${icon("seal", 26)}</span><span><b>${esc(label)} ${esc(role.account.toLowerCase())}</b><small>${esc(sub)}. The badge shows on your profile and cards.</small></span></div>`; })() : "";
     $("#accCount").textContent = `${cl.done}/${cl.total}`;
     $("#filterDot").hidden = !(state.f.type !== "all" || state.f.cat || state.f.region);
 

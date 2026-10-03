@@ -289,7 +289,7 @@
     const { data: { session } } = await sb.auth.getSession(); const user = session?.user; // local read: no network round trip
     if (!user) { toast("Your session expired. Please sign in again."); show("type"); return; }
     const phone = user.phone ? `+${String(user.phone).replace(/^\+/, "")}` : S.phone || "";
-    const email = user.email || "";
+    const email = /\.invalid$/i.test(user.email || "") ? "" : user.email || ""; // the internal sign-in placeholder is never shown or stored on a profile
     const name = S.name, cat = S.cat?.id;
     const rows = {
       worker: { full_name: name, phone_number: phone, primary_job_category_id: cat },

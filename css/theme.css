@@ -328,3 +328,5 @@ body.g-on .comp { background: rgba(14,14,14,.5); backdrop-filter: blur(26px) sat
 body.g-on .comp-row textarea { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); }
 body.g-on .dsep span, body.g-on .sysmsg, body.g-on .older { background: rgba(14,14,14,.5); border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(14px); color: #d5d5d5; }
 body.g-on .chat-head small { white-space: nowrap; font-size: 11.5px; } body.g-on .chat-head .tx { overflow: hidden; }
+
+.vbadge[class*="t-"] { filter: drop-shadow(0 0 6px currentColor); } .vbadge.t-identity, .vbadge.t-professional, .vbadge.t-advanced { filter: drop-shadow(0 0 5px currentColor); }

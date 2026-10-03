@@ -55,7 +55,7 @@
       return `<div class="dcard plan ${isCur ? "cur" : ""}"><h4><span>${TIER_NAME[t]}</span>${isCur ? `<span class="pill ok">Your plan</span>` : ""}</h4>
         <div class="pr"><b>${cedi(show.price_minor)}</b><small>per ${per}</small>${f ? `<s>${cedi(p.price_minor)}</s>` : ""}</div>
         ${caps ? `<ul class="caps">${caps}</ul>` : ""}
-        ${isCur ? "" : `<button class="btn-light sm" data-bact="choose" data-id="${esc(show.id)}">${cur === "access" ? "Choose " + TIER_NAME[t] : "Switch to " + TIER_NAME[t]}</button>`}</div>`;
+        <div class="prow"><button class="more" data-bact="benefits" data-tier="${t}">See what you get</button>${isCur ? "" : `<button class="btn-light sm" data-bact="choose" data-id="${esc(show.id)}">${cur === "access" ? "Choose " + TIER_NAME[t] : "Switch to " + TIER_NAME[t]}</button>`}</div></div>`;
     }).join("");
     // payment history now lives on its own tab
     html += `<p class="cap2">Verification is a separate service and is never part of a plan. Paying for a plan does not make an account verified.</p>`;
@@ -63,18 +63,24 @@
   }
 
   const HISTORY = (pays) => `<div class="sec">Payment history</div>` + (pays.length ? pays.map((p) => `<div class="row"><span class="ic">${icon("pay", 17)}</span><span class="tx"><b>${esc(pretty(p.purpose === "wallet_deposit" ? "wallet top-up" : p.purpose))}</b><small>${esc(date(p.created_at))} · ${esc(p.reference)}</small></span><span class="rt"><b>${cedi(p.amount_minor || p.expected_amount_minor || 0, p.currency)}</b>${pill(PAY_STATUS, p.status)}</span></div>`).join("") : `<div class="cap2">No payments yet.</div>`);
-  const KIND = { verification: ["Verification", "seal", "A one-time review fee. Paying starts the review; it does not guarantee approval."], boost: ["Boosts", "bolt", "Appear higher in search and listings for the time you choose."], xid: ["Digital ID", "id", "A shareable ID card, valid for a year."], promotion: ["Promotions", "star", "Featured placement for your catalog listings."] };
+  const KIND = { verification: ["Verification", "seal", "A one-time review fee. Paying starts the review; it does not guarantee approval."], boost: ["Boosts", "bolt", "Appear higher in search and listings for the time you choose."], xid: ["Digital ID", "id", "A shareable ID card, valid for a year."], promotion: ["Promotions", "mega", "Featured placement for your catalog listings."] };
+  const TIER_OF = { identity: "identity", standard: "identity", professional: "professional", advanced: "advanced", enhanced: "advanced" };
+  const BADGE_WORD = { identity: "Green", professional: "Purple", advanced: "Gold" };
   const DUR = (h) => (!h ? "" : h < 48 ? `${h} hours` : `${Math.round(h / 24)} days`);
   async function servicesView(c) {
     const { data } = await c.sb.from("service_catalog").select("id,kind,code,label,price_minor,currency,duration_hours,metadata,role").eq("is_active", true).order("price_minor", { ascending: true });
     const mine = (data || []).filter((x) => !x.role || x.role === c.role);
-    let html = `<p class="cap2" style="margin-bottom:10px">Verification, boosts and digital IDs are paid separately from your plan, by Mobile Money or card through Paystack. Nothing is charged until you confirm, and nothing is activated until Paystack confirms the payment.</p>`;
+    const B = window.BX.BADGES, me = c.profile || {}, cur = me.verification_status === "verified" ? (B[me.badge_tier] ? me.badge_tier : "verified") : null;
+    let html = (cur ? `<div class="dcard"><h4><span>Your badge</span><span class="pill ok">Active</span></h4><div class="bd-cur">${window.BX.badge(cur, 40)}<div><b>${esc(B[cur][1])}</b><small>${esc(B[cur][2])}. Shown on your profile, cards and search results.</small></div></div></div>` : "")
+      + `<div class="lg"><div class="lg-h"><b>Verification badges</b><small>Your badge colour shows how you were verified</small></div><div class="lg-grid">${["verified", "identity", "professional", "advanced"].map((k) => `<div>${window.BX.badge(k, 28)}<b>${esc(k === "verified" ? "Verified" : B[k][1].replace(" verified", ""))}</b><small>${esc(B[k][2])}</small></div>`).join("")}</div></div>`
+      + `<p class="cap2" style="margin-bottom:10px">Verification, boosts and digital IDs are paid separately from your plan, by Mobile Money or card through Paystack. Nothing is charged until you confirm, and nothing is activated until Paystack confirms the payment.</p>`;
     for (const k of ["verification", "boost", "xid", "promotion"]) {
       const list = mine.filter((x) => x.kind === k); if (!list.length) continue;
       const [title, ic, blurb] = KIND[k];
       html += `<div class="sec">${esc(title)}</div><p class="cap2" style="margin:-4px 2px 8px">${esc(blurb)}</p>` + list.map((x) => {
         const t = x.metadata?.target, later = k === "promotion" || t === "project" || t === "business_listing";
-        return `<div class="dcard svc"><span class="ic">${icon(ic, 18)}</span><span class="tx"><b>${esc(x.label)}</b><small>${esc(DUR(x.duration_hours) || (k === "verification" ? "One-time review" : "Per year"))}</small></span><span class="pr"><b>${cedi(x.price_minor, x.currency)}</b>${later ? `<small class="cap2">Buy from the ${k === "promotion" ? "catalog" : t === "project" ? "project" : "listing"} page</small>` : `<button class="btn-light sm" data-bact="svc" data-kind="${esc(k)}" data-code="${esc(x.code)}" data-target="${esc(t || "")}" data-label="${esc(x.label)}" data-price="${x.price_minor}">${k === "boost" ? "Boost" : k === "xid" ? "Get" : "Pay"}</button>`}</span></div>`;
+        const tier = k === "verification" ? TIER_OF[x.code] : null, bd = tier ? window.BX.BADGES[tier] : null;
+        return `<div class="dcard svc"><span class="ic" ${bd ? `style="background:${bd[0]}1f;border-color:${bd[0]}55;color:${bd[0]}"` : ""}>${icon(tier ? "seal" : ic, tier ? 22 : 18)}</span><span class="tx"><b>${esc(x.label)}</b><small>${esc(DUR(x.duration_hours) || (k === "verification" ? "One-time review" : "Per year"))}</small>${bd ? `<span class="tagc" style="color:${bd[0]};border-color:${bd[0]}55;background:${bd[0]}14">${esc(BADGE_WORD[tier])} badge</span>` : ""}</span><span class="pr"><b>${cedi(x.price_minor, x.currency)}</b>${later ? `<small class="cap2">Buy from the ${k === "promotion" ? "catalog" : t === "project" ? "project" : "listing"} page</small>` : `<button class="btn-light sm" data-bact="svc" data-kind="${esc(k)}" data-code="${esc(x.code)}" data-target="${esc(t || "")}" data-label="${esc(x.label)}" data-price="${x.price_minor}">${k === "boost" ? "Boost" : k === "xid" ? "Get" : "Pay"}</button>`}</span></div>`;
       }).join("");
     }
     return html || `<div class="cap2">No services are available for your account type yet.</div>`;
@@ -118,6 +124,21 @@
       ${live && !s.cancel_at_period_end ? `<button class="btn-dark sm" data-bact="cancel">Cancel renewal</button>` : ""}</div>`;
   }
 
+
+  const BEST = { pro: "People who use BAID X regularly and want more room to work.", premium: "Busy members who run several jobs or projects at once.", enterprise: "Teams and larger organizations that need higher limits and shared access." };
+  function benefitsSheet(tier) {
+    const plans = state.ctx.plans, p = plans.find((x) => x.tier === tier && x.billing_interval === state.interval && !x.is_founding) || plans.find((x) => x.tier === tier);
+    if (!p) return;
+    const meta = p.metadata || {}, list = Array.isArray(meta.benefits) ? meta.benefits : [];
+    const caps = Object.entries(p.capacity_limits || {}).map(([k, v]) => ({ t: `Up to ${v} ${CAP[k] || pretty(k)}`, d: "" }));
+    const items = [{ t: "Everything in Access", d: "Profile, search, messaging, applications, reviews, reputation and XID lookup." }, ...list.map((b) => ({ t: b.t || b.title || "", d: b.d || b.desc || "" })), ...caps].filter((b) => b.t);
+    openSheet(`${TIER_NAME[tier]} plan`, `<div class="bn">${icon("crown", 22)}<div><b>${cedi(p.price_minor, p.currency)} / ${state.interval === "monthly" ? "month" : "year"}</b><small>Cancel any time · 7-day refund window</small></div></div>
+      <div class="bsec"><small>BEST FOR</small><p>${esc(meta.best_for || BEST[tier] || "")}</p></div>
+      <div class="bsec"><small>WHAT YOU GET</small>${items.map((b) => `<div class="bi2"><span class="bic">${icon("star", 16)}</span><div><b>${esc(b.t)}</b>${b.d ? `<small>${esc(b.d)}</small>` : ""}</div></div>`).join("")}</div>
+      <div class="bsec"><small>WHAT IT DOES NOT INCLUDE</small><p>Verification badges are bought separately and are never part of a plan.</p></div>
+      <button class="btn-light" style="width:100%;margin-top:14px" data-bact="choose" data-id="${esc(p.id)}">Choose ${TIER_NAME[tier]} · ${cedi(p.price_minor, p.currency)}</button>`);
+  }
+
   function checkoutSheet(plan, foundingOpen) {
     const annual = plan.billing_interval === "annual", now = new Date();
     const renew = new Date(now.getTime() + (annual ? 365 : 30) * 864e5), refund = new Date(now.getTime() + 7 * 864e5);
@@ -159,6 +180,7 @@
     if (a === "svc") { el.disabled = true; await buyService(c, el); el.disabled = false; return; }
     if (a === "svc-go") { el.disabled = true; closeSheet(); await startService(c, el.dataset.kind, el.dataset.code, { target_id: el.dataset.tid }); return; }
     if (a === "interval") { state.interval = el.dataset.i; return window.APP.route(); }
+    if (a === "benefits") return benefitsSheet(el.dataset.tier);
     if (a === "choose") { const plan = state.ctx.plans.find((p) => p.id === el.dataset.id); return checkoutSheet(plan, state.founding); }
     if (a === "pay") { el.disabled = true; await pay(c, el.dataset.id); el.disabled = false; return; }
     if (a === "cancel") return openSheet("Cancel renewal", `<p class="cap2">Your plan will not renew. You keep paid access until the end of the period you already paid for. Nothing is deleted.</p><div class="btn-row"><button class="btn-light sm" data-bact="cancel-yes">Stop renewal</button><button class="btn-dark sm" data-close>Keep my plan</button></div>`);

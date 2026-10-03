@@ -152,6 +152,21 @@
   }
 
 
+
+  /* ---------- Sign-in email: the member's own address, confirmed by a link, then usable to sign in ---------- */
+  const EMAIL_COL = { worker: "email", company: "contact_email", "project-manager": "email", business: "contact_email", "individual-employer": "email" };
+  const emailState = (c) => { const u = c.me.session.user; return { current: window.BX.isPlaceholderEmail(u.email) ? "" : u.email || "", pending: u.new_email || "" }; };
+  const emailStatus = (c) => { const { current, pending } = emailState(c); return pending ? `<div class="es-warn" style="margin:0 0 12px">${icon("shield", 18)}<div><b>Waiting for confirmation.</b> We sent a link to ${esc(pending)}. Open it to finish. Until then you sign in with your phone number.</div></div>` : current ? `<div class="mk-phone"><b style="font-size:16px">${esc(current)}</b><span class="pill ok">Confirmed</span></div><p class="cap2">You can sign in with this email and your password, or with your phone number.</p>` : `<p class="cap2">Add your own email. We send a link to confirm it, then you can sign in with it as well as your phone number.</p>`; };
+  async function addEmail(c, raw) {
+    const email = String(raw || "").trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 160) throw new Error("Enter a valid email address.");
+    if (/\.invalid$/.test(email)) throw new Error("Use your own email address.");
+    if (email === emailState(c).current) throw new Error("That is already your sign-in email.");
+    const { error } = await c.sb.auth.updateUser({ email }, { emailRedirectTo: `${location.origin}${location.pathname}` });
+    if (error) throw new Error(/already|registered|exists/i.test(error.message) ? "That email is already used by another account." : /rate|seconds/i.test(error.message) ? "Please wait a minute before asking for another link." : error.message || "We couldn't send the link.");
+    await window.APP.refresh();
+  }
+
   /* ======================================================================
      Checklist steps: every checklist row opens its own screen with only its own questions.
      ====================================================================== */
@@ -165,7 +180,7 @@
   // checklist title -> { cols: [...], photo?, phone?, go?, blurb }
   const STEPS = (c) => ({
     "Phone number": { phone: true },
-    "Email": { cols: [c.role === "company" || c.role === "business" ? "contact_email" : "email"], blurb: "We use this for account notices and receipts." },
+    "Email": { email: true, blurb: "Your own email, for notices and as another way to sign in." },
     "Basic profile": { photo: true, cols: [ROLES[c.role].nameKey], blurb: c.role === "company" || c.role === "business" ? "Your name and logo are what people see first." : "Your name and photo are what people see first." },
     "Trade category": { cols: ["primary_job_category_id", "has_own_tools"], blurb: "Pick the trade clients should find you under." },
     "Specialization": { cols: ["specialization", "specialization_tags"] },
@@ -198,6 +213,7 @@
     const bar = `<div class="mk-step"><span>Step ${idx + 1} of ${list.length}</span><i style="--w:${Math.round(((idx + 1) / list.length) * 100)}%"></i></div>`;
     const top = head(title, `<button class="btn-dark sm" data-go="checklist">Checklist</button>`) + bar + (spec.blurb || desc ? `<p class="sub2">${esc(spec.blurb || desc)}</p>` : "");
     if (spec.phone) return top + `<div class="fs"><h3>Your number</h3><div class="mk-phone"><b>${esc(maskPhone(p[ROLES[c.role].phoneKey]) || "Not set")}</b>${done ? `<span class="pill ok">Verified</span>` : ""}</div><p class="cap2">This number signs you in and receives your one-time codes. It was confirmed when you created your account.</p></div><button class="btn-dark" style="width:100%" data-fx="change-phone">Change number</button><button class="mk-skip" data-go="checklist">Back to checklist</button>`;
+    if (spec.email) return top + `<div class="fs"><h3>Sign-in email</h3>${emailStatus(c)}<form data-fx-form="step-email">${fld("Email address", inp("email", { type: "email", req: true, ph: "you@example.com" }), "We send a confirmation link to this address.")}<button class="btn-light" type="submit" style="width:100%">Send confirmation link</button></form></div><button class="mk-skip" data-go="checklist">Back to checklist</button>`;
     if (spec.go) return top + `<button class="btn-light" style="width:100%" data-go="${spec.go}">${esc(spec.goLabel || "Open")}</button><button class="mk-skip" data-go="checklist">Back to checklist</button>`;
     const [pcol, , plabel] = PHOTO[c.role], cats = JOB_CATS.map((j) => [j.id, j.name]);
     const field = (col) => {
@@ -313,7 +329,7 @@
     "open-privacy": () => { window.open("privacy.html", "_blank", "noopener"); },
     "open-about": () => { window.open("about.html", "_blank", "noopener"); },
     "public-profile": (c) => publicProfile(c),
-    "add-email": (c) => openSheet("Add email", `<form data-fx-form="add-email">${fld("Email address", inp("email", { type: "email", req: true, val: c.me.session.user.email }), "We send a link to confirm it.")}<button class="btn-light" type="submit" style="width:100%">Send confirmation</button></form>`),
+    "add-email": (c) => openSheet("Sign-in email", `${emailStatus(c)}<form data-fx-form="add-email">${fld("Email address", inp("email", { type: "email", req: true, ph: "you@example.com" }), "We send a link to confirm it.")}<button class="btn-light" type="submit" style="width:100%">Send confirmation link</button></form>`),
     "change-phone": (c) => openSheet("Change phone", `<form data-fx-form="change-phone">${fld("New mobile number", inp("phone", { type: "tel", ph: "+233201234567", req: true }), "Include the country code. We text a code to confirm.")}<button class="btn-light" type="submit" style="width:100%">Send code</button></form>`),
     "change-password": (c) => openSheet("Change password", `<form data-fx-form="change-password">${fld("New password", inp("pw", { type: "password", req: true, min: 8 }), "At least 8 characters.")}${fld("Confirm new password", inp("pw2", { type: "password", req: true }))}<button class="btn-light" type="submit" style="width:100%">Update password</button></form>`),
     "add-past": () => openSheet("Add a past project", `<form data-fx-form="add-past">${fld("Project name", inp("name", { req: true, max: 100 }))}${fld("Client", inp("client", { max: 100 }))}${fld("Year", inp("year", { type: "number", min: 1990, step: 1 }))}${fld("What you delivered", area("description", { max: 400 }))}<button class="btn-light" type="submit" style="width:100%">Add project</button></form>`),
@@ -385,7 +401,8 @@
       else if (k === "add-cert") { const file = form.querySelector('[name="doc"]').files[0]; const path = await upload(c, "trade-licenses", file, "cert"); const { error } = await c.sb.from("worker_certifications").insert({ worker_id: c.uid, cert_name: d.name, issuing_body: d.issuer || null, document_url: path }); if (error) throw error; closeSheet(); c.toast("Certification added"); window.APP.route(); }
       else if (k === "pm-cert") { const patch = { certification_body: d.certification_body || null, certification_number: d.certification_number || null }; const f = form.querySelector('[name="doc"]').files[0]; if (f) patch.certification_doc_url = await upload(c, "trade-licenses", f, "cert"); await save(c, patch); c.toast("Saved"); await refreshMe(); window.APP.route(); }
       else if (k === "link-code") { await rpc(c, "request_pm_link", { p_code: d.code }); c.toast("Request sent. The company will review it."); window.APP.route(); }
-      else if (k === "add-email") { const { error } = await c.sb.auth.updateUser({ email: d.email }); if (error) throw error; closeSheet(); c.toast("Check your email to confirm."); }
+      else if (k === "add-email") { await addEmail(c, d.email); closeSheet(); c.toast("Check your inbox and open the link to confirm."); }
+      else if (k === "step-email") { await addEmail(c, d.email); c.toast("Check your inbox and open the link to confirm."); window.APP.route(); }
       else if (k === "change-phone") { const { error } = await c.sb.auth.updateUser({ phone: d.phone.replace(/\s/g, "") }); if (error) throw new Error("Phone changes need SMS, which isn't switched on yet."); closeSheet(); c.toast("We texted you a code."); }
       else if (k === "change-password") { if (d.pw !== d.pw2) throw new Error("The two passwords don't match."); const { error } = await c.sb.auth.updateUser({ password: d.pw }); if (error) throw error; closeSheet(); c.toast("Password updated"); }
     } catch (err) { fail(c, err); }
