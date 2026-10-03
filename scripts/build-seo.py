@@ -7,7 +7,7 @@ SITE = "https://baid-x-website.vercel.app"
 TODAY = datetime.date.today().isoformat()
 ORG_ID = SITE + "/#org"; BRAND_ID = SITE + "/#brand"; APP_ID = SITE + "/#app"; SITE_ID = SITE + "/#website"
 DESC = "BAID X is Ghana's work network: verified professionals, companies, project managers, suppliers and clients on one trusted platform to hire, run projects and get paid."
-OG = SITE + "/assets/og-image.png?v=3"
+OG = SITE + "/assets/og-image.png?v=4"
 esc = html.escape
 w = lambda path, s: (os.makedirs(os.path.dirname(path) or ".", exist_ok=True), open(path, "w", encoding="utf-8").write(s))
 
