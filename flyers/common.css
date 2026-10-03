@@ -1,0 +1,15 @@
+@font-face { font-family: Inter; font-weight: 400; src: url(fonts/inter-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: Inter; font-weight: 600; src: url(fonts/inter-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Inter; font-weight: 800; src: url(fonts/inter-latin-800-normal.woff2) format("woff2"); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #000; font-family: Inter, system-ui, sans-serif; color: #f6f6f7; }
+.fl { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: #050505; }
+.glow { position: absolute; border-radius: 50%; }
+.g1 { width: 1300px; height: 1300px; left: -110px; top: -380px; background: radial-gradient(circle, rgba(232,196,106,.38), transparent 62%); }
+.g2 { width: 1000px; height: 1000px; left: 380px; top: 640px; background: radial-gradient(circle, rgba(232,196,106,.22), transparent 62%); }
+.frame { position: absolute; inset: 28px; border: 1px solid rgba(232,217,168,.28); border-radius: 8px; }
+.frame::before, .frame::after { content: ""; position: absolute; width: 56px; height: 56px; border: 3px solid rgba(232,217,168,.7); }
+.frame::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; } .frame::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.logo { position: absolute; left: 74px; top: 66px; width: 250px; }
+.url { position: absolute; left: 0; right: 0; bottom: 74px; text-align: center; font-weight: 600; font-size: 34px; letter-spacing: .04em; color: #e8d9a8; }
+.gold { color: #e8c46a; }
