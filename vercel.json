@@ -97,5 +97,13 @@
       "path": "/api/paystack-sweep",
       "schedule": "0 3 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/sms-scheduler.js": {
+      "maxDuration": 60
+    },
+    "api/sasusync-admin.js": {
+      "maxDuration": 30
+    }
+  }
 }

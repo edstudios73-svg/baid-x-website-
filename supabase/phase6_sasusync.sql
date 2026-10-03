@@ -174,3 +174,84 @@ end $$;
 grant execute on function public.admin_sms_broadcasts() to authenticated;
 revoke execute on function public.admin_sms_broadcasts() from anon, public;
 -- admin_broadcast: the sms channel is no longer reported as "not configured" (the SMS itself is sent by /api/sasusync-admin sms_broadcast)
+
+-- 12) Scheduled SMS + automated welcome messages. Applied to project igfmmprlrybxsdzehwid.
+create table if not exists public.sms_jobs (id uuid primary key default gen_random_uuid(), kind text not null check (kind in ('broadcast','welcome')), run_at timestamptz not null default now(), status text not null default 'queued' check (status in ('queued','running','sent','partial','failed','skipped','cancelled')), dedupe_key text unique, payload jsonb not null default '{}'::jsonb, created_by uuid, created_at timestamptz not null default now(), started_at timestamptz, finished_at timestamptz, result jsonb, error text);
+create table if not exists public.sms_automations (role text primary key check (role in ('worker','company','project-manager','business','individual-employer')), enabled boolean not null default false, template text not null, updated_at timestamptz not null default now(), updated_by uuid);
+alter table public.sms_jobs enable row level security; alter table public.sms_automations enable row level security;
+revoke all on public.sms_jobs, public.sms_automations from anon, authenticated;
+create index if not exists sms_jobs_due_idx on public.sms_jobs (status, run_at);
+insert into public.sms_automations(role, enabled, template) values
+ ('worker', false, 'Welcome to BAID X, {first_name}! Complete your profile and get verified to start landing jobs: baid-x-website.vercel.app'),
+ ('company', false, 'Welcome to BAID X, {name}! Post your first job and find verified workers fast: baid-x-website.vercel.app'),
+ ('project-manager', false, 'Welcome to BAID X, {first_name}! Start a project and build your team with verified talent: baid-x-website.vercel.app'),
+ ('business', false, 'Welcome to BAID X, {name}! List your services and get found by clients: baid-x-website.vercel.app'),
+ ('individual-employer', false, 'Welcome to BAID X, {first_name}! Post what you need done and hire trusted people: baid-x-website.vercel.app')
+on conflict (role) do nothing;
+insert into public.platform_settings(key, value) values ('sms_automations_enabled', 'false'::jsonb) on conflict (key) do nothing;
+create or replace function public.sms_jobs_claim(p_limit int default 20) returns setof public.sms_jobs language plpgsql security definer set search_path = public as $$
+begin
+  update sms_jobs set status = 'failed', error = 'STUCK (may have been sent)', finished_at = now() where status = 'running' and started_at < now() - interval '10 minutes';
+  return query with c as (select id from sms_jobs where status = 'queued' and run_at <= now() order by run_at limit greatest(1, least(p_limit, 50)) for update skip locked)
+    update sms_jobs j set status = 'running', started_at = now() from c where j.id = c.id returning j.*;
+end $$;
+create or replace function public.sms_welcome_context(p_user uuid) returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('role', a.role,
+    'name', case a.role when 'worker' then (select full_name from worker_profiles where id = p_user) when 'company' then (select company_name from company_profiles where id = p_user)
+       when 'project-manager' then (select full_name from project_manager_profiles where id = p_user) when 'business' then (select business_name from business_profiles where id = p_user)
+       when 'individual-employer' then (select full_name from individual_employer_profiles where id = p_user) end,
+    'phone', coalesce((select phone from phone_identities where user_id = p_user), case a.role when 'worker' then (select phone_number from worker_profiles where id = p_user)
+       when 'company' then (select contact_phone from company_profiles where id = p_user) when 'project-manager' then (select phone_number from project_manager_profiles where id = p_user)
+       when 'business' then (select contact_phone from business_profiles where id = p_user) when 'individual-employer' then (select phone_number from individual_employer_profiles where id = p_user) end),
+    'opted_out', coalesce((select not (np.sms_enabled and np.announcements) from notification_preferences np where np.user_id = p_user), false))
+  from account_roles a where a.user_id = p_user and a.account_status = 'active' limit 1 $$;
+create or replace function public.sms_scheduler_poke() returns void language plpgsql security definer set search_path = public, extensions as $$
+declare sec text;
+begin
+  if not exists (select 1 from sms_jobs where status = 'queued' and run_at <= now()) then return; end if;
+  select v into sec from app_secrets where k = 'push_secret';
+  perform net.http_post(url := 'https://baid-x-website.vercel.app/api/sms-scheduler', headers := jsonb_build_object('content-type','application/json','x-push-secret', sec), body := '{}'::jsonb, timeout_milliseconds := 25000);
+exception when others then null;
+end $$;
+create or replace function public.trg_sms_welcome() returns trigger language plpgsql security definer set search_path = public, extensions as $$
+begin
+  if coalesce((select value from platform_settings where key = 'sms_automations_enabled') = 'true'::jsonb, false)
+     and exists (select 1 from sms_automations where role = new.role and enabled) then
+    insert into sms_jobs(kind, run_at, dedupe_key, payload, created_by) values ('welcome', now(), 'welcome:' || new.user_id::text, jsonb_build_object('user_id', new.user_id, 'role', new.role), new.user_id) on conflict (dedupe_key) do nothing;
+    perform public.sms_scheduler_poke();
+  end if;
+  return new;
+exception when others then return new;
+end $$;
+create trigger sms_welcome_on_role after insert on public.account_roles for each row execute function public.trg_sms_welcome();
+create extension if not exists pg_cron;
+select cron.schedule('sms-scheduler', '* * * * *', 'select public.sms_scheduler_poke()');
+create or replace function public.sched_broadcast_inapp(p_title text, p_body text, p_href text, p_roles text[], p_by uuid, p_channels text[]) returns integer language plpgsql security definer set search_path = public as $$
+declare bid uuid; n int; ch text[] := coalesce(p_channels, array['in_app']);
+begin
+  insert into notification_broadcasts(created_by, title, body, href, target_roles, channels, status, sent_at, meta) values (p_by, trim(p_title), trim(p_body), nullif(trim(coalesce(p_href,'')),''), coalesce(p_roles,'{}'), ch, 'sent', now(),
+    jsonb_build_object('delivered', jsonb_build_object('in_app', true), 'scheduled', true, 'not_configured', (select coalesce(jsonb_agg(c), '[]') from unnest(ch) c where c not in ('in_app','sms')))) returning id into bid;
+  insert into notifications(user_id, type, title, body, href, category, meta, broadcast_id)
+    select user_id, 'announcement', trim(p_title), trim(p_body), nullif(trim(coalesce(p_href,'')),''), 'announcement', '{}', bid from account_roles where account_status = 'active' and (coalesce(array_length(p_roles,1),0) = 0 or role = any(p_roles));
+  get diagnostics n = row_count; update notification_broadcasts set recipient_count = n where id = bid;
+  return n;
+end $$;
+-- admin_sms_jobs() and admin_sms_automations() are admin-gated read RPCs (granted to authenticated); the rest are service-only.
+create or replace function public.admin_sms_jobs() returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_active_admin() then raise exception 'not allowed'; end if;
+  return coalesce((select jsonb_agg(x) from (select id, kind, status, run_at, created_at, finished_at, error,
+      left(coalesce(payload->>'message',''), 160) as message, payload->'roles' as roles, coalesce((payload->'in_app') is not null, false) as in_app, result
+    from sms_jobs where kind = 'broadcast' order by case when status in ('queued','running') then 0 else 1 end, run_at desc limit 30) x), '[]'::jsonb);
+end $$;
+create or replace function public.admin_sms_automations() returns jsonb language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_active_admin() then raise exception 'not allowed'; end if;
+  return jsonb_build_object('master', coalesce((select value from platform_settings where key = 'sms_automations_enabled') = 'true'::jsonb, false),
+    'automations', coalesce((select jsonb_agg(jsonb_build_object('role', role, 'enabled', enabled, 'template', template, 'updated_at', updated_at) order by role) from sms_automations), '[]'::jsonb),
+    'sent_7d', coalesce((select jsonb_object_agg(status, c) from (select status, count(*) c from sms_jobs where kind = 'welcome' and created_at > now() - interval '7 days' group by status) s), '{}'::jsonb));
+end $$;
+grant execute on function public.admin_sms_jobs() to authenticated; grant execute on function public.admin_sms_automations() to authenticated;
+revoke execute on function public.admin_sms_jobs() from anon, public; revoke execute on function public.admin_sms_automations() from anon, public;
+revoke execute on function public.sms_jobs_claim(int) from public, anon, authenticated; revoke execute on function public.sms_welcome_context(uuid) from public, anon, authenticated;
+revoke execute on function public.sms_scheduler_poke() from public, anon, authenticated; revoke execute on function public.sched_broadcast_inapp(text,text,text,text[],uuid,text[]) from public, anon, authenticated;

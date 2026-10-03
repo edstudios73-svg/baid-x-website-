@@ -42,3 +42,12 @@ test("admin broadcast UI: SMS channel previews first, needs typed SEND, sends a 
   assert.ok(f.includes("440") && f.includes("enough_credit") && f.includes("within_limit"));
   assert.ok(!/api\/v1\/send|smssandbox/.test(src));
 });
+
+test("admin UI: Scheduled and Automations tabs, schedule-for-later flow with confirmation, template chips and live preview", () => {
+  assert.ok(src.includes('["scheduled", "Scheduled"]') && src.includes('["automations", "Automations", 1]'));
+  const f = src.slice(src.indexOf('if (f.id === "bf")'), src.indexOf('if (f.id === "setf")'));
+  assert.ok(f.indexOf("dry_run: true") < f.indexOf('action: "sms_schedule"') && /confirm: sms \? "SCHEDULE SMS"/.test(f) && /toUpperCase\(\) !== "SEND"/.test(f));
+  assert.ok(src.includes('data-ph="{first_name}"') && src.includes("data-auto-prev") && src.includes('action: "sms_automation_save"') && src.includes('action: "sms_automations_master"') && src.includes('action: "sms_job_cancel"'));
+  assert.ok(src.includes("data-painted"), "the preview repaint is guarded against an observer loop");
+  assert.ok(!/api\/v1\/send|smssandbox/.test(src));
+});
