@@ -64,7 +64,9 @@
   const ssSet = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* private mode */ } };
   function runSplash() {
     const el = $("#splash");
-    setTimeout(() => { el.classList.add("hide"); ssSet("baidx_splash", "1"); }, ssGet("baidx_splash") ? 0 : 1800);
+    const seen = ssGet("baidx_splash"), calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (seen) { el.classList.add("hide", "instant"); return; }
+    setTimeout(() => { el.classList.add("leave"); ssSet("baidx_splash", "1"); setTimeout(() => el.classList.add("hide"), 750); }, calm ? 900 : 3300);
   }
 
   /* ---------- Routing ---------- */
