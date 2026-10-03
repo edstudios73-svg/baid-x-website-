@@ -80,6 +80,7 @@
     };
     return head("Edit profile") + `<form class="pform" data-fx-form="edit-profile" autocomplete="off">
       <div class="fs"><h3>${esc(plabel)}</h3><div class="photo-row"><span class="av lg" ${p[pcol] ? `style="background-image:url('${esc(p[pcol])}')"` : ""}>${p[pcol] ? "" : esc(initials(p[ROLES[c.role].nameKey]))}</span><label class="btn-dark sm filebtn">Choose photo<input type="file" name="photo" accept="image/*" hidden /></label></div></div>
+      <div class="fs"><h3>Cover image</h3><div class="cover-prev" id="coverPrev" ${p.cover_url ? `style="background-image:url('${esc(p.cover_url)}')"` : ""}>${p.cover_url ? "" : "No cover image yet"}</div><label class="btn-dark sm filebtn">Choose cover image<input type="file" name="cover" accept="image/*" hidden onchange="var f=this.files[0];if(f){var b=document.getElementById('coverPrev');b.style.backgroundImage='url('+URL.createObjectURL(f)+')';b.textContent='';}" /></label><p class="cap2">Shown at the top of your card in Discover and on your public profile. Wide photos work best.</p></div>
       <div class="fs"><h3>Details</h3>${fields.map(field).join("")}</div>
       <p class="cap2">Your phone number and verification status are changed elsewhere. Verification can only be decided by BAID X.</p>
       <button class="btn-light" type="submit" style="width:100%">Save changes</button></form>`;
@@ -97,6 +98,8 @@
     for (const req of ["full_name", "company_name", "business_name"]) if (req in patch && !patch[req]) throw new Error("Name can't be empty.");
     const file = form.querySelector('[name="photo"]').files[0];
     if (file) { const [col, bucket] = PHOTO[c.role]; const path = await upload(c, bucket, file, "photo"); patch[col] = publicUrl(c, bucket, path); }
+    const cover = form.querySelector('[name="cover"]').files[0];
+    if (cover) { const [, bucket] = PHOTO[c.role]; const path = await upload(c, bucket, cover, "cover"); patch.cover_url = publicUrl(c, bucket, path); }
     await save(c, patch);
   }
 
@@ -208,10 +211,11 @@
   async function publicProfile(c) {
     const p = c.profile, r = ROLES[c.role], name = p[r.nameKey] || "Your account", photo = p.profile_photo_url || p.company_logo_url || p.logo_url;
     const vs = p.verification_status === "verified";
-    openSheet("How others see you", `<div class="pv"><span class="av lg" ${photo ? `style="background-image:url('${esc(photo)}')"` : ""}>${photo ? "" : esc(initials(name))}</span><h3>${esc(name)} ${vs ? `<span class="pill ok">Verified</span>` : ""}</h3><p class="cap2">${esc(r.account)} · ${esc([p.city_town, p.region].filter(Boolean).join(", ") || "Ghana")}</p>${p.short_bio || p.company_overview || p.personal_statement ? `<p>${esc(p.short_bio || p.company_overview || p.personal_statement)}</p>` : `<p class="cap2">Add a short bio in Edit profile.</p>`}</div>${vs ? "" : `<button class="btn-light" style="width:100%" data-go="verification">Get verified</button>`}`);
+    openSheet("How others see you", `${p.cover_url ? `<div class="cover-prev" style="background-image:url('${esc(p.cover_url)}');margin-bottom:12px"></div>` : ""}<div class="pv"><span class="av lg" ${photo ? `style="background-image:url('${esc(photo)}')"` : ""}>${photo ? "" : esc(initials(name))}</span><h3>${esc(name)} ${vs ? `<span class="pill ok">Verified</span>` : ""}</h3><p class="cap2">${esc(r.account)} · ${esc([p.city_town, p.region].filter(Boolean).join(", ") || "Ghana")}</p>${p.short_bio || p.company_overview || p.personal_statement ? `<p>${esc(p.short_bio || p.company_overview || p.personal_statement)}</p>` : `<p class="cap2">Add a short bio in Edit profile.</p>`}</div>${vs ? "" : `<button class="btn-light" style="width:100%" data-go="verification">Get verified</button>`}`);
   }
 
   const FX = {
+    "open-docs": () => { window.open("docs.html", "_blank", "noopener"); },
     "public-profile": (c) => publicProfile(c),
     "add-email": (c) => openSheet("Add email", `<form data-fx-form="add-email">${fld("Email address", inp("email", { type: "email", req: true, val: c.me.session.user.email }), "We send a link to confirm it.")}<button class="btn-light" type="submit" style="width:100%">Send confirmation</button></form>`),
     "change-phone": (c) => openSheet("Change phone", `<form data-fx-form="change-phone">${fld("New mobile number", inp("phone", { type: "tel", ph: "+233201234567", req: true }), "Include the country code. We text a code to confirm.")}<button class="btn-light" type="submit" style="width:100%">Send code</button></form>`),
@@ -233,7 +237,7 @@
     const { data } = await window.BX.sb.from(S.table).select(S.cols).eq("id", id).maybeSingle();
     if (!data) return window.BX.toast("This profile isn't available.");
     const it = S.map(data), vs = data.verification_status === "verified", me = window.APP.state.me;
-    openSheet(it.name, `<div class="pv"><span class="av lg" ${it.image ? `style="background-image:url('${esc(it.image)}')"` : ""}>${it.image ? "" : esc(initials(it.name))}</span><h3>${esc(it.name)} ${vs ? `<span class="pill ok">Verified</span>` : ""}</h3><p class="cap2">${esc(it.tag)} · ${esc(it.place)}</p><p>${esc(it.desc)}</p></div>
+    openSheet(it.name, `${it.cover ? `<div class="cover-prev" style="background-image:url('${esc(it.cover)}');margin-bottom:12px"></div>` : ""}<div class="pv"><span class="av lg" ${it.image ? `style="background-image:url('${esc(it.image)}')"` : ""}>${it.image ? "" : esc(initials(it.name))}</span><h3>${esc(it.name)} ${vs ? `<span class="pill ok">Verified</span>` : ""}</h3><p class="cap2">${esc(it.tag)} · ${esc(it.place)}</p><p>${esc(it.desc)}</p></div>
       <div class="stats">${it.stats.map(([n, l]) => `<div class="stat"><b>${esc(n)}</b><small>${esc(l)}</small></div>`).join("")}</div>
       ${me?.role ? (id === c.uid ? `<p class="cap2" style="margin-top:12px">This is you.</p>` : `<button class="btn-light" style="width:100%;margin-top:14px" data-fx="message" data-id="${esc(id)}" data-name="${esc(it.name)}">Message</button>`) : `<button class="btn-light" style="width:100%;margin-top:14px" data-action="signin">Sign in to message</button>`}`);
   }

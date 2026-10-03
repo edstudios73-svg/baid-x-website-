@@ -10,9 +10,9 @@
   const SOURCES = {
     companies: {
       label: "Companies", role: "company", table: "company_profiles",
-      cols: "id,company_name,industry_sector,company_size,city_town,region,company_logo_url,company_overview,trust_score,verification_status",
+      cols: "id,company_name,industry_sector,company_size,city_town,region,company_logo_url,cover_url,company_overview,trust_score,verification_status",
       map: (r) => ({
-        kind: "company", id: r.id, name: r.company_name, image: r.company_logo_url, cover: null,
+        kind: "company", id: r.id, name: r.company_name, image: r.company_logo_url, cover: r.cover_url || null,
         desc: r.company_overview || "Verified company on BAID X.", tag: pretty(r.industry_sector), place: place(r),
         catId: r.industry_sector, region: r.region,
         stats: [[num(r.trust_score, 1), "Trust"], [pretty(r.company_size) || "—", "Size"]],
@@ -20,11 +20,11 @@
     },
     professionals: {
       label: "Professionals", role: "worker", table: "worker_profiles",
-      cols: "id,full_name,specialty,short_bio,primary_job_category_id,years_of_experience,daily_rate_ghs,city_town,region,profile_photo_url,portfolio_photo_urls,rank_tier,verification_status",
+      cols: "id,full_name,specialty,short_bio,primary_job_category_id,years_of_experience,daily_rate_ghs,city_town,region,profile_photo_url,cover_url,portfolio_photo_urls,rank_tier,verification_status",
       map: (r) => {
         const trade = JOB_CAT_BY_ID[r.primary_job_category_id]?.name || r.specialty;
         return {
-          kind: "worker", id: r.id, name: r.full_name, image: r.profile_photo_url, cover: (r.portfolio_photo_urls || [])[0] || null,
+          kind: "worker", id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
           desc: r.short_bio || (trade ? `${trade} based in ${r.city_town || "Ghana"}.` : "Skilled professional on BAID X."),
           tag: trade || pretty(r.rank_tier) || "Professional", place: place(r), catId: r.primary_job_category_id, region: r.region,
           stats: [[r.daily_rate_ghs ? `GH₵${num(r.daily_rate_ghs)}` : "—", "Daily rate"], [pretty(r.years_of_experience) || "—", "Experience"]],
@@ -33,9 +33,9 @@
     },
     managers: {
       label: "Project Managers", role: "project-manager", table: "project_manager_profiles",
-      cols: "id,full_name,specialization,specialization_tags,years_managing_projects,projects_managed_count,city_town,region,profile_photo_url,verification_status",
+      cols: "id,full_name,specialization,specialization_tags,years_managing_projects,projects_managed_count,city_town,region,profile_photo_url,cover_url,verification_status",
       map: (r) => ({
-        kind: "pm", id: r.id, name: r.full_name, image: r.profile_photo_url, cover: null,
+        kind: "pm", id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || null,
         desc: (r.specialization_tags || []).slice(0, 3).join(" · ") || "Project manager on BAID X.",
         tag: pretty(r.specialization) || "Project Manager", place: place(r), catId: r.specialization, region: r.region,
         stats: [[r.projects_managed_count ?? 0, "Projects"], [r.years_managing_projects ?? 0, "Years"]],
@@ -43,9 +43,9 @@
     },
     businesses: {
       label: "Businesses", role: "business", table: "business_profiles",
-      cols: "id,business_name,specialty,short_bio,years_in_operation,crew_size,city_town,region,logo_url,portfolio_photo_urls,verification_status",
+      cols: "id,business_name,specialty,short_bio,years_in_operation,crew_size,city_town,region,logo_url,cover_url,portfolio_photo_urls,verification_status",
       map: (r) => ({
-        kind: "business", id: r.id, name: r.business_name, image: r.logo_url, cover: (r.portfolio_photo_urls || [])[0] || null,
+        kind: "business", id: r.id, name: r.business_name, image: r.logo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
         desc: r.short_bio || "Supplier of products, equipment and materials.", tag: r.specialty || "Supplier", place: place(r),
         catId: r.specialty, region: r.region,
         stats: [[r.crew_size ?? 0, "Crew"], [r.years_in_operation ?? 0, "Years"]],
@@ -101,8 +101,9 @@
     const tab = cfg.parent[name] || name;
     $$("#navIn [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
     $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}` || (name === "org" && b.dataset.tab === "orgs")));
-    $("#nav").hidden = SUBS.includes(name);
-    document.body.classList.toggle("hide-nav", SUBS.includes(name));
+    const hideNav = SUBS.includes(name) || (name === "chat" && member);
+    $("#nav").hidden = hideNav;
+    document.body.classList.toggle("hide-nav", hideNav);
 
     if (name === "checklist") renderChecklist();
     if (name === "filters") renderFilters();
@@ -210,7 +211,7 @@
     };
     $("#accMenu").innerHTML = [billRow, orgRow, ...menus[me.role]].map(([t, d, to]) => row(t, d, to)).join("");
     $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account.", null, "add-email"), row("Change phone", "Update the mobile number linked to this account.", null, "change-phone"), row("Change password", "Set a new password for sign-in.", null, "change-password")].join("");
-    $("#accInfo").innerHTML = [row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", "info/terms"), row("Privacy policy", "Read how we handle your information.", "info/privacy"), row("About BAID X", "Product and company information.", "info/about")].join("");
+    $("#accInfo").innerHTML = [row("User guide", "How to use BAID X, step by step, for every role.", null, "open-docs"), row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", "info/terms"), row("Privacy policy", "Read how we handle your information.", "info/privacy"), row("About BAID X", "Product and company information.", "info/about")].join("");
   }
 
   const HOURGLASS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 5 5 5 9s-5 4-5 9M17 3c0 5-5 5-5 9s5 4 5 9"/></svg>';
@@ -297,7 +298,7 @@
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });
   window.addEventListener("hashchange", route);
-  window.APP = { state, go, route, dashCtx, sources: SOURCES, refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
+  window.APP = { state, go, route, dashCtx, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
 
   /* ---------- Boot ---------- */
   renderChips(); renderNav(); runSplash();
@@ -305,5 +306,6 @@
     state.me = await loadMe();
     if (state.me && !state.me.role) { location.replace("auth.html"); return; }
     paintMember(); renderNav(); route(); loadDirectory(); loadUnread();
+    window.dispatchEvent(new Event("baidx:member"));
   })();
 })();

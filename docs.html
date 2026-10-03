@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>BAID X User Guide</title>
+<meta name="description" content="How to use BAID X: every role, linking a company with a project manager, adding workers to a project, messaging and calls, wallet, verification and billing." />
+<meta name="theme-color" content="#000000" />
+<meta name="color-scheme" content="dark" />
+<link rel="icon" href="assets/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+<style>
+:root{--bg:#0d0d0d;--card:#161616;--card2:#1c1c1c;--line:#2a2a2a;--tx:#f2f2f2;--mut:#9a9a9a;--acc:#ffffff;--amber:#f5a524;--ok:#3ecf8e;--bad:#ef5b5b;--info:#5aa7ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--info);text-decoration:none}a:hover{text-decoration:underline}
+header.top{position:sticky;top:0;z-index:20;background:rgba(13,13,13,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.top-in img{height:26px}.top-in b{font-size:15px}.top-in .sp{flex:1}
+.btn{display:inline-block;background:#fff;color:#000;font-weight:700;font-size:13px;padding:8px 16px;border-radius:99px}.btn:hover{text-decoration:none;opacity:.9}
+#menuBtn{display:none;background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:7px 12px;font:inherit;font-size:13px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:250px 1fr;gap:40px}
+nav.toc{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 80px);overflow:auto;padding:24px 0}
+nav.toc h6{margin:18px 0 6px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}nav.toc h6:first-child{margin-top:0}
+nav.toc a{display:block;padding:5px 10px;border-radius:8px;color:#cfcfcf;font-size:14px}
+nav.toc a:hover,nav.toc a.on{background:var(--card2);color:#fff;text-decoration:none}
+main{padding:28px 0 90px;min-width:0}
+.hero{padding:10px 0 26px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.hero h1{font-size:clamp(30px,5vw,44px);line-height:1.1;margin:0 0 12px;letter-spacing:-.02em}.hero p{color:#cfcfcf;max-width:680px;margin:0}
+section{padding-top:34px}
+h2{font-size:27px;letter-spacing:-.01em;margin:0 0 6px}h3{font-size:19px;margin:28px 0 8px}h4{font-size:15px;margin:18px 0 6px;color:#e6e6e6}
+p{margin:8px 0}ul,ol{padding-left:22px;margin:8px 0}li{margin:5px 0}
+.lead{color:var(--mut);margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:14px 0}
+.card>:first-child{margin-top:0}.card>:last-child{margin-bottom:0}
+.tip,.warn,.note{border-radius:14px;padding:13px 16px;margin:14px 0;font-size:15px;border:1px solid}
+.tip{background:rgba(62,207,142,.07);border-color:rgba(62,207,142,.35)}.warn{background:rgba(245,165,36,.07);border-color:rgba(245,165,36,.4)}.note{background:rgba(90,167,255,.07);border-color:rgba(90,167,255,.35)}
+.tip b:first-child,.warn b:first-child,.note b:first-child{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.tip b:first-child{color:var(--ok)}.warn b:first-child{color:var(--amber)}.note b:first-child{color:var(--info)}
+ol.steps{list-style:none;counter-reset:s;padding:0}
+ol.steps>li{counter-increment:s;position:relative;padding:2px 0 14px 48px;margin:0}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:#fff;color:#000;font-weight:800;display:grid;place-items:center;font-size:14px}
+ol.steps>li::after{content:"";position:absolute;left:15px;top:36px;bottom:2px;width:2px;background:var(--line)}ol.steps>li:last-child::after{display:none}
+ol.steps b{color:#fff}
+code,.k{background:var(--card2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:.88em;font-family:ui-monospace,Menlo,Consolas,monospace}
+.k{white-space:nowrap}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;display:block;overflow-x:auto}
+th,td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}th{color:var(--mut);font-size:12px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--card2);border:1px solid var(--line);color:#ddd}
+.way{border-left:3px solid #fff;padding-left:16px;margin:22px 0}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.flow span{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-size:14px}.flow i{color:var(--mut);font-style:normal}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:8px 0}summary{cursor:pointer;font-weight:600}details p{color:#cfcfcf}
+footer{border-top:1px solid var(--line);padding:26px 16px;text-align:center;color:var(--mut);font-size:13px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}nav.toc{display:none;position:fixed;inset:56px 0 0 0;background:var(--bg);z-index:15;max-height:none;padding:16px}nav.toc.open{display:block}#menuBtn{display:inline-block}}
+@media print{header.top,nav.toc,#menuBtn{display:none}.wrap{display:block}body{background:#fff;color:#000}.card,details{border-color:#bbb;background:#fff}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in"><img src="assets/logo.png" alt="BAID X" /><b>User Guide</b><span class="sp"></span><button id="menuBtn" type="button">Contents</button><a class="btn" href="index.html">Open BAID X</a></div></header>
+
+<div class="wrap">
+<nav class="toc" id="toc" aria-label="Contents">
+  <h6>Start here</h6>
+  <a href="#overview">What BAID X is</a><a href="#quick">Quick start</a><a href="#roles">The five roles</a><a href="#matrix">How roles connect</a>
+  <h6>Linking &amp; teams</h6>
+  <a href="#link-company-pm">Link a company and a PM</a><a href="#add-workers">Add workers to a project</a><a href="#approvals">Approval rules</a><a href="#lifecycle">A project from start to finish</a>
+  <h6>Per role</h6>
+  <a href="#worker">Worker</a><a href="#company">Company</a><a href="#pm">Project manager</a><a href="#business">Business / supplier</a><a href="#individual">Individual employer</a>
+  <h6>Features</h6>
+  <a href="#messaging">Messaging &amp; calls</a><a href="#notifications">Notifications</a><a href="#profile">Profile &amp; cover image</a><a href="#verification">Verification</a><a href="#wallet">Wallet &amp; payments</a><a href="#orgs">Organizations &amp; teams</a><a href="#billing">Plans &amp; billing</a>
+  <h6>More</h6>
+  <a href="#admin">For BAID X staff</a><a href="#limits">Limits to know</a><a href="#faq">FAQ</a>
+</nav>
+
+<main>
+<div class="hero"><h1>How to use BAID X</h1><p>A complete guide to the work marketplace for Ghana: who does what, how companies and project managers link up, how workers join projects, and how to message and call from inside the app.</p></div>
+
+<section id="overview"><h2>What BAID X is</h2>
+<p class="lead">One place to find trusted people, hire them, run the project, and pay for the work.</p>
+<div class="grid2">
+<div class="card"><h4>Discover</h4><p>Browse verified workers, companies, project managers and suppliers. Filter by trade and region.</p></div>
+<div class="card"><h4>Run projects</h4><p>Create a project, add a project manager and workers, assign tasks, file reports, approve requests and payments.</p></div>
+<div class="card"><h4>Talk</h4><p>Encrypted messages, photos, files, voice notes, voice calls and video calls.</p></div>
+<div class="card"><h4>Get paid</h4><p>A wallet for earnings and payouts, with project payments recorded against each project.</p></div>
+</div>
+<div class="note"><b>Verified</b>Only BAID X reviewers decide verification. A paid plan never makes an account verified.</div>
+</section>
+
+<section id="quick"><h2>Quick start</h2>
+<ol class="steps">
+<li><b>Create your account.</b> Open BAID X, tap <span class="k">Profile</span> → <span class="k">Sign up</span> and pick your role. Sign in with your mobile number.</li>
+<li><b>Complete your profile.</b> Follow the checklist on Home. Add your photo and a <b>cover image</b> from <span class="k">Profile → Edit profile</span>.</li>
+<li><b>Get verified.</b> <span class="k">Profile → Verification documents</span>. Upload what is asked and submit. You are notified when a reviewer decides.</li>
+<li><b>Connect.</b> Use <span class="k">Discover</span> (or <span class="k">Jobs</span> for workers), open a profile and tap <span class="k">Message</span>, or accept an invitation under <span class="k">Invitations</span>.</li>
+</ol>
+<div class="tip"><b>Install it</b>On a phone, use your browser's “Add to Home screen” so BAID X opens like an app.</div>
+</section>
+
+<section id="roles"><h2>The five roles</h2>
+<table>
+<tr><th>Role</th><th>Who it is for</th><th>Main tabs</th></tr>
+<tr><td><b>Worker</b></td><td>Electricians, masons, plumbers, painters and other trades looking for jobs and projects.</td><td>Home, Jobs, Work, Chats, Profile</td></tr>
+<tr><td><b>Company</b></td><td>Builders and firms that own projects, hire managers and workers, and approve spending.</td><td>Home, Workforce, Projects, Chats, Profile</td></tr>
+<tr><td><b>Project manager (PM)</b></td><td>Runs a company's project day to day: team, tasks, reports, requests.</td><td>Home, Discover, Projects, Chats, Profile</td></tr>
+<tr><td><b>Business / supplier</b></td><td>Sells materials, equipment or services; receives inquiries.</td><td>Home, Discover, Catalog, Inquiries, Profile</td></tr>
+<tr><td><b>Individual employer</b></td><td>A person hiring help for a home or small job.</td><td>Home, Discover, Hires, Chats, Profile</td></tr>
+</table>
+<p>On a computer, every function is in the left sidebar. On a phone, the bottom bar shows the five main tabs and everything else opens from Home or Profile.</p>
+</section>
+
+<section id="matrix"><h2>How the roles connect</h2>
+<table>
+<tr><th>From</th><th>To</th><th>How</th></tr>
+<tr><td>Company</td><td>Project manager</td><td>Invite from a project, or accept a PM who used your join code (see <a href="#link-company-pm">linking</a>).</td></tr>
+<tr><td>Company</td><td>Worker</td><td>Invite from a project; or the worker applies to a posted job.</td></tr>
+<tr><td>Project manager</td><td>Worker</td><td>Invite from the project's Team tab. May need company approval (see <a href="#approvals">approval rules</a>).</td></tr>
+<tr><td>Worker</td><td>Company / PM</td><td>Accept an invitation, apply to a job, or message them from Discover.</td></tr>
+<tr><td>Company / PM</td><td>Business</td><td>Request materials and equipment, send an inquiry, then talk in chat.</td></tr>
+<tr><td>Individual employer</td><td>Worker</td><td>Post a job or message a worker, then record the hire under Hires.</td></tr>
+<tr><td>Anyone</td><td>Anyone</td><td>Open a profile in Discover and tap <b>Message</b>. Chats work between all roles.</td></tr>
+</table>
+<div class="flow"><span>Company</span><i>⇄</i><span>Project manager</span><i>→</i><span>Workers</span><i>⇄</i><span>Suppliers</span></div>
+<p>The company is the owner and the approver. The PM is the operator. Workers deliver the work. Suppliers provide materials and equipment.</p>
+</section>
+
+<section id="link-company-pm"><h2>Linking a company and a project manager</h2>
+<p class="lead">There are three ways. Pick the one that matches how the two of you already know each other.</p>
+
+<div class="way"><h3>Way 1 · The company invites a PM from a project</h3>
+<p>Best when the company already has a project and wants a specific PM.</p>
+<ol class="steps">
+<li><b>Company:</b> <span class="k">Projects → New project</span>. Fill in the name, type, location, dates, budget and the trades needed. Leave <b>“I need a project manager”</b> switched on. The project gets a Project ID such as <code>BXD-PRJ-XXXXX</code>.</li>
+<li><b>Company:</b> open the project → <span class="k">Team</span> → <span class="k">Invite project manager</span>. Search a verified PM by name, specialty or town and select them.</li>
+<li><b>Company:</b> add responsibilities, expected duration and the monthly rate, plus an optional message. Choose which items need the company's own approval, then send.</li>
+<li><b>PM:</b> gets a notification. Open <span class="k">Invitations</span>, read the offer and tap <b>Accept</b>, <b>Decline</b> or <b>Ask a question</b>.</li>
+<li><b>Done.</b> On accept, the PM becomes the project's manager and the project shows both names. A project can have one PM at a time.</li>
+</ol>
+<div class="tip"><b>Talk first</b>Open a PM's card in Discover and tap <span class="k">Message</span> to agree the details, then send the invitation from the project.</div></div>
+
+<div class="way"><h3>Way 2 · The PM links to the company with a join code</h3>
+<p>Best for a PM who works with a company across many projects and wants a standing link before any project exists.</p>
+<ol class="steps">
+<li><b>Company:</b> <span class="k">Profile → Team &amp; join code → Create a code</span>. Share the code with the PM (message it in chat). A new code replaces the old one and lasts 30 days.</li>
+<li><b>PM:</b> <span class="k">Profile → Link a company</span>. Enter the code and tap <b>Request link</b>.</li>
+<li><b>Company:</b> the request shows under <span class="k">Linked project managers</span>. Tap <b>Approve</b> or <b>Decline</b>.</li>
+<li><b>Done.</b> The PM appears as a linked project manager. You can still invite them to individual projects (Way 1).</li>
+</ol>
+<div class="note"><b>Link ≠ project role</b>A link says “we work together.” Being the manager of a specific project is still set by the project invitation.</div></div>
+
+<div class="way"><h3>Way 3 · Through an organization</h3>
+<p>Best when a company has several staff who all need access (owner, finance, site managers).</p>
+<ol class="steps">
+<li><b>Owner:</b> <span class="k">Profile → Organization</span> and open your organization.</li>
+<li>Go to <span class="k">Invitations → Invite</span>, enter the person's phone or email and choose a role. You can only grant roles below your own.</li>
+<li>Share the generated link. The person opens it while signed in, and joins automatically.</li>
+<li>Link a project to the organization so every member with the right role can see it.</li>
+</ol>
+<p>The organization has its own members, roles and activity log. See <a href="#orgs">Organizations</a>.</p></div>
+
+<h3>Which one should I use?</h3>
+<table>
+<tr><th>Situation</th><th>Use</th></tr>
+<tr><td>New project, you know which PM you want</td><td>Way 1</td></tr>
+<tr><td>Repeat collaboration across many projects</td><td>Way 2, then Way 1 per project</td></tr>
+<tr><td>Several people on the company side</td><td>Way 3</td></tr>
+<tr><td>No PM yet</td><td>Create the project with “I need a project manager” on, then browse PMs in Discover</td></tr>
+</table>
+<div class="warn"><b>Who can do what</b>Only the company invites a project manager. A PM can't invite another PM. A project that already has a PM must have that PM removed or finished first.</div>
+</section>
+
+<section id="add-workers"><h2>Adding workers to a project</h2>
+<p class="lead">Both the company and the project manager can invite workers. Workers can also find the project through jobs.</p>
+
+<div class="way"><h3>Way 1 · Invite from the Team tab</h3>
+<ol class="steps">
+<li>Open the project → <span class="k">Team</span> → <span class="k">Invite worker</span>. If you have several projects, pick which one at the top of the form.</li>
+<li>Search a verified worker by name, trade or town. Select them.</li>
+<li>Fill in the trade, daily or monthly rate, expected duration, start date and a message. Tap <b>Send</b>.</li>
+<li>The invitation appears in the Team tab with its status: <span class="pill">Sent</span> → <span class="pill">Accepted</span> or <span class="pill">Needs approval</span>.</li>
+<li>The worker opens <span class="k">Invitations</span> and taps <b>Accept</b>, <b>Decline</b> or <b>Ask a question</b>.</li>
+<li>On accept the worker joins the team and sees the project's tasks under <span class="k">Work</span>.</li>
+</ol></div>
+
+<div class="way"><h3>Way 2 · Talk first, then invite</h3>
+<p>In <span class="k">Discover</span>, open a worker's card and tap <span class="k">Message</span> to agree rate and dates. Then send the formal invitation from the project's Team tab (Way 1) so the offer is on record.</p></div>
+
+<div class="way"><h3>Way 3 · From a job post</h3>
+<ol class="steps">
+<li>Post a job (<span class="k">Post a job</span>) with trade, place, daily rate and number of workers.</li>
+<li>Workers see it in <span class="k">Jobs</span> and tap <b>Apply</b> (their profile must be completed first).</li>
+<li>Review applicants, shortlist or accept, then invite the accepted worker into the project (Way 1).</li>
+</ol></div>
+
+<h3>Removing or cancelling</h3>
+<ul><li><b>Cancel an invitation</b> before it is answered: Team tab → the invitation → <span class="k">Cancel invite</span>.</li><li><b>Remove a member</b> who has joined: Team tab → the member → remove.</li></ul>
+</section>
+
+<section id="approvals"><h2>Approval rules</h2>
+<p>The company controls how much freedom its PM has when adding workers. This is set per project, in <span class="k">Team</span> (and at project creation).</p>
+<table>
+<tr><th>Setting</th><th>What happens</th></tr>
+<tr><td><b>Automatic</b></td><td>Workers the PM invites <i>within the plan</i> join as soon as they accept. Anything outside the plan still waits for the company.</td></tr>
+<tr><td><b>Company approval</b></td><td>Every worker the PM invites waits for the company after accepting.</td></tr>
+</table>
+<h4>Always needs the company, even on Automatic</h4>
+<ul>
+<li>Over the planned team size, or more of one trade than planned</li>
+<li>A role that is not in the project plan</li>
+<li>Extra budget, sensitive access, supervisor or site-lead roles</li>
+<li>Anything outside the project requirements</li>
+</ul>
+<p>The invitation shows the reasons, so the company knows exactly why it is waiting.</p>
+<h4>Deciding as a company</h4>
+<ol class="steps"><li>Open <span class="k">Approvals</span> from the sidebar (or the banner on the project's Overview).</li><li>Under <b>Workers to approve</b>, read the trade, rate and reasons.</li><li>Tap <b>Approve</b> to let them in, or <b>Decline</b>.</li></ol>
+<div class="warn"><b>Money is always yours</b>Expenses, materials, equipment and payments always need the company's approval, whatever the worker setting is.</div>
+</section>
+
+<section id="lifecycle"><h2>A project from start to finish</h2>
+<ol class="steps">
+<li><b>Create.</b> Company creates the project and gets a Project ID.</li>
+<li><b>Staff it.</b> Invite a PM, then workers (<a href="#link-company-pm">PM</a>, <a href="#add-workers">workers</a>).</li>
+<li><b>Plan.</b> PM creates tasks, sets priority and due dates, and assigns them to workers.</li>
+<li><b>Do the work.</b> Workers <b>Accept</b> a task, post updates and photos, then mark progress. Project progress updates automatically as tasks are completed.</li>
+<li><b>Report.</b> The PM files daily or weekly reports (work done, workers present, problems, materials needed). The company reviews and approves or asks for changes.</li>
+<li><b>Request.</b> The PM submits requests for materials, equipment or money. The company approves or declines.</li>
+<li><b>Pay.</b> Payments (worker wages, monthly PM fee) are requested, approved by the company, then marked paid with a reference.</li>
+<li><b>Finish.</b> The PM requests completion. The company checks there are no open tasks, unreviewed reports, or pending requests and payments, then completes the project. Both sides can leave a review.</li>
+</ol>
+</section>
+
+<section id="worker"><h2>Worker guide</h2>
+<h3>Set up</h3>
+<ol class="steps"><li>Complete the checklist on Home: trade, town, daily rate, payout details.</li><li>Add a profile photo and cover image, portfolio photos and certifications (<span class="k">Profile</span>).</li><li>Submit verification documents.</li></ol>
+<h3>Find work</h3>
+<ul><li><b>Jobs:</b> browse and filter by trade and region, then <b>Apply</b>. Track each application's status (submitted, shortlisted, accepted).</li><li><b>Invitations:</b> projects that invited you. Accept, decline or ask a question.</li></ul>
+<h3>Do the work</h3>
+<ul><li><b>Work:</b> your projects and tasks. <b>Accept</b> a task, post updates with photos, mark it done.</li><li><b>Wallet:</b> balance, earnings and withdrawals to MoMo.</li><li><b>Career Growth:</b> experience points and rank tiers earned from completed work and verification.</li></ul>
+<div class="tip"><b>Stand out</b>A clear photo, a cover image of your best work, and a verified badge get you shortlisted faster.</div>
+</section>
+
+<section id="company"><h2>Company guide</h2>
+<ul>
+<li><b>Overview:</b> activity across your projects and items waiting for you.</li>
+<li><b>Workforce marketplace:</b> search workers and PMs, open profiles, message or invite.</li>
+<li><b>Projects:</b> create projects, set budget and approval mode, see team, tasks, reports and finance.</li>
+<li><b>Approvals:</b> everything waiting on you: workers, requests, payments, reports and completions.</li>
+<li><b>Payments, Equipment, Materials:</b> pay your people and request supplies from suppliers.</li>
+<li><b>Team &amp; join code, Organization:</b> link PMs and give your own staff access.</li>
+</ul>
+<div class="tip"><b>Daily routine</b>Open Approvals first. Fast approvals keep workers on site and paid on time.</div>
+</section>
+
+<section id="pm"><h2>Project manager guide</h2>
+<ol class="steps">
+<li><b>Get linked.</b> Accept a company's invitation, or use a join code (<a href="#link-company-pm">linking</a>).</li>
+<li><b>Build the team.</b> <span class="k">Team</span> → invite workers by trade, location and rating.</li>
+<li><b>Plan tasks.</b> <span class="k">Tasks</span> → create, assign, set priority and due date.</li>
+<li><b>Report.</b> <span class="k">Reports</span> → daily or weekly, with photos.</li>
+<li><b>Ask for what you need.</b> <span class="k">Finance</span> → submit requests for materials, equipment or money, and payment requests for workers.</li>
+<li><b>Close out.</b> Request completion when everything is done.</li>
+</ol>
+<p>The project switcher at the top of each page lets you move between your projects quickly.</p>
+</section>
+
+<section id="business"><h2>Business / supplier guide</h2>
+<ul>
+<li><b>Catalog:</b> add products and equipment with price, category and availability. Switch items off when out of stock.</li>
+<li><b>Inquiries:</b> companies and individuals who ask about your items. Reply in chat.</li>
+<li><b>Discover:</b> find companies and PMs to approach directly.</li>
+<li><b>Profile:</b> add a logo and cover image, your service areas and delivery range, and switch <b>Accepting orders</b> on or off.</li>
+</ul>
+</section>
+
+<section id="individual"><h2>Individual employer guide</h2>
+<ol class="steps"><li><b>Post a job</b> for work at home, with place, rate and the number of people.</li><li><b>Review applicants</b> or browse Discover and message a worker.</li><li>Agree details in chat.</li><li>Record the person under <span class="k">Hires</span> so you can find them again.</li></ol>
+</section>
+
+<section id="messaging"><h2>Messaging, files and calls</h2>
+<p class="lead">Messages appear instantly, with no page refresh. Open <span class="k">Chats</span>, pick a conversation or start one from anyone's profile with <span class="k">Message</span>.</p>
+
+<h3>Speed</h3>
+<ul>
+<li><b>Instant send.</b> Your message appears the moment you tap send, then the clock turns into a tick when the server has it. If the network drops, tap the red message to retry.</li>
+<li><b>Live receive.</b> New messages, read ticks and “typing” show up on their own. If the live connection is unavailable the app checks again every few seconds.</li>
+<li><b>Ticks.</b> ✓ sent, ✓✓ blue read.</li>
+<li><b>Unread badge</b> on the Chats tab updates live and clears when you open the chat.</li>
+</ul>
+
+<h3>Sending things</h3>
+<table>
+<tr><th>To send</th><th>Do this</th></tr>
+<tr><td>Text</td><td>Type and tap send. Enter sends on a computer; Shift+Enter adds a new line.</td></tr>
+<tr><td>Photo, video or file</td><td>Tap the paperclip, choose one or more files. Photos are resized for speed. Tap a photo to view it full screen, or tap a file to download it.</td></tr>
+<tr><td>Voice note</td><td>Tap the microphone, speak, then tap send. Tap the bin to cancel. Allow the microphone when your browser asks.</td></tr>
+<tr><td>Voice call / video call</td><td>Tap the phone or camera icon at the top of the chat. The other person sees an Accept / Decline screen. During a call you can mute and turn the camera on or off.</td></tr>
+</table>
+<p>Call results (duration, declined or missed) are added to the chat so both of you have a record.</p>
+
+<h3>End-to-end encryption</h3>
+<div class="card">
+<p>Messages and attachments are encrypted on your device before they are sent. Only you and the person you are talking to can read them. BAID X servers and staff only hold scrambled data.</p>
+<ul>
+<li>Each device creates its own secret key the first time you open Chats. It never leaves the device.</li>
+<li>The chat header shows <b>End-to-end encrypted</b> when both people have keys.</li>
+<li>If the other person has not opened Chats yet, the header says <b>Not encrypted yet</b>. Text sent then is stored as normal text until they join. Wait for the lock before sending anything sensitive.</li>
+<li>Each file gets its own random key, so even stored files are unreadable without the message.</li>
+</ul>
+<h4>Using a new phone or clearing your browser</h4>
+<p>Your key lives in your browser. To keep old messages readable after switching devices, create a <b>backup password</b> from the banner at the top of <span class="k">Chats</span> (“Back up your secure-chat key”). On the new device, enter that password at the “Restore secure chat” prompt. If you skip it, new messages work but old ones show “Can't be decrypted on this device.” <b>BAID X cannot recover a forgotten backup password.</b></p>
+</div>
+</section>
+
+<section id="notifications"><h2>Notifications</h2>
+<ul>
+<li><b>Live in the app.</b> A banner and a soft sound appear for new messages and updates (invitations, approvals, payments, report reviews) while BAID X is open.</li>
+<li><b>Browser alerts.</b> In Chats, tap <b>Turn on message alerts</b> and allow notifications. When the BAID X tab is in the background, new messages pop up as system notifications. Tap one to jump to the chat.</li>
+<li><b>Badges.</b> The unread count on the Chats tab updates live.</li>
+</ul>
+<div class="note"><b>Closed browser</b>Alerts work while BAID X is open in a tab or installed app window. Push notifications to a fully closed phone are not part of this release.</div>
+</section>
+
+<section id="profile"><h2>Profile and cover image</h2>
+<ol class="steps">
+<li>Open <span class="k">Profile → Edit profile</span>.</li>
+<li><b>Photo.</b> Choose your profile photo (company logo for companies and businesses).</li>
+<li><b>Cover image.</b> Tap <span class="k">Choose cover image</span>. A preview appears at once. Wide photos work best.</li>
+<li>Update your details and tap <span class="k">Save changes</span>.</li>
+</ol>
+<p>Your cover shows at the top of your card in Discover and in your public profile. Check it with <span class="k">Profile → How others see you</span>. Photos must be JPG, PNG or WebP, up to 8 MB.</p>
+</section>
+
+<section id="verification"><h2>Verification</h2>
+<table>
+<tr><th>Role</th><th>What to provide</th></tr>
+<tr><td>Worker, PM, individual employer</td><td>Ghana Card number, front and back photos, a clear photo of your face. Optional trade certificate or certification.</td></tr>
+<tr><td>Company</td><td>RGD number, TIN, business registration document, contact person's Ghana Card.</td></tr>
+<tr><td>Business</td><td>Business details and documents as listed in the checklist.</td></tr>
+</table>
+<p>Go to <span class="k">Profile → Verification documents</span>, upload, and submit. A BAID X reviewer decides. Identity documents are stored privately and are only seen by reviewers.</p>
+</section>
+
+<section id="wallet"><h2>Wallet and payments</h2>
+<ul>
+<li><b>Balance</b> shows available money, pending money, lifetime earned and a list of every transaction.</li>
+<li><b>Withdraw</b> to your mobile money number. Set your payout network, number and account name in <span class="k">Edit profile</span> first.</li>
+<li><b>Project payments</b> are requested by the PM, approved by the company, then marked paid with a reference. They show on the project's Finance tab.</li>
+</ul>
+<div class="note"><b>Amounts</b>All amounts are in Ghana cedis (GH₵).</div>
+</section>
+
+<section id="orgs"><h2>Organizations and teams</h2>
+<p>An organization lets several people share one company account safely.</p>
+<ul>
+<li><b>Roles</b> decide what each member can do. You can only grant a role below your own.</li>
+<li><b>Invite</b> with a link from <span class="k">Organization → Invitations</span>. The link works once, for the person it was sent to, and expires.</li>
+<li><b>Activity log</b> lists role changes, joins and removals.</li>
+<li><b>Two-step sign-in</b> can be turned on from the organization's security area using an authenticator app.</li>
+</ul>
+</section>
+
+<section id="billing"><h2>Plans and billing</h2>
+<ul>
+<li>Open <span class="k">Profile → Plans &amp; billing</span> to see your plan, usage and receipts.</li>
+<li>Payments are made with Paystack (card or mobile money). The plan activates when the payment is confirmed.</li>
+<li>A paid plan unlocks more capacity and tools. It does <b>not</b> change verification.</li>
+</ul>
+</section>
+
+<section id="admin"><h2>For BAID X staff</h2>
+<p>Staff use the separate admin console at <code>/admin.html</code>. It has dashboards, people and verification queues, projects, jobs, finance, billing, support and an audit log.</p>
+<ul>
+<li>Access is by staff account only and is checked on the server for every action.</li>
+<li>Some actions are limited to the <b>Super Admin</b>: managing staff and changing platform settings.</li>
+<li>Staff cannot read end-to-end encrypted conversations; they only see scrambled content for chats created after encryption was enabled.</li>
+</ul>
+</section>
+
+<section id="limits"><h2>Limits to know</h2>
+<table>
+<tr><th>Topic</th><th>Honest note</th></tr>
+<tr><td>Calls</td><td>Calls connect directly between the two phones. On some strict office or mobile networks a call may fail to connect. A relay server can be added later to fix this.</td></tr>
+<tr><td>Notifications</td><td>Browser alerts work while the app is open or in the background. Closed-app push is not included yet.</td></tr>
+<tr><td>Encryption keys</td><td>Keys belong to a device. Create a backup password to read old messages on a new device.</td></tr>
+<tr><td>Files</td><td>Photos and files up to the size your browser and network allow. Very large videos can be slow on weak connections.</td></tr>
+<tr><td>Test release</td><td>BAID X is in its test period. Terms and privacy policy are drafts and will be replaced before launch.</td></tr>
+</table>
+</section>
+
+<section id="faq"><h2>FAQ</h2>
+<details><summary>My message shows a clock and does not send.</summary><p>You are offline or the connection dropped. Check your network. If the message turns red, tap it to retry.</p></details>
+<details><summary>I can't see the Message button on a profile.</summary><p>You need to be signed in. Guests see “Sign in to message.”</p></details>
+<details><summary>The PM accepted but can't invite workers.</summary><p>The invitation must be accepted by the PM first, and the project must still be open (not completed or cancelled).</p></details>
+<details><summary>A worker accepted but is not on the team.</summary><p>Their invitation is waiting for company approval. Check the company's Approvals page and the reason shown.</p></details>
+<details><summary>The join code was rejected.</summary><p>Codes expire after 30 days and a new code replaces the old one. Ask the company for a fresh code.</p></details>
+<details><summary>I switched phones and my old chats say “Can't be decrypted.”</summary><p>Messages are encrypted per device. Restore with your backup password on the new device. Without a backup, only new messages can be read.</p></details>
+<details><summary>I did not get a message alert.</summary><p>Allow notifications for BAID X in your browser, and tap “Turn on message alerts” in Chats.</p></details>
+<details><summary>Does a paid plan make me verified?</summary><p>No. Only a BAID X reviewer verifies accounts.</p></details>
+</section>
+</main>
+</div>
+<footer>BAID X · Built by Baiden Creatives · <a href="index.html">Open the app</a></footer>
+<script>
+(function(){
+  var toc=document.getElementById('toc'),btn=document.getElementById('menuBtn');
+  btn.addEventListener('click',function(){toc.classList.toggle('open')});
+  toc.addEventListener('click',function(e){if(e.target.tagName==='A')toc.classList.remove('open')});
+  var links=[].slice.call(toc.querySelectorAll('a')),map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
+  if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(a){a.classList.remove('on')});var a=map[e.target.id];if(a)a.classList.add('on')}})},{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('main section').forEach(function(s){io.observe(s)})}
+})();
+</script>
+</body>
+</html>
