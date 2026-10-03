@@ -12,8 +12,8 @@
       label: "Companies", role: "company", table: "company_profiles",
       cols: "id,company_name,industry_sector,company_size,city_town,region,company_logo_url,cover_url,company_overview,trust_score,verification_status,badge_tier",
       map: (r) => ({
-        kind: "company", badge: r.badge_tier, id: r.id, name: r.company_name, image: r.company_logo_url, cover: r.cover_url || null,
-        desc: r.company_overview || "Verified company on BAID X.", tag: pretty(r.industry_sector), place: place(r),
+        kind: "company", badge: r.verification_status === "verified" ? (r.badge_tier || "verified") : null, id: r.id, name: r.company_name, image: r.company_logo_url, cover: r.cover_url || null,
+        desc: r.company_overview || "Company on BAID X.", tag: pretty(r.industry_sector), place: place(r),
         catId: r.industry_sector, region: r.region,
         stats: [[num(r.trust_score, 1), "Trust"], [pretty(r.company_size) || "—", "Size"]],
       }),
@@ -24,7 +24,7 @@
       map: (r) => {
         const trade = JOB_CAT_BY_ID[r.primary_job_category_id]?.name || r.specialty;
         return {
-          kind: "worker", badge: r.badge_tier, id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
+          kind: "worker", badge: r.verification_status === "verified" ? (r.badge_tier || "verified") : null, id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
           desc: r.short_bio || (trade ? `${trade} based in ${r.city_town || "Ghana"}.` : "Skilled professional on BAID X."),
           tag: trade || pretty(r.rank_tier) || "Professional", place: place(r), catId: r.primary_job_category_id, region: r.region,
           stats: [[r.daily_rate_ghs ? `GH₵${num(r.daily_rate_ghs)}` : "On request", "Daily rate"], [r.years_of_experience ? `${pretty(r.years_of_experience)}${/^\d/.test(String(r.years_of_experience)) ? " yrs" : ""}` : "New", "Experience"]],
@@ -35,7 +35,7 @@
       label: "Project Managers", role: "project-manager", table: "project_manager_profiles",
       cols: "id,full_name,specialization,specialization_tags,years_managing_projects,projects_managed_count,city_town,region,profile_photo_url,cover_url,verification_status,badge_tier",
       map: (r) => ({
-        kind: "pm", badge: r.badge_tier, id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || null,
+        kind: "pm", badge: r.verification_status === "verified" ? (r.badge_tier || "verified") : null, id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || null,
         desc: (r.specialization_tags || []).slice(0, 3).join(" · ") || "Project manager on BAID X.",
         tag: pretty(r.specialization) || "Project Manager", place: place(r), catId: r.specialization, region: r.region,
         stats: [[r.projects_managed_count ?? 0, "Projects"], [r.years_managing_projects ?? 0, "Years"]],
@@ -45,7 +45,7 @@
       label: "Businesses", role: "business", table: "business_profiles",
       cols: "id,business_name,specialty,short_bio,years_in_operation,crew_size,city_town,region,logo_url,cover_url,portfolio_photo_urls,verification_status,badge_tier",
       map: (r) => ({
-        kind: "business", badge: r.badge_tier, id: r.id, name: r.business_name, image: r.logo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
+        kind: "business", badge: r.verification_status === "verified" ? (r.badge_tier || "verified") : null, id: r.id, name: r.business_name, image: r.logo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
         desc: r.short_bio || "Supplier of products, equipment and materials.", tag: r.specialty || "Supplier", place: place(r),
         catId: r.specialty, region: r.region,
         stats: [[r.crew_size ?? 0, "Crew"], [r.years_in_operation ?? 0, "Years"]],
@@ -160,7 +160,7 @@
   const PIN = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 21s7-6.200 7-11.500A7 7 0 0 0 5 9.500C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>';
   const BAG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7"/></svg>';
   const KIND_LABEL = { worker: "Professional", company: "Company", pm: "Project manager", business: "Supplier" };
-  const SEAL = (tier) => window.BX.badge(tier, 17);
+  const SEAL = (tier) => (tier ? window.BX.badge(tier, 17) : "");
   function cardHTML(it) {
     const role = R(), canInvite = (role === "company" && ["worker", "pm"].includes(it.kind)) || (role === "project-manager" && it.kind === "worker");
     const cover = `<div class="c-cover k-${esc(it.kind)} ${it.cover ? "has" : ""}" ${it.cover ? `style="background-image:url('${esc(it.cover)}')"` : ""}><span class="c-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span></div>`;
@@ -192,11 +192,11 @@
     state.loading = true; state.failed = false; renderFeed();
     try {
       const results = await Promise.all(Object.entries(SOURCES).map(async ([group, s]) => {
-        const { data, error } = await sb.from(s.table).select(s.cols).eq("verification_status", "verified").limit(50);
+        const { data, error } = await sb.from(s.table).select(s.cols).or("account_status.is.null,account_status.eq.active").order("created_at", { ascending: false }).limit(100);
         if (error) throw error;
         return (data || []).map((r) => ({ ...s.map(r), group }));
       }));
-      state.items = results.flat();
+      state.items = results.flat().sort((a, b) => (b.badge ? 1 : 0) - (a.badge ? 1 : 0)); // verified members first
     } catch (e) { console.error("directory load failed", e); state.failed = true; }
     state.loading = false; renderFeed();
   }
