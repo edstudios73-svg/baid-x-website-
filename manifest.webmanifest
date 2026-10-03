@@ -1,15 +1,20 @@
 {
   "name": "BAID X · Ghana's work network",
   "short_name": "BAID X",
-  "description": "Hire verified professionals, run projects and build trust across Ghana. Professionals, companies, project managers and suppliers in one network.",
+  "description": "Verified professionals, companies, project managers and suppliers across Ghana: hire, run projects, message and get paid in one trusted network.",
   "id": "/",
-  "start_url": "/index.html#/home",
+  "start_url": "/index.html#/home?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "lang": "en-GH",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "dir": "ltr",
+  "background_color": "#050505",
+  "theme_color": "#050505",
   "categories": [
     "business",
     "productivity",
@@ -17,30 +22,49 @@
   ],
   "icons": [
     {
-      "src": "assets/icon-192.png",
+      "src": "/assets/icon-192.png?v=2",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/icon-512.png",
+      "src": "/assets/icon-512.png?v=2",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/icon-maskable-512.png",
+      "src": "/assets/icon-maskable-512.png?v=2",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
-  "dir": "ltr",
   "shortcuts": [
+    {
+      "name": "Chats",
+      "short_name": "Chats",
+      "description": "Open your messages",
+      "url": "/index.html#/chats",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png?v=2",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "short_name": "Alerts",
+      "description": "See what's new",
+      "url": "/index.html#/notifications",
+      "icons": [
+        {
+          "src": "/assets/icon-192.png?v=2",
+          "sizes": "192x192"
+        }
+      ]
+    },
     {
       "name": "Discover",
       "short_name": "Discover",
@@ -48,7 +72,7 @@
       "url": "/index.html#/discover",
       "icons": [
         {
-          "src": "assets/icon-192.png",
+          "src": "/assets/icon-192.png?v=2",
           "sizes": "192x192"
         }
       ]
@@ -60,33 +84,11 @@
       "url": "/index.html#/projects",
       "icons": [
         {
-          "src": "assets/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Plans & billing",
-      "short_name": "Billing",
-      "description": "Your plan and payments",
-      "url": "/index.html#/billing",
-      "icons": [
-        {
-          "src": "assets/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Sign in",
-      "short_name": "Sign in",
-      "url": "/auth.html?mode=signin",
-      "icons": [
-        {
-          "src": "assets/icon-192.png",
+          "src": "/assets/icon-192.png?v=2",
           "sizes": "192x192"
         }
       ]
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }

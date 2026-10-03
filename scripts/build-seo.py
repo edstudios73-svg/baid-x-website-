@@ -79,7 +79,7 @@ def head(title, desc, path, ld, extra=""):
 <meta name="geo.region" content="GH" /><meta name="geo.placename" content="Ghana" /><meta name="geo.position" content="7.9465;-1.0232" /><meta name="ICBM" content="7.9465, -1.0232" />
 <meta name="theme-color" content="#050505" /><meta name="color-scheme" content="dark" />
 <meta name="author" content="Baiden Creatives" /><meta name="application-name" content="BAID X" />
-<link rel="icon" href="/assets/favicon.ico" sizes="any" /><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" /><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" /><link rel="manifest" href="/manifest.webmanifest" />
+<link rel="icon" href="/assets/favicon.ico?v=2" sizes="any" /><link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2" /><link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2" /><link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=2" /><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2" /><link rel="manifest" href="/manifest.webmanifest" />
 <meta property="og:type" content="website" /><meta property="og:site_name" content="BAID X" /><meta property="og:locale" content="en_GH" />
 <meta property="og:title" content="{esc(title)}" /><meta property="og:description" content="{esc(desc)}" /><meta property="og:url" content="{url}" />
 <meta property="og:image" content="{OG}" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
