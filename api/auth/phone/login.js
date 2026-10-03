@@ -14,17 +14,16 @@ module.exports = async (req, res) => {
   try {
     const phone = normalizeGhanaPhone(req.body && req.body.phone), password = String((req.body && req.body.password) || "");
     if (!phone || !password || password.length > 200) return res.status(400).json(FAIL);
-    const a = await rpc("rl_hit", { p_key: `phone:login:p:${phone}`, p_window_s: 600, p_max: 10 });
-    const b = await rpc("rl_hit", { p_key: `phone:login:ip:${ip(req)}`, p_window_s: 600, p_max: 30 });
+    // independent checks run together (one round trip instead of four)
+    const [a, b, found] = await Promise.all([
+      rpc("rl_hit", { p_key: `phone:login:p:${phone}`, p_window_s: 600, p_max: 10 }),
+      rpc("rl_hit", { p_key: `phone:login:ip:${ip(req)}`, p_window_s: 600, p_max: 30 }),
+      rpc("auth_email_by_phone", { p_phone: phone }),
+    ]);
     const lim = [a, b].find((x) => x.ok && x.json && x.json.allowed === false);
     if (lim) { res.setHeader("Retry-After", String(lim.json.retry_after_s)); return res.status(429).json({ error: "Too many attempts. Please wait a few minutes." }); }
     if (!a.ok || !b.ok) return res.status(503).json({ error: "Try again shortly." });
-
-    const found = await rpc("auth_user_by_phone", { p_phone: phone });
-    const uid = found.ok && typeof found.json === "string" ? found.json : null;
-    if (!uid) return res.status(401).json(FAIL);
-    const u = await id.getUser(uid);
-    const email = u.ok && u.json.email;
+    const email = found.ok && typeof found.json === "string" && found.json ? found.json : null;
     if (!email) return res.status(401).json(FAIL);
     const t = await id.passwordGrant(email, password);
     if (!t.ok || !t.json.access_token) { await audit("phone.login_failed", null, { phone: maskPhone(phone) }); return res.status(401).json(FAIL); }

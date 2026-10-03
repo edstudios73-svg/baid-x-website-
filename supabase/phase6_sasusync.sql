@@ -142,3 +142,8 @@ begin
   if ph is null then select phone into ph from auth.users where id = p_user and phone_confirmed_at is not null; end if;
   return ph;
 end $$;
+
+-- 10) One-query phone -> login email lookup (speeds up phone sign-in)
+create or replace function public.auth_email_by_phone(p_phone text) returns text language sql stable security definer set search_path = public, auth as $$
+  select u.email from auth.users u where u.id = public.auth_user_by_phone(p_phone) $$;
+revoke execute on function public.auth_email_by_phone(text) from public, anon, authenticated;

@@ -16,15 +16,17 @@ module.exports = async (req, res) => {
   try {
     const phone = normalizeGhanaPhone(req.body && req.body.phone), code = String((req.body && req.body.code) || "");
     if (!phone || !/^\d{4,8}$/.test(code)) return res.status(400).json({ error: "Enter the code you received." });
-    const a = await rpc("rl_hit", { p_key: `otp:verify:p:${phone}`, p_window_s: 600, p_max: 8 });
-    const b = await rpc("rl_hit", { p_key: `otp:verify:ip:${ip(req)}`, p_window_s: 600, p_max: 30 });
+    const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const [a, b, q] = await Promise.all([
+      rpc("rl_hit", { p_key: `otp:verify:p:${phone}`, p_window_s: 600, p_max: 8 }),
+      rpc("rl_hit", { p_key: `otp:verify:ip:${ip(req)}`, p_window_s: 600, p_max: 30 }),
+      supa(`/rest/v1/sasusync_otp_requests?phone=eq.${phone}&status=eq.sent&created_at=gte.${encodeURIComponent(since)}&order=created_at.desc&limit=1&select=otp_id,purpose,user_id`),
+    ]);
     const lim = [a, b].find((x) => x.ok && x.json && x.json.allowed === false);
     if (lim) { res.setHeader("Retry-After", String(lim.json.retry_after_s)); return res.status(429).json({ error: "Too many attempts. Please wait a few minutes." }); }
     if (!a.ok || !b.ok) return res.status(503).json({ error: "Try again shortly." });
 
-    // the newest code we sent to this number, from the last 15 minutes
-    const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const q = await supa(`/rest/v1/sasusync_otp_requests?phone=eq.${phone}&status=eq.sent&created_at=gte.${encodeURIComponent(since)}&order=created_at.desc&limit=1&select=otp_id,purpose,user_id`);
+    // q (above): the newest code we sent to this number in the last 15 minutes
     const row = q.ok && Array.isArray(q.json) ? q.json[0] : null;
     if (!row) return res.status(400).json({ ok: false, reason: "no_pending_code", error: MSG.no_pending_code });
 
@@ -46,14 +48,16 @@ module.exports = async (req, res) => {
 
     // Account step. No Supabase phone/SMS provider is involved: the user is a normal email user with an internal synthetic email.
     const tmp = id.tempPassword();
-    let uid = row.user_id, email;
+    let uid = row.user_id, email, grant = null;
     if (row.purpose === "signup") {
       email = id.syntheticEmail(phone);
       const c = await id.createUser(email, tmp, { signup_method: "phone_otp" });
       if (!c.ok || !c.json.id) { await audit("otp.account_failed", row.otp_id, { purpose: "signup", status: c.status }); return res.status(500).json({ error: "We couldn't finish creating your account." }); }
       uid = c.json.id;
-      const link = await supa("/rest/v1/phone_identities", { method: "POST", body: { phone, user_id: uid } });
+      // link the number and mint the session at the same time; if the link loses a race the session is discarded and the user removed
+      const [link, tok] = await Promise.all([supa("/rest/v1/phone_identities", { method: "POST", body: { phone, user_id: uid } }), id.passwordGrant(email, tmp)]);
       if (!link.ok) { await id.deleteUser(uid); await audit("otp.account_failed", row.otp_id, { purpose: "signup", step: "link" }); return res.status(409).json({ error: "This number already has an account. Sign in instead." }); }
+      grant = tok;
     } else {
       if (!uid) return res.status(400).json({ error: "Something went wrong." });
       const cur = await id.getUser(uid);
@@ -63,9 +67,11 @@ module.exports = async (req, res) => {
       if (!u.ok) { await audit("otp.account_failed", row.otp_id, { purpose: "reset", step: "update" }); return res.status(500).json({ error: "We couldn't finish. Try again." }); }
       await supa("/rest/v1/phone_identities", { method: "POST", body: { phone, user_id: uid }, headers: { Prefer: "resolution=ignore-duplicates" } }); // legacy users gain an identity row
     }
-    const t = await id.passwordGrant(email, tmp);
-    await supa(`/rest/v1/sasusync_otp_requests?otp_id=eq.${encodeURIComponent(row.otp_id)}`, { method: "PATCH", body: { user_id: uid } });
-    await audit("otp.verified", row.otp_id, { purpose: row.purpose, phone: maskPhone(phone) }, uid);
+    const [t] = await Promise.all([
+      grant ? Promise.resolve(grant) : id.passwordGrant(email, tmp),
+      supa(`/rest/v1/sasusync_otp_requests?otp_id=eq.${encodeURIComponent(row.otp_id)}`, { method: "PATCH", body: { user_id: uid } }),
+      audit("otp.verified", row.otp_id, { purpose: row.purpose, phone: maskPhone(phone) }, uid),
+    ]);
     if (!t.ok || !t.json.access_token) return res.status(502).json({ error: "Your number is verified, but we couldn't sign you in. Try signing in." });
     // phone verification is NOT identity/KYC verification; it only proves control of the number
     return res.status(200).json({ ok: true, purpose: row.purpose, session: id.sessionOf(t.json) });

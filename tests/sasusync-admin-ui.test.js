@@ -25,3 +25,11 @@ test("admin UI: result shows provider outcome and charged state, never the numbe
   assert.ok(!/innerHTML[^;]*a\.value/.test(block));
   assert.ok(!/message|api[_-]?key|secret/i.test(block.replace(/sandbox test message/gi, "").replace(/Nothing is delivered[^"]*/, "")));
 });
+
+const auth = fs.readFileSync(require.resolve("../js/auth.js"), "utf8"), html = fs.readFileSync(require.resolve("../auth.html"), "utf8");
+test("signup UI: password needs 8+ chars, a letter, a number and a capital or symbol; Create account saves password + profile together", () => {
+  assert.ok(/len: \(p\) => p\.length >= 8/.test(auth) && /mix:/.test(auth) && html.includes('data-r="mix"'));
+  assert.ok(/finishProfile\(label, \$\("#pass"\)\.value\)/.test(auth));
+  assert.ok(/Promise\.all\(\[password \? sb\.auth\.updateUser/.test(auth), "password update and profile insert run together");
+  assert.ok(!/getUser\(\)/.test(auth.slice(auth.indexOf("async function finishProfile"), auth.indexOf("/* ---------- sign in"))), "no network getUser in the create step");
+});

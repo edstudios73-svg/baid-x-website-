@@ -176,6 +176,7 @@
     if (error) { $("#codeErr").textContent = friendly(error); $$("#otp input").forEach((i) => (i.value = "")); $$("#otp input")[0].focus(); $("#codeNext").disabled = true; return; }
     S.user = data.user;
     if (S.mode === "reset") { prepPass(); show("pass"); return; }
+    if (phoneApi && S.mode === "signup") { prepName(); show("name"); return; } // brand-new account: no role yet, skip the lookup
     const me = await loadMe();
     if (me?.role) { location.href = HOME; return; }
     prepName(); show("name");
@@ -215,11 +216,11 @@
   $("#cats").addEventListener("click", (e) => {
     const b = e.target.closest("[data-id]"); if (!b) return;
     S.cat = categoriesFor(S.role).items.find((i) => i.id === b.dataset.id); renderCats();
-    setTimeout(() => { if (S.mode === "onboard") finishProfile(); else { prepPass(); show("pass"); } }, 200);
+    setTimeout(() => { if (S.mode === "onboard") finishProfile(); else { prepPass(); show("pass"); } }, 60);
   });
 
   /* ---------- 5. password ---------- */
-  const rules = { len: (p) => p.length >= 8, num: (p) => /\d/.test(p), let: (p) => /[A-Za-z]/.test(p) };
+  const rules = { len: (p) => p.length >= 8, num: (p) => /\d/.test(p), let: (p) => /[A-Za-z]/.test(p), mix: (p) => /[A-Z]/.test(p) || /[^A-Za-z0-9]/.test(p) };
   function prepPass() {
     const reset = S.mode === "reset";
     $("#passTitle").textContent = reset ? "Set a new password" : "Create a password";
@@ -235,16 +236,16 @@
   $("#pass").addEventListener("keydown", (e) => e.key === "Enter" && !$("#passNext").disabled && $("#passNext").click());
   $("#passNext").addEventListener("click", async () => {
     const label = $("#passNext").textContent; setBusy($("#passNext"), true, label);
+    if (S.mode !== "reset") { await finishProfile(label, $("#pass").value); return; } // password + profile are saved together
     const { error } = await sb.auth.updateUser({ password: $("#pass").value });
     if (error) { setBusy($("#passNext"), false, label); $("#passErr").textContent = friendly(error); return; }
     if (S.mode === "reset") { toast("Password updated."); const me = await loadMe(); setTimeout(() => (location.href = me?.role ? HOME : "auth.html?onboard=1"), 700); return; }
-    await finishProfile(label);
   });
 
   /* ---------- create the profile row (db trigger adds account_roles) ---------- */
-  async function finishProfile(label = "Create account") {
+  async function finishProfile(label = "Create account", password) {
     const btn = $("#passNext");
-    const { data: { user } } = await sb.auth.getUser();
+    const { data: { session } } = await sb.auth.getSession(); const user = session?.user; // local read: no network round trip
     if (!user) { toast("Your session expired. Please sign in again."); show("type"); return; }
     const phone = user.phone ? `+${String(user.phone).replace(/^\+/, "")}` : S.phone || "";
     const email = user.email || "";
@@ -257,8 +258,10 @@
       "individual-employer": { full_name: name, phone_number: phone, email, profile_sections: { need_category: S.cat?.name } },
     };
     setBusy(btn, true, label);
-    const { error } = await sb.from(ROLES[S.role].table).insert({ id: user.id, ...rows[S.role] });
-    if (error && error.code !== "23505") { setBusy(btn, false, label); const m = friendly(error); if (S.view === "pass") $("#passErr").textContent = m; else toast(m); return; }
+    // save the password and create the profile at the same time (a retry is safe: an existing profile row is accepted)
+    const [pw, ins] = await Promise.all([password ? sb.auth.updateUser({ password }) : Promise.resolve({}), sb.from(ROLES[S.role].table).insert({ id: user.id, ...rows[S.role] })]);
+    const error = pw.error || (ins.error && ins.error.code !== "23505" ? ins.error : null);
+    if (error) { setBusy(btn, false, label); const m = friendly(error); if (S.view === "pass") $("#passErr").textContent = m; else toast(m); return; }
     location.href = HOME;
   }
 
