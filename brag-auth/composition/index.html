@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=1920, height=1080" /><style>
+@font-face { font-family: Inter; font-weight: 400; src: url(assets/fonts/inter-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/inter-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: Inter; font-weight: 800; src: url(assets/fonts/inter-latin-800-normal.woff2) format("woff2"); }
+:root { --bg:#050505; --text:#f6f6f7; --muted:#c4c4c4; --gold:#e8c46a; --cream:#e8d9a8; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width:1920px; height:1080px; background:var(--bg); overflow:hidden; font-family:Inter,system-ui,sans-serif; color:var(--text); }
+#root { position:relative; width:1920px; height:1080px; background:radial-gradient(1200px 700px at 50% 40%, #14110a, #050505 70%); overflow:hidden; }
+.orb { position:absolute; border-radius:50%; filter:blur(10px); }
+#o1 { width:1100px; height:1100px; left:-300px; top:-420px; background:radial-gradient(circle, rgba(232,196,106,.55), transparent 62%); }
+#o2 { width:900px; height:900px; left:1150px; top:380px; background:radial-gradient(circle, rgba(184,134,11,.5), transparent 62%); }
+#o3 { width:700px; height:700px; left:760px; top:-300px; background:radial-gradient(circle, rgba(232,217,168,.22), transparent 62%); }
+.grid { position:absolute; inset:0; background-image:linear-gradient(rgba(232,217,168,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(232,217,168,.045) 1px, transparent 1px); background-size:80px 80px; -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 20%, transparent 75%); mask-image:radial-gradient(circle at 50% 50%, #000 20%, transparent 75%); }
+.frame { position:absolute; inset:26px; border:1px solid rgba(232,217,168,.22); border-radius:6px; pointer-events:none; }
+.frame::before, .frame::after { content:""; position:absolute; width:46px; height:46px; border:2px solid rgba(232,217,168,.6); }
+.frame::before { left:-1px; top:-1px; border-right:0; border-bottom:0; } .frame::after { right:-1px; bottom:-1px; border-left:0; border-top:0; }
+.mark { position:absolute; left:64px; top:52px; font-weight:800; font-size:21px; letter-spacing:.32em; color:rgba(232,217,168,.8); }
+#progw { position:absolute; left:26px; right:26px; bottom:26px; height:3px; background:rgba(255,255,255,.07); } #prog { height:100%; background:linear-gradient(90deg,#b8860b,#e8c46a,#fff); transform-origin:left; }
+.glass { background:linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.04)); border:1px solid rgba(255,255,255,.2); backdrop-filter:blur(28px) saturate(1.5); -webkit-backdrop-filter:blur(28px) saturate(1.5); box-shadow:inset 0 1px 0 rgba(255,255,255,.3), inset 0 -1px 0 rgba(255,255,255,.05), 0 40px 90px -30px rgba(0,0,0,.85); border-radius:40px; }
+.clip { position:absolute; inset:0; }
+.eb { font-weight:800; font-size:26px; letter-spacing:.3em; text-transform:uppercase; color:var(--gold); }
+h1 { font-weight:800; font-size:92px; line-height:1.02; letter-spacing:-.035em; }
+h2 { font-weight:800; font-size:72px; line-height:1.04; letter-spacing:-.03em; margin-top:18px; }
+.gold { background:linear-gradient(90deg,#f1d58a,#c99a2e); -webkit-background-clip:text; background-clip:text; color:transparent; }
+p.t { font-size:36px; line-height:1.38; color:var(--muted); margin-top:22px; }
+.center { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.logo { width:230px; height:auto; }
+.ring { position:absolute; width:520px; height:520px; border-radius:50%; border:1px solid rgba(232,196,106,.5); left:700px; top:140px; }
+.ring.b { width:640px; height:640px; left:640px; top:80px; border-color:rgba(232,196,106,.22); }
+.pillg { display:inline-block; padding:18px 38px; border-radius:99px; font-weight:800; font-size:30px; letter-spacing:.04em; margin-top:34px; }
+.two { display:flex; gap:44px; margin-top:56px; }
+.big { width:640px; padding:48px 44px; text-align:left; }
+.big i { display:grid; place-items:center; width:84px; height:84px; border-radius:24px; border:1px solid rgba(232,196,106,.6); background:rgba(232,196,106,.14); color:var(--gold); margin-bottom:26px; }
+.big b { display:block; font-size:50px; letter-spacing:-.02em; } .big small { display:block; font-size:30px; color:var(--muted); margin-top:12px; line-height:1.35; }
+.panel { position:absolute; width:800px; top:250px; padding:54px 56px 48px; }
+.num { font-weight:800; font-size:30px; display:flex; align-items:center; gap:16px; } .num span { display:grid; place-items:center; width:62px; height:62px; border-radius:50%; background:linear-gradient(135deg,#f1d58a,#c99a2e); color:#14110a; font-size:32px; }
+.stp { display:flex; gap:10px; margin-top:40px; flex-wrap:wrap; } .stp em { font-style:normal; font-weight:600; font-size:22px; padding:10px 18px; border-radius:99px; border:1px solid rgba(255,255,255,.2); color:#bdbdbd; background:rgba(255,255,255,.05); } .stp em.on { background:linear-gradient(135deg,#f1d58a,#c99a2e); color:#14110a; border-color:transparent; font-weight:800; } .stp em.dn { color:var(--gold); border-color:rgba(232,196,106,.45); }
+/* phone */
+#ph { position:absolute; left:1262px; top:104px; width:408px; height:872px; padding:14px; border-radius:68px; background:linear-gradient(145deg, rgba(255,255,255,.22), rgba(255,255,255,.05)); border:1.5px solid rgba(232,217,168,.55); box-shadow:0 50px 110px -30px #000, 0 0 90px rgba(232,196,106,.22), inset 0 1px 0 rgba(255,255,255,.4); opacity:0; }
+#scr { position:relative; width:380px; height:844px; border-radius:54px; overflow:hidden; background:#000; }
+#scr img.s { position:absolute; inset:0; width:380px; height:822px; object-fit:cover; opacity:0; }
+.notch { position:absolute; left:50%; top:10px; margin-left:-52px; width:104px; height:28px; border-radius:20px; background:#000; z-index:5; }
+.tap { position:absolute; width:70px; height:70px; margin:-35px 0 0 -35px; border-radius:50%; background:radial-gradient(circle, rgba(232,196,106,.85), rgba(232,196,106,.25) 55%, transparent 70%); border:2px solid rgba(255,255,255,.7); opacity:0; z-index:6; }
+.okc { width:150px; height:150px; border-radius:50%; display:grid; place-items:center; background:linear-gradient(135deg,#f1d58a,#c99a2e); color:#14110a; box-shadow:0 0 90px rgba(232,196,106,.55); margin-bottom:34px; }
+</style></head>
+<body>
+<div id="root" data-composition-id="root" data-width="1920" data-height="1080" data-start="0" data-duration="60">
+  <div class="orb" id="o1"></div><div class="orb" id="o2"></div><div class="orb" id="o3"></div><div class="grid"></div>
+  <div class="frame"></div><div class="mark">BAID X</div><div id="progw"><div id="prog"></div></div>
+  <div id="a" class="clip" data-start="0" data-duration="5.4"><div class="ring" id="ar1"></div><div class="ring b" id="ar2"></div><div class="center" style="position:absolute;inset:0"><img id="alogo" class="logo" src="assets/logo.png"><div id="arule" style="width:200px;height:2px;background:linear-gradient(90deg,transparent,#e8c46a,transparent);margin:34px 0 30px"></div><div id="ae" class="eb">Ghana's work network</div><h1 id="ah" style="margin-top:26px">Sign up. <span class="gold">Sign in.</span></h1><div id="ap" class="glass pillg">It takes about a minute</div></div></div><div id="b" class="clip" data-start="5.4" data-duration="3.8"><div class="center" style="position:absolute;inset:0"><div id="be" class="eb">Two ways in</div><div class="two"><div id="bc1" class="glass big"><i><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1-4 4-6 7.5-6s6.5 2 7.5 6"/></svg></i><b>New here?</b><small>Create an account with your phone number.</small></div><div id="bc2" class="glass big"><i><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/></svg></i><b>Been here before?</b><small>Sign in with your phone or your email.</small></div></div></div></div><div id="s1" class="clip" data-start="9.2" data-duration="5.0"><div id="s1p" class="glass panel" style="left:150px"><div class="num"><span>1</span><b class="eb" style="font-size:24px">Sign up</b></div><h2>Choose your <span class="gold">account type</span></h2><p class="t">Professional, Company, Project Manager, Supplier or Client. Pick the one that fits how you use BAID X.</p><div class="stp"><em class="on">Type</em><em class="">Phone</em><em class="">Code</em><em class="">Name</em><em class="">Work</em><em class="">Password</em></div></div></div><div id="s2" class="clip" data-start="14.2" data-duration="5.0"><div id="s2p" class="glass panel" style="left:150px"><div class="num"><span>2</span><b class="eb" style="font-size:24px">Sign up</b></div><h2>Enter your <span class="gold">phone number</span></h2><p class="t">Ghana +233 is preset. BAID X sends a verification code to this number.</p><div class="stp"><em class="dn">Type</em><em class="on">Phone</em><em class="">Code</em><em class="">Name</em><em class="">Work</em><em class="">Password</em></div></div></div><div id="s3" class="clip" data-start="19.2" data-duration="5.0"><div id="s3p" class="glass panel" style="left:150px"><div class="num"><span>3</span><b class="eb" style="font-size:24px">Sign up</b></div><h2>Confirm the <span class="gold">code</span></h2><p class="t">Type the 6-digit code from the SMS. It proves the number is really yours.</p><div class="stp"><em class="dn">Type</em><em class="dn">Phone</em><em class="on">Code</em><em class="">Name</em><em class="">Work</em><em class="">Password</em></div></div></div><div id="s4" class="clip" data-start="24.2" data-duration="5.0"><div id="s4p" class="glass panel" style="left:150px"><div class="num"><span>4</span><b class="eb" style="font-size:24px">Sign up</b></div><h2>Tell us your <span class="gold">name</span></h2><p class="t">This is how clients, companies and teams will see you on BAID X.</p><div class="stp"><em class="dn">Type</em><em class="dn">Phone</em><em class="dn">Code</em><em class="on">Name</em><em class="">Work</em><em class="">Password</em></div></div></div><div id="s5" class="clip" data-start="29.2" data-duration="5.0"><div id="s5p" class="glass panel" style="left:150px"><div class="num"><span>5</span><b class="eb" style="font-size:24px">Sign up</b></div><h2>Choose what <span class="gold">you do</span></h2><p class="t">Search and pick your trade or category, so the right people can find you.</p><div class="stp"><em class="dn">Type</em><em class="dn">Phone</em><em class="dn">Code</em><em class="dn">Name</em><em class="on">Work</em><em class="">Password</em></div></div></div><div id="s6" class="clip" data-start="34.2" data-duration="5.8"><div id="s6p" class="glass panel" style="left:150px"><div class="num"><span>6</span><b class="eb" style="font-size:24px">Sign up</b></div><h2>Create a <span class="gold">password</span></h2><p class="t">At least 8 characters with a letter and a number. Then tap Create account.</p><div class="stp"><em class="dn">Type</em><em class="dn">Phone</em><em class="dn">Code</em><em class="dn">Name</em><em class="dn">Work</em><em class="on">Password</em></div></div></div><div id="ok" class="clip" data-start="40.0" data-duration="3.6"><div class="center" style="position:absolute;left:0;right:0;top:0;bottom:0"><div id="okc" class="okc"><svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div><h1 id="okh" style="font-size:100px">You're <span class="gold">in.</span></h1><p id="okp" class="t" style="max-width:1100px">Add your email any time from your profile, then get verified to earn a trust badge.</p></div></div><div id="i1" class="clip" data-start="43.6" data-duration="6.0"><div id="i1p" class="glass panel" style="left:800px"><div class="num"><span>A</span><b class="eb" style="font-size:24px">Sign in</b></div><h2>Sign in with your <span class="gold">phone</span></h2><p class="t">Enter your number and password, then tap Sign in.</p><div class="stp"></div></div></div><div id="i2" class="clip" data-start="49.6" data-duration="5.4"><div id="i2p" class="glass panel" style="left:800px"><div class="num"><span>B</span><b class="eb" style="font-size:24px">Sign in</b></div><h2>Or use your <span class="gold">email</span></h2><p class="t">Switch the tab to Email. Forgot your password? Tap Forgot password to reset it.</p><div class="stp"></div></div></div><div id="z" class="clip" data-start="55.0" data-duration="5.0"><div class="center" style="position:absolute;inset:0"><img id="zlogo" class="logo" src="assets/logo.png"><div id="zrule" style="width:200px;height:2px;background:linear-gradient(90deg,transparent,#e8c46a,transparent);margin:34px 0 30px"></div><h1 id="zh" style="font-size:84px">Join free at <span class="gold">baidx.com</span></h1><div id="zp" class="glass pillg" style="background:linear-gradient(135deg,#f1d58a,#c99a2e);color:#14110a;border:0">Sign up with your phone</div></div></div>
+  <div id="phw" style="position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none"><div id="ph"><div id="scr"><div class="notch"></div><img class="s" id="sc1" src="assets/shots/01-type.png"><img class="s" id="sc2" src="assets/shots/02-phone-empty.png"><img class="s" id="sc3" src="assets/shots/03-phone-filled.png"><img class="s" id="sc4" src="assets/shots/04-code.png"><img class="s" id="sc5" src="assets/shots/05-name.png"><img class="s" id="sc6" src="assets/shots/06-cat.png"><img class="s" id="sc7" src="assets/shots/07-pass.png"><img class="s" id="sc8" src="assets/shots/08-signin-empty.png"><img class="s" id="sc9" src="assets/shots/09-signin-filled.png"><img class="s" id="sc10" src="assets/shots/10-signin-email.png"><div class="tap" id="tp0"></div><div class="tap" id="tp1"></div><div class="tap" id="tp2"></div><div class="tap" id="tp3"></div><div class="tap" id="tp4"></div><div class="tap" id="tp5"></div><div class="tap" id="tp6"></div><div class="tap" id="tp7"></div><div class="tap" id="tp8"></div></div></div></div>
+  <audio id="bed" data-start="0" data-duration="60" data-track-index="1" data-volume="0.5" data-fade-in="1.2" data-fade-out="3" src="assets/music/bed.mp3"></audio>
+</div>
+<script src="vendor/gsap.min.js"></script>
+<script>
+  const tl = gsap.timeline({ paused: true });
+  gsap.set("#ph", { transformPerspective: 1400 });
+    tl.fromTo("#o1",{x:0,y:0,opacity:.5},{x:120,y:60,opacity:.9,duration:60,ease:"none"},0);
+  tl.fromTo("#o2",{x:0,y:0,opacity:.4},{x:-160,y:-80,opacity:.9,duration:60,ease:"none"},0);
+  tl.fromTo("#o3",{opacity:.3,scale:.9},{opacity:.8,scale:1.3,duration:60,ease:"none"},0);
+  tl.fromTo("#prog",{scaleX:0},{scaleX:1,duration:60,ease:"none"},0);
+  tl.fromTo("#ar1",{opacity:0,scale:.7},{opacity:1,scale:1,duration:2.2,ease:"power2.out"},0.1);
+  tl.fromTo("#ar2",{opacity:0,scale:.7},{opacity:1,scale:1,duration:2.6,ease:"power2.out"},0.3);
+  tl.fromTo("#alogo",{opacity:0,scale:.85,y:14},{opacity:1,scale:1,y:0,duration:1.4,ease:"power3.out"},0.5);
+  tl.fromTo("#arule",{opacity:0,scaleX:0},{opacity:1,scaleX:1,duration:1.0,ease:"power2.inOut"},1.5);
+  tl.fromTo("#ae",{opacity:0,y:20},{opacity:1,y:0,duration:0.7,ease:"power3.out"},2.0);
+  tl.fromTo("#ah",{opacity:0,y:44},{opacity:1,y:0,duration:0.9,ease:"power3.out"},2.4);
+  tl.fromTo("#ap",{opacity:0,y:30},{opacity:1,y:0,duration:0.8,ease:"power3.out"},3.3);
+  tl.fromTo("#be",{opacity:0,y:20},{opacity:1,y:0,duration:0.6,ease:"power3.out"},5.7);
+  tl.fromTo("#bc1",{opacity:0,scale:0.9},{opacity:1,scale:1,duration:0.8,ease:"back.out(1.4)"},6.2);
+  tl.fromTo("#bc2",{opacity:0,scale:0.9},{opacity:1,scale:1,duration:0.8,ease:"back.out(1.4)"},6.9);
+  tl.fromTo("#s1p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},9.35);
+  tl.to("#s1p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},13.75);
+  tl.fromTo("#s2p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},14.35);
+  tl.to("#s2p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},18.75);
+  tl.fromTo("#s3p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},19.349999999999998);
+  tl.to("#s3p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},23.75);
+  tl.fromTo("#s4p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},24.349999999999998);
+  tl.to("#s4p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},28.75);
+  tl.fromTo("#s5p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},29.349999999999998);
+  tl.to("#s5p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},33.75);
+  tl.fromTo("#s6p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},34.35);
+  tl.to("#s6p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},39.55);
+  tl.fromTo("#okc",{opacity:0,scale:0.6},{opacity:1,scale:1,duration:0.8,ease:"back.out(1.4)"},40.3);
+  tl.fromTo("#okh",{opacity:0,y:44},{opacity:1,y:0,duration:0.8,ease:"power3.out"},40.6);
+  tl.fromTo("#okp",{opacity:0,y:30},{opacity:1,y:0,duration:0.8,ease:"power3.out"},41.1);
+  tl.fromTo("#i1p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},43.75);
+  tl.to("#i1p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},49.15);
+  tl.fromTo("#i2p",{opacity:0,y:50},{opacity:1,y:0,duration:0.9,ease:"power3.out"},49.75);
+  tl.to("#i2p",{opacity:0,y:-20,duration:.4,ease:"power2.in"},54.55);
+  tl.fromTo("#zlogo",{opacity:0,scale:.85},{opacity:1,scale:1,duration:1.0,ease:"power3.out"},55.3);
+  tl.fromTo("#zrule",{opacity:0,scaleX:0},{opacity:1,scaleX:1,duration:.9,ease:"power2.inOut"},56.0);
+  tl.fromTo("#zh",{opacity:0,y:44},{opacity:1,y:0,duration:0.9,ease:"power3.out"},56.2);
+  tl.fromTo("#zp",{opacity:0,y:30},{opacity:1,y:0,duration:0.8,ease:"power3.out"},57.0);
+  tl.fromTo("#ph",{opacity:0,y:70,rotationY:-14,scale:.94},{opacity:1,y:0,rotationY:0,scale:1,duration:1.2,ease:"power3.out"},8.8);
+  tl.to("#phw",{y:-14,duration:30,ease:"none"},10.0);
+  tl.to("#sc1",{opacity:1,duration:0.01,ease:"power1.inOut"},9.4);
+  tl.set("#tp0",{left:85,top:246},10.7);
+  tl.fromTo("#tp0",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},10.7);
+  tl.to("#tp0",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},11.0);
+  tl.set("#tp1",{left:160,top:768},12.9);
+  tl.fromTo("#tp1",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},12.9);
+  tl.to("#tp1",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},13.200000000000001);
+  tl.to("#sc2",{opacity:1,duration:0.5,ease:"power1.inOut"},14.2);
+  tl.to("#sc1",{opacity:0,duration:0.4,ease:"power1.inOut"},14.3);
+  tl.to("#sc3",{opacity:1,duration:0.5,ease:"power1.inOut"},16.6);
+  tl.to("#sc2",{opacity:0,duration:0.4,ease:"power1.inOut"},16.8);
+  tl.set("#tp2",{left:190,top:158},16.4);
+  tl.fromTo("#tp2",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},16.4);
+  tl.to("#tp2",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},16.7);
+  tl.set("#tp3",{left:190,top:790},18.2);
+  tl.fromTo("#tp3",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},18.2);
+  tl.to("#tp3",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},18.5);
+  tl.to("#sc4",{opacity:1,duration:0.5,ease:"power1.inOut"},19.3);
+  tl.to("#sc3",{opacity:0,duration:0.4,ease:"power1.inOut"},19.5);
+  tl.set("#tp4",{left:190,top:790},22.9);
+  tl.fromTo("#tp4",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},22.9);
+  tl.to("#tp4",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},23.2);
+  tl.to("#sc5",{opacity:1,duration:0.5,ease:"power1.inOut"},24.3);
+  tl.to("#sc4",{opacity:0,duration:0.4,ease:"power1.inOut"},24.5);
+  tl.set("#tp5",{left:190,top:790},27.9);
+  tl.fromTo("#tp5",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},27.9);
+  tl.to("#tp5",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},28.2);
+  tl.to("#sc6",{opacity:1,duration:0.5,ease:"power1.inOut"},29.3);
+  tl.to("#sc5",{opacity:0,duration:0.4,ease:"power1.inOut"},29.5);
+  tl.set("#tp6",{left:111,top:185},31.2);
+  tl.fromTo("#tp6",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},31.2);
+  tl.to("#tp6",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},31.5);
+  tl.to("#sc7",{opacity:1,duration:0.5,ease:"power1.inOut"},34.3);
+  tl.to("#sc6",{opacity:0,duration:0.4,ease:"power1.inOut"},34.5);
+  tl.set("#tp7",{left:190,top:690},38.3);
+  tl.fromTo("#tp7",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},38.3);
+  tl.to("#tp7",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},38.599999999999994);
+  tl.to("#ph",{opacity:0,scale:.94,duration:.6,ease:"power2.in"},39.7);
+  tl.set("#ph",{x:-1012},40.4);
+  tl.set("#sc7",{opacity:0},40.4);
+  tl.fromTo("#ph",{opacity:0,y:70,rotationY:14,scale:.94},{opacity:1,y:0,rotationY:0,scale:1,duration:1.1,ease:"power3.out",immediateRender:false},43.2);
+  tl.to("#phw",{y:-12,duration:11,ease:"none"},44.4);
+  tl.to("#sc8",{opacity:1,duration:0.01,ease:"power1.inOut"},43.4);
+  tl.set("#tp8",{left:190,top:196},45.2);
+  tl.fromTo("#tp8",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},45.2);
+  tl.to("#tp8",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},45.5);
+  tl.to("#sc9",{opacity:1,duration:0.5,ease:"power1.inOut"},46.6);
+  tl.to("#sc8",{opacity:0,duration:0.4,ease:"power1.inOut"},46.8);
+  tl.set("#tp0",{left:190,top:196},45.8);
+  tl.fromTo("#tp0",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},45.8);
+  tl.to("#tp0",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},46.099999999999994);
+  tl.set("#tp1",{left:190,top:330},48.0);
+  tl.fromTo("#tp1",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},48.0);
+  tl.to("#tp1",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},48.3);
+  tl.to("#sc10",{opacity:1,duration:0.5,ease:"power1.inOut"},51.0);
+  tl.to("#sc9",{opacity:0,duration:0.4,ease:"power1.inOut"},51.2);
+  tl.set("#tp2",{left:270,top:250},50.5);
+  tl.fromTo("#tp2",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},50.5);
+  tl.to("#tp2",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},50.8);
+  tl.set("#tp3",{left:190,top:790},53.2);
+  tl.fromTo("#tp3",{opacity:0,scale:.3},{opacity:1,scale:1.15,duration:.28,ease:"power2.out"},53.2);
+  tl.to("#tp3",{opacity:0,scale:1.7,duration:.45,ease:"power1.in"},53.5);
+  tl.to("#ph",{opacity:0,scale:.94,duration:.6,ease:"power2.in"},54.4);
+  window.__timelines = window.__timelines || {};
+  window.__timelines["root"] = tl;
+</script></body></html>
