@@ -4,13 +4,18 @@ const crypto = require("crypto");
 
 const MAX_BODY_BYTES = 256 * 1024; // webhook payloads are tiny; refuse anything unreasonable
 
-// Reads the request's exact bytes. The stream is read before anything touches req.body, so no parser can
-// re-encode the payload. (A body someone already buffered is accepted as-is; a parsed object is refused.)
+// Reads the request's exact bytes straight from the stream.
+// IMPORTANT: Vercel parses req.body lazily, the first time anything touches it, and parsing consumes the stream.
+// So the stream is read FIRST and req.body is never touched on the normal path.
+// Only if the stream was already consumed by someone else do we fall back to a body that is still raw (Buffer/string).
 function readRawBody(req, limit = MAX_BODY_BYTES) {
   return new Promise((resolve, reject) => {
-    if (Buffer.isBuffer(req.body)) return resolve(req.body);
-    if (typeof req.body === "string") return resolve(Buffer.from(req.body, "utf8"));
-    if (req.body && typeof req.body === "object") return reject(Object.assign(new Error("body already parsed"), { code: "PARSED" }));
+    if (req.readableEnded === true) {
+      const b = req.body;
+      if (Buffer.isBuffer(b)) return resolve(b);
+      if (typeof b === "string") return resolve(Buffer.from(b, "utf8"));
+      return reject(Object.assign(new Error("body already consumed"), { code: "PARSED" }));
+    }
     const chunks = []; let size = 0;
     req.on("data", (c) => {
       size += c.length;

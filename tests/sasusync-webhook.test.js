@@ -65,3 +65,13 @@ test("extra: non-JSON content-type 415, oversize body 413, secret never appears 
   assert.equal((await call({ body: big, headers: { "content-type": "application/json", "x-webhook-signature": sign(big) } })).status, 413);
   for (const f of ["../api/webhooks/sasusync.js", "../api/_lib/sasusync-webhook.js"]) assert.doesNotMatch(fs.readFileSync(require.resolve(f), "utf8"), /console\.(log|error|warn|info)/);
 });
+
+test("9. Vercel-style lazy req.body: the stream is read first and req.body is never touched", async () => {
+  let touched = false;
+  const prev = process.env.SASUSYNC_WEBHOOK_SECRET; process.env.SASUSYNC_WEBHOOK_SECRET = SECRET;
+  const req = Readable.from([Buffer.from(goodBody)]); req.method = "POST"; req.headers = { "content-type": "application/json", "x-webhook-signature": sign(goodBody) };
+  Object.defineProperty(req, "body", { get() { touched = true; return JSON.parse(goodBody); } }); // what Vercel's helper does on first access
+  const out = { status: null }; const res = { setHeader() {}, status(n) { out.status = n; return res; }, json() { return res; }, end() { return res; } };
+  await handler(req, res); if (prev === undefined) delete process.env.SASUSYNC_WEBHOOK_SECRET; else process.env.SASUSYNC_WEBHOOK_SECRET = prev;
+  assert.equal(out.status, 200); assert.equal(touched, false);
+});
