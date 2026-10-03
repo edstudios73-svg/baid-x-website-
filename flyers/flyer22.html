@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="common.css">
+<style>
+.fl { background: #050505; }
+.img { position: absolute; inset: 0; background: url(ex-ref.jpg) 0 0/100% 100% no-repeat; filter: grayscale(1) sepia(.5) saturate(1.3) contrast(1.1) brightness(.78); }
+.top { position: absolute; left: 0; right: 0; top: 0; height: 260px; background: linear-gradient(180deg, #050505 0, #050505 200px, transparent); }
+.frame { z-index: 5; }
+.logo { left: 70px; top: 62px; width: 220px; }
+.eb { position: absolute; right: 70px; top: 76px; font-weight: 800; font-size: 19px; letter-spacing: .3em; text-transform: uppercase; color: #e8c46a; border: 1.5px solid rgba(232,196,106,.6); padding: 11px 20px; border-radius: 99px; }
+.tag { position: absolute; left: 70px; top: 190px; font-weight: 600; font-size: 25px; color: #d6d6d6; letter-spacing: .02em; }
+.pn { position: absolute; left: 468px; right: 0; top: 252px; height: 912px; background: linear-gradient(180deg, #0b0b0b, #0b0b0b); border-left: 3px solid #e8c46a; border-top: 1.5px solid rgba(232,196,106,.5); border-bottom: 1.5px solid rgba(232,196,106,.5); padding: 52px 64px 0 54px; box-shadow: -30px 0 60px rgba(0,0,0,.5); }
+.pn .k { font-weight: 800; font-size: 19px; letter-spacing: .3em; text-transform: uppercase; color: #e8c46a; }
+.pn h1 { font-size: 66px; font-weight: 800; line-height: 1; letter-spacing: -.04em; color: #fff; margin-top: 20px; }
+.pn h1 span { background: linear-gradient(90deg, #e8c46a, #b8860b 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.rule { height: 2px; width: 120px; background: linear-gradient(90deg, #e8c46a, transparent); margin: 30px 0 26px; }
+.row { display: flex; gap: 18px; align-items: flex-start; padding: 17px 0; border-bottom: 1px solid rgba(232,196,106,.2); }
+.row:last-of-type { border-bottom: 0; }
+.row .n { flex: none; width: 46px; height: 46px; border-radius: 50%; background: #e8c46a; color: #14110a; font-weight: 800; font-size: 24px; display: grid; place-items: center; }
+.row b { display: block; font-size: 27px; font-weight: 800; color: #fff; letter-spacing: -.01em; }
+.row span { display: block; font-size: 20px; line-height: 1.3; color: #cfcfcf; margin-top: 3px; }
+.row:first-of-type b { color: #e8c46a; }
+.bar { z-index: 6; position: absolute; left: 0; right: 0; bottom: 0; height: 136px; background: #0a0a0a; border-top: 2px solid #b8860b; }
+.ft { z-index: 7; position: absolute; left: 70px; right: 70px; bottom: 34px; display: flex; justify-content: space-between; align-items: center; }
+.ft b { font-size: 36px; font-weight: 800; display: block; } .ft small { font-size: 17px; color: #c9c9c9; }
+.btn { background: linear-gradient(90deg, #d9b24f, #e8c46a); color: #14110a; font-weight: 800; font-size: 25px; padding: 15px 30px; border-radius: 99px; }
+.cap { position: absolute; z-index: 3; left: 70px; top: 1090px; font-weight: 800; font-size: 20px; letter-spacing: .22em; text-transform: uppercase; color: #fff; text-shadow: 0 2px 10px #000; } .cap::before { content: ""; display: inline-block; width: 12px; height: 12px; background: #e8c46a; transform: rotate(45deg); margin-right: 12px; }
+</style>
+<div class="fl">
+<div class="img"></div><div class="top"></div><div class="frame"></div>
+<img class="logo" src="logo.png"><div class="eb">For clients</div>
+<div class="tag">Planned right. Built right. Paid right.</div>
+<div class="pn">
+<div class="k">Start your project on BAID X</div>
+<h1>Your Project Deserves <span>The Highest Standards.</span></h1>
+<div class="rule"></div>
+<div class="row"><div class="n">1</div><div><b>Post it free</b><span>Describe the job, set a budget, add photos.</span></div></div>
+<div class="row"><div class="n">2</div><div><b>Hire verified professionals</b><span>Compare proposals from people with trust badges.</span></div></div>
+<div class="row"><div class="n">3</div><div><b>Add a Project Manager</b><span>Someone accountable to run the site for you.</span></div></div>
+<div class="row"><div class="n">4</div><div><b>Pay through escrow</b><span>Money is held, then released per approved milestone.</span></div></div>
+</div>
+<div class="cap">Your plan. Your team.</div>
+<div class="bar"></div>
+<div class="ft"><span><b>baidx.com</b><small>Verified. Approved. Paid safely.</small></span><div class="btn">Start your project free</div></div>
+</div>
