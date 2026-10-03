@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="common.css">
+<style>
+.fl { background: #dff3dc url(build-ref.jpg) 0 0/100% 100% no-repeat; }
+.plate { position: absolute; left: 60px; top: 36px; width: 960px; height: 424px; background: linear-gradient(180deg, #f7fbf4, #eef8ea); border-radius: 30px; box-shadow: 0 30px 60px -24px rgba(0,40,10,.45); }
+.plate::before { content: ""; position: absolute; inset: 12px; border: 1.5px solid rgba(184,134,11,.65); border-radius: 22px; }
+.plate::after { content: ""; position: absolute; inset: 20px; border: 1px solid rgba(184,134,11,.28); border-radius: 16px; }
+.logo { position: absolute; left: 50%; margin-left: -110px; top: 62px; width: 220px; filter: invert(1); }
+.eb { position: absolute; left: 0; right: 0; top: 134px; text-align: center; font-weight: 600; font-size: 20px; letter-spacing: .42em; text-transform: uppercase; color: #8a6a12; }
+h1 { position: absolute; left: 0; right: 0; top: 176px; text-align: center; font-weight: 800; font-size: 84px; line-height: 1; letter-spacing: -.04em; color: #0a0a0a; }
+h1 span { background: linear-gradient(90deg, #a8780a, #e8c46a 55%, #b8860b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sub { position: absolute; left: 130px; right: 130px; top: 306px; text-align: center; font-size: 28px; line-height: 1.35; color: #2b2b2b; font-weight: 500; }
+.orn { position: absolute; left: 50%; margin-left: -150px; top: 392px; width: 300px; display: flex; align-items: center; gap: 12px; } .orn i { flex: 1; height: 1.5px; background: linear-gradient(90deg, transparent, #b8860b); } .orn i:last-child { background: linear-gradient(90deg, #b8860b, transparent); } .orn b { width: 12px; height: 12px; background: #b8860b; transform: rotate(45deg); }
+.row { position: absolute; left: 0; right: 0; top: 408px; display: flex; justify-content: center; gap: 12px; } .row span { font-size: 19px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #0a0a0a; }
+.row span + span::before { content: "·"; margin-right: 12px; color: #b8860b; }
+.bar { position: absolute; left: 0; right: 0; bottom: 0; height: 168px; background: #0a0a0a; clip-path: polygon(0 0, 100% 62px, 100% 100%, 0 100%); }
+.bar::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, #b8860b, #e8c46a, #b8860b); transform-origin: left top; transform: rotate(3.3deg); }
+.ft { position: absolute; left: 70px; right: 70px; bottom: 36px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+.ft .a { display: flex; gap: 16px; align-items: center; } .ft b { font-size: 38px; font-weight: 800; letter-spacing: .01em; } .ft small { display: block; font-size: 18px; color: #c9c9c9; font-weight: 400; }
+.ft .btn { background: linear-gradient(90deg, #d9b24f, #e8c46a); color: #14110a; font-weight: 800; font-size: 25px; padding: 15px 32px; border-radius: 99px; }
+.ic { width: 58px; height: 58px; border-radius: 50%; background: #e8c46a; color: #14110a; display: grid; place-items: center; }
+</style>
+<div class="fl">
+<div class="plate"></div>
+<img class="logo" src="logo.png">
+<div class="eb">Ghana's work network</div>
+<h1>Trust Is Our <span>Signature</span></h1>
+<div class="sub">Every project on BAID X is built on verified people, clear approvals, and payments held safely until the work is done.</div>
+<div style="position:absolute;left:50px;top:440px;width:300px;height:50px;background:#e6f6df;filter:blur(6px)"></div><div style="position:absolute;left:760px;top:440px;width:300px;height:50px;background:#e6f6df;filter:blur(6px)"></div><div class="bar"></div>
+<div class="ft"><div class="a"><span class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span><span><b>baidx.com</b><small>Verified. Approved. Paid safely.</small></span></div><div class="btn">Sign up free with your phone</div></div>
+</div>
