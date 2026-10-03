@@ -104,7 +104,10 @@
     const { data: { session } } = await sb.auth.getSession();
     const r = await fetch("/api/auth/phone/password", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify({ password }) });
     const j = await r.json().catch(() => ({}));
-    return r.ok ? {} : { error: { message: j.error || "We couldn't save your password. Try again." } };
+    if (!r.ok) return { error: { message: j.error || "We couldn't save your password. Try again." } };
+    // the server ends old sessions when it sets the password and hands back a fresh one
+    if (j.session?.access_token) await sb.auth.setSession({ access_token: j.session.access_token, refresh_token: j.session.refresh_token });
+    return {};
   }
     // when an error message appears, the field above it shakes (no change needed at each call site)
   $$(".err").forEach((el) => new MutationObserver(() => {

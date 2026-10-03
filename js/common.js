@@ -235,6 +235,12 @@
     accounts.remember(session, role, profile);
     return { session, role, profile: profile || {} };
   }
+
+  // A session can be revoked server-side while its token still works for database reads. Detect that and sign out cleanly.
+  async function sessionAlive() {
+    try { const { error } = await sb.auth.getUser(); if (error && [401, 403].includes(error.status)) { await sb.auth.signOut({ scope: "local" }).catch(() => {}); return false; } } catch { /* offline: assume alive */ }
+    return true;
+  }
   function checklistState(role, profile) {
     // A reviewer has verified this account, so every check is complete by definition (10 of 10, whatever the optional fields hold).
     const verified = (profile || {}).verification_status === "verified";
@@ -345,5 +351,5 @@
     return new Date(iso).toLocaleDateString("en-GH", { day: "numeric", month: "short" });
   };
 
-  window.BX = { BADGES, badge, isPlaceholderEmail, accounts, ICONS, icon, NAV, COMMON_ROUTES, ROLE_ROUTES, money, ago, sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
+  window.BX = { sessionAlive, BADGES, badge, isPlaceholderEmail, accounts, ICONS, icon, NAV, COMMON_ROUTES, ROLE_ROUTES, money, ago, sb, $, $$, esc, pretty, real, toast, ROLES, JOB_CATS, JOB_CAT_BY_ID, PHASES, INDUSTRIES, SPECIALIZATIONS, SUPPLY, REGIONS, categoriesFor, loadMe, checklistState, statusLabel };
 })();

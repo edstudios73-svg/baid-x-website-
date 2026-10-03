@@ -42,6 +42,10 @@ module.exports = async (req, res) => {
       return res.status(502).json({ error: "We couldn't save your password. Try again." });
     }
     await audit("phone.password_set", row.otp_id, {}, uid);
+    // Changing a password makes Supabase end the user's existing sessions, which silently broke the session this browser holds
+    // (database calls kept working until the token expired, but every server call and the refresh failed). Mint a fresh session now.
+    const email = me.json.email, t = email ? await id.passwordGrant(email, password) : null;
+    if (t && t.ok && t.json.access_token) return res.status(200).json({ ok: true, session: id.sessionOf(t.json) });
     return res.status(200).json({ ok: true });
   } catch { return res.status(500).json({ error: "Something went wrong." }); }
 };

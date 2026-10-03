@@ -333,6 +333,7 @@
   renderChips(); renderNav(); runSplash();
   (async () => {
     state.me = await loadMe();
+    if (state.me && !(await window.BX.sessionAlive())) { toast("Your sign-in expired. Please sign in again."); setTimeout(() => location.replace("auth.html"), 1200); return; }
     if (state.me && !state.me.role) { location.replace("auth.html"); return; }
     paintMember(); renderNav(); route(); loadDirectory(); loadUnread();
     window.dispatchEvent(new Event("baidx:member"));
