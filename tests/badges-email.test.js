@@ -6,7 +6,7 @@ const read = (f) => fs.readFileSync(f, "utf8");
 test("badges: every directory source loads and maps the tier; seal is coloured by tier", () => {
   const app = read("js/app.js"), common = read("js/common.js");
   assert.equal((app.match(/verification_status,badge_tier"/g) || []).length, 4);
-  assert.equal((app.match(/badge: r\.badge_tier/g) || []).length, 4);
+  assert.equal((app.match(/badge: r\.verification_status === "verified" \? \(r\.badge_tier \|\| "verified"\) : null/g) || []).length, 4);
   assert.match(app, /SEAL\(it\.badge\)/);
   for (const t of ["identity", "professional", "advanced"]) assert.match(common, new RegExp(`${t}: \\["#`));
   assert.match(common, /verified: \["#38bdf8"/);
