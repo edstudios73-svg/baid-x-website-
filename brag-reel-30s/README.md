@@ -7,24 +7,24 @@ A concept-ad in the style of the client's inDrive 2.0 reference (dark stage, one
 | `out/baidx-site-reel-30s.mp4` | **Final** — 1080×1920, 60 fps, H.264 + AAC, 30.0 s |
 | `out/baidx-site-reel-cover.jpg` | cover still for the post |
 | `reel-a.html` / `reel-b.html` | the two 15 s shots (open in a browser to preview) |
-| `reel.css` | shared look: site tokens (#050505, cards #0e0e0e, line #2c2c2c), Inter, logo yellow #FFCD00, verified blue #38bdf8 |
-| `assets/` | site logo + mark (yellow mark recoloured from `baidx_mark.png`), Inter woff2, app screenshots, the music |
+| `reel.css` | shared look: site tokens (#050505, cards #0e0e0e, line #2c2c2c), Inter, black-and-white theme (white is the only accent), the real logo |
+| `assets/` | site logo + mark (`baidx_mark.png`), Inter woff2, app screenshots, the music |
 | `assets/audio/beat.py` | **original** 144 BPM beat (synthesised from code — no third-party samples), stems mixed with ffmpeg → `beat-30s.wav` |
 | `motion.js`, `motion.css`, `sfx.js` | animation engine (apple-style-motion skill) |
 
 ## Story (144 BPM · beat 0.417 s · bar 1.667 s)
 | Time | Beat | On screen (all copy from `llms-full.txt`, `index.html`, `assets/og-image.png`, the app) |
 |---|---|---|
-| 0–3.3 | filtered intro + riser | phone turns out of the dark, yellow light |
+| 0–3.3 | filtered intro + riser | phone turns out of the dark, white light |
 | 3.3 | **drop** | phone snaps to camera; island: BAID X · Your profile is verified |
-| 4–6.7 | | home screen → tap the BAID X app → push through the icon → yellow wipe on the bar |
+| 4–6.7 | | home screen → tap the BAID X app → push through the icon → white wipe on the bar |
 | 6.7–11.2 | roles every 2 beats | WHO IT'S FOR — Workers / Companies / Project managers / Suppliers / Clients with each role's "What you get" items |
 | 11.2–13.3 | | 50 trades · 16 regions — "Every trade. Every region." over live trade marquees |
 | 13.3–15 | break | Verified card + four badge tiers — "Verified with Ghana Card. Never for sale." |
 | 15–16.7 | | end-to-end encrypted chat (text, voice note) |
-| 16.7–18.3 | | search "Electrician in Kumasi" → yellow action button |
+| 16.7–18.3 | | search "Electrician in Kumasi" → white action button |
 | 18.3–25 | one line per bar | The future of work isn't about connections. / It's about capability. / Verified people. Real projects. / All 16 regions. One trusted network. |
-| 25–30 | outro | yellow mark pops + pulses → BAID X™ logo → GHANA'S WORK NETWORK → **Join free at baidx.com** → Built and powered by Baiden Creatives |
+| 25–30 | outro | mark pops + pulses → BAID X™ logo → GHANA'S WORK NETWORK → **Join free at baidx.com** → Built and powered by Baiden Creatives |
 
 Illustrative UI content (the chat lines, "Kwame Mensah") follows the app's own demo data; no statistics, prices or reviews are claimed.
 

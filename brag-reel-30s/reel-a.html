@@ -10,8 +10,8 @@
   /* phone + OS home */
   #phone { top: 51%; }
   #wall { position: absolute; inset: -40px; background:
-          radial-gradient(70% 40% at 85% 8%, rgba(255,205,0,.30), transparent 70%),
-          radial-gradient(80% 45% at 10% 100%, rgba(255,205,0,.16), transparent 70%), linear-gradient(180deg, #121212, #050505); }
+          radial-gradient(70% 40% at 85% 8%, rgba(255,255,255,.16), transparent 70%),
+          radial-gradient(80% 45% at 10% 100%, rgba(255,255,255,.08), transparent 70%), linear-gradient(180deg, #121212, #050505); }
   #status { position: absolute; top: 46px; left: 74px; right: 66px; display: flex; justify-content: space-between; font: 600 34px/1 var(--font); color: #fff; z-index: 5; }
   #status .r { display: flex; gap: 12px; font-size: 32px; }
   #island { position: absolute; top: 34px; left: 50%; translate: -50% 0; width: 236px; height: 70px; border-radius: 35px; background: #000; overflow: hidden; z-index: 20;
@@ -25,7 +25,7 @@
   .ic { width: 118px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .ic i { display: block; width: 118px; height: 118px; border-radius: 30px; background: rgba(255,255,255,.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.07); }
   .ic s { display: block; width: 74px; height: 12px; border-radius: 6px; background: rgba(255,255,255,.12); }
-  #bx img { width: 118px; height: 118px; border-radius: 30px; display: block; box-shadow: 0 18px 40px -12px rgba(255,205,0,.6); }
+  #bx img { width: 118px; height: 118px; border-radius: 30px; display: block; box-shadow: 0 18px 40px -12px rgba(255,255,255,.35); }
   #bx span { font: 700 24px/1 var(--font); color: #fff; }
   #dock { position: absolute; left: 30px; right: 30px; bottom: 30px; height: 180px; border-radius: 64px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; }
   #dock i { display: block; width: 118px; height: 118px; border-radius: 30px; background: rgba(255,255,255,.1); }
@@ -69,7 +69,7 @@
   #vcard .seal { --s: 150px; }
   #vcard b { display: block; font: 800 80px/1 var(--font-display); letter-spacing: -0.05em; }
   #vcard small { display: block; margin-top: 16px; font: 500 34px/1.25 var(--font); color: var(--muted); }
-  #vcard .act { position: absolute; right: 44px; top: 40px; font: 700 24px/1 var(--font); color: var(--green); padding: 12px 18px; border-radius: 20px; background: rgba(52,211,153,.12); }
+  #vcard .act { position: absolute; right: 44px; top: 40px; font: 700 24px/1 var(--font); color: #fff; padding: 12px 18px; border-radius: 20px; background: rgba(255,255,255,.12); }
   #tiers { position: absolute; left: 80px; top: 820px; width: 920px; padding: 44px 30px; display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; }
   #tiers .seal { --s: 92px; margin: 0 auto 18px; }
   #tiers b { display: block; font: 700 30px/1.1 var(--font); }
@@ -86,7 +86,7 @@
     <div id="phone" class="layer phone"><div id="screen" class="screen">
       <div id="wall"></div>
       <div id="status"><span>9:41</span><span class="r"><i class="icon" data-icon="signal"></i><i class="icon" data-icon="wifi"></i><i class="icon" data-icon="battery"></i></span></div>
-      <div id="island"><div id="isl"><img src="assets/mark-yellow.png" alt=""><div><b>BAID X</b><small>Your profile is verified</small></div><svg class="seal"><use href="#seal"/></svg></div></div>
+      <div id="island"><div id="isl"><img src="assets/mark.png" alt=""><div><b>BAID X</b><small>Your profile is verified</small></div><svg class="seal"><use href="#seal"/></svg></div></div>
       <div id="grid"></div>
       <div id="dock"><i></i><i></i><i></i><i></i></div>
       <div id="ripple"></div>
@@ -94,7 +94,7 @@
 
     <!-- APP · who it's for -->
     <div id="app" class="layer">
-      <div id="bar"><img class="m" src="assets/mark-yellow.png" alt=""><b>BAID X</b><span class="pill loc"><i class="dot"></i>Ghana</span></div>
+      <div id="bar"><img class="m" src="assets/mark.png" alt=""><b>BAID X</b><span class="pill loc"><i class="dot"></i>Ghana</span></div>
       <div id="eyebrow" class="caps">Who it's for</div>
       <div id="chipsWrap"><div id="chips"><div id="sel"></div></div></div>
     </div>
@@ -102,7 +102,7 @@
     <!-- TRADES -->
     <div id="trades" class="layer">
       <div id="live" class="pill"><i class="dot"></i>50 trades · 16 regions</div>
-      <div id="tradesH" class="h-l">Every trade.<br><span class="y">Every region.</span></div>
+      <div id="tradesH" class="h-l soft">Every trade.<br><span class="y">Every region.</span></div>
       <div id="m1" class="marq"></div><div id="m2" class="marq"></div><div id="m3" class="marq"></div>
     </div>
 
@@ -110,12 +110,12 @@
     <div id="ver" class="layer">
       <div id="vcard" class="card"><svg class="seal"><use href="#seal"/></svg><div><b>Verified</b><small>Reviewed by BAID X. Shown on your profile, cards and search results.</small></div><span class="act">Active</span></div>
       <div id="tiers" class="card">
-        <div><svg class="seal" style="--c:var(--verified)"><use href="#seal"/></svg><b>Verified</b><small>Reviewed by BAID X</small></div>
-        <div><svg class="seal" style="--c:var(--green)"><use href="#seal"/></svg><b>Identity</b><small>ID document checked</small></div>
-        <div><svg class="seal" style="--c:var(--violet)"><use href="#seal"/></svg><b>Professional</b><small>Trade and ID checked</small></div>
-        <div><svg class="seal" style="--c:var(--gold)"><use href="#seal"/></svg><b>Advanced</b><small>Full background check</small></div>
+        <div><svg class="seal" style="--c:var(--t1)"><use href="#seal"/></svg><b>Verified</b><small>Reviewed by BAID X</small></div>
+        <div><svg class="seal" style="--c:var(--t2)"><use href="#seal"/></svg><b>Identity</b><small>ID document checked</small></div>
+        <div><svg class="seal" style="--c:var(--t3)"><use href="#seal"/></svg><b>Professional</b><small>Trade and ID checked</small></div>
+        <div><svg class="seal" style="--c:var(--t4)"><use href="#seal"/></svg><b>Advanced</b><small>Full background check</small></div>
       </div>
-      <div id="verH" class="h-m">Verified with Ghana Card.<br><span class="y">Never for sale.</span></div>
+      <div id="verH" class="h-m soft">Verified with Ghana Card.<br><span class="y">Never for sale.</span></div>
     </div>
   </div>
   <div id="flood"></div>
@@ -129,7 +129,7 @@
       d += (i ? 'L' : 'M') + (50 + r * Math.cos(a)).toFixed(2) + ' ' + (50 + r * Math.sin(a)).toFixed(2); } document.getElementById('sealPath').setAttribute('d', d + 'Z'); })();
   // OS home grid with the BAID X app
   (function () { const g = document.getElementById('grid'); for (let i = 0; i < 16; i++) g.insertAdjacentHTML('beforeend', i === 9
-      ? '<div class="ic" id="bx"><img src="assets/mark-yellow.png" alt=""><span>BAID X</span></div>' : '<div class="ic"><i></i><s></s></div>'); })();
+      ? '<div class="ic" id="bx"><img src="assets/mark.png" alt=""><span>BAID X</span></div>' : '<div class="ic"><i></i><s></s></div>'); })();
   // roles (copy from the site: llms-full.txt "What you get")
   const ROLES = [
     ['Workers', ['Verified badge', 'Job marketplace', 'Wallet & payouts']],
@@ -202,7 +202,7 @@
   m.fromTo('#flood', { clip: 'inset(0% 0% 0% 0%)' }, { clip: 'inset(0% 0% 100% 0%)' }, { at: APP, dur: 0.42, ease: 'inOut' });
   m.fromTo('#app', { scale: 0.9, blur: 12 }, { scale: 1, blur: 0 }, { at: APP, dur: 0.7, ease: 'out' });
 
-  // ── 4 · WHO IT'S FOR: one yellow pill travels the roles, every 2 beats ──
+  // ── 4 · WHO IT'S FOR: one white pill travels the roles, every 2 beats ──
   m.from(['#bar > *', '#eyebrow'], { y: 24, opacity: 0, blur: 8 }, { at: APP + 0.12, dur: 0.55, ease: 'out', stagger: 0.04 });
   m.from(['#ch0', '#ch1', '#ch2', '#ch3', '#ch4'], { y: 24, opacity: 0, blur: 8 }, { at: APP + 0.2, dur: 0.55, ease: 'out', stagger: 0.04 });
   const ch = i => document.getElementById('ch' + i), CW = () => document.getElementById('chips').offsetWidth;

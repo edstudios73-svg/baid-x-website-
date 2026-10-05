@@ -14,7 +14,7 @@
   #chatHead b { display: block; font: 700 36px/1.1 var(--font); }
   #chatHead small { display: block; font: 500 26px/1.2 var(--font); color: var(--muted); margin-top: 6px; }
   #lock { margin: 28px auto 8px; width: max-content; font: 600 24px/1 var(--font); color: var(--muted); padding: 14px 22px; border-radius: 24px; background: #151515; display: flex; gap: 10px; align-items: center; }
-  #lock .icon { color: var(--y); font-size: 24px; }
+  #lock .icon { color: #fff; font-size: 24px; }
   .msgs { display: flex; flex-direction: column; gap: 18px; padding: 24px 40px 0; }
   .bub { max-width: 640px; padding: 26px 32px; border-radius: 36px; font: 500 36px/1.25 var(--font); }
   .in { align-self: flex-start; background: #1d1d1d; border-bottom-left-radius: 10px; transform-origin: 0% 100%; }
@@ -40,12 +40,12 @@
 
   /* end card */
   #mk { top: 44%; width: 220px; height: 220px; }
-  #mk img { width: 100%; height: 100%; border-radius: 56px; display: block; box-shadow: 0 40px 90px -30px rgba(255,205,0,.7); }
+  #mk img { width: 100%; height: 100%; border-radius: 56px; display: block; box-shadow: 0 40px 90px -30px rgba(255,255,255,.35); }
   #logo { top: 40%; width: 560px; }
   #logo img { width: 100%; display: block; }
   #net { top: 47.2%; }
   #cta { top: 55.5%; height: 120px; padding: 0 56px; border-radius: 60px; background: var(--y); color: #111; display: grid; place-items: center;
-         font: 800 46px/1 var(--font); letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; box-shadow: 0 30px 70px -30px rgba(255,205,0,.7); }
+         font: 800 46px/1 var(--font); letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; box-shadow: 0 30px 70px -30px rgba(255,255,255,.3); }
   #by { top: 62.5%; font: 500 28px/1 var(--font); color: var(--dim); letter-spacing: .02em; white-space: nowrap; }
 </style>
 </head>
@@ -68,11 +68,11 @@
     <div id="ring" class="layer"></div>
 
     <div id="t1" class="layer tl h-l">The future of work isn't about connections.</div>
-    <div id="t2" class="layer tl h-l">It's about <span class="big y">capability.</span></div>
-    <div id="t3" class="layer tl h-xl">Verified people.<br><span class="y">Real projects.</span></div>
-    <div id="t4" class="layer tl h-l">All 16 regions.<br><span class="y">One trusted network.</span></div>
+    <div id="t2" class="layer tl h-l soft">It's about <span class="big y">capability.</span></div>
+    <div id="t3" class="layer tl h-xl soft">Verified people.<br><span class="y">Real projects.</span></div>
+    <div id="t4" class="layer tl h-l soft">All 16 regions.<br><span class="y">One trusted network.</span></div>
 
-    <div id="mk" class="layer"><img src="assets/mark-yellow.png" alt=""></div>
+    <div id="mk" class="layer"><img src="assets/mark.png" alt=""></div>
     <div id="logo" class="layer"><img src="assets/logo-white.png" alt="BAID X"></div>
     <div id="net" class="layer caps">Ghana's work network</div>
     <div id="cta" class="layer"><span>Join free at baidx.com</span></div>
