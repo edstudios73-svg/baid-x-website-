@@ -1,0 +1,39 @@
+/* BAID X · site reel (30 s) — shared look.
+   Brand from the site: dark UI (#050505 / cards #0e0e0e, line #2c2c2c), Inter, logo yellow #FFCD00, verified blue #38bdf8. */
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: block; }
+
+:root {
+  --font-display: "Inter", sans-serif; --font: "Inter", sans-serif;
+  --bg: #050505; --card: #0e0e0e; --tile: #151515; --line: #2c2c2c; --ink: #f6f6f7; --muted: #a3a3a3; --dim: #6b6b6b;
+  --y: #FFCD00; --verified: #38bdf8; --green: #34d399; --violet: #a78bfa; --gold: #e8c46a;
+}
+#stage { background: var(--bg); color: var(--ink); font-family: var(--font); }
+
+/* the reference's signature: one brand-colour light pool + a faint second, both breathing */
+#glowA { position: absolute; width: 1700px; height: 1700px; left: 30%; top: 82%; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+         background: radial-gradient(closest-side, rgba(255,205,0,.30) 0%, rgba(255,205,0,.10) 45%, transparent 100%); }
+#glowB { position: absolute; width: 1300px; height: 1300px; left: 92%; top: 10%; translate: -50% -50%; border-radius: 50%; pointer-events: none;
+         background: radial-gradient(closest-side, rgba(255,205,0,.12) 0%, transparent 100%); }
+
+.y { color: var(--y); }
+.mut { color: var(--muted); }
+.caps { font: 700 30px/1 var(--font); letter-spacing: .3em; text-transform: uppercase; color: var(--y); white-space: nowrap; }
+.h-xl { font: 800 132px/0.98 var(--font-display); letter-spacing: -0.055em; }
+.h-l  { font: 800 96px/1.02 var(--font-display); letter-spacing: -0.05em; }
+.h-m  { font: 800 72px/1.06 var(--font-display); letter-spacing: -0.045em; }
+.card { background: var(--card); border-radius: 44px; box-shadow: inset 0 0 0 2px var(--line); }
+.pill { height: 72px; padding: 0 30px; border-radius: 36px; display: inline-grid; place-items: center; white-space: nowrap;
+        font: 600 30px/1 var(--font); color: var(--ink); background: var(--tile); box-shadow: inset 0 0 0 2px var(--line); }
+.dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: var(--green); margin-right: 14px; box-shadow: 0 0 0 6px rgba(52,211,153,.18); }
+
+/* verified seal (scalloped badge + check), coloured per tier */
+.seal { width: var(--s, 96px); height: var(--s, 96px); color: var(--c, var(--verified)); display: block; }
+
+/* phone */
+.phone { width: 600px; height: 1290px; border-radius: 100px; padding: 18px; background: #0b0b0b;
+         box-shadow: inset 0 0 0 3px #303030, inset 0 0 0 9px #0b0b0b, 0 100px 180px -60px rgba(0,0,0,.95), 0 0 0 1px rgba(255,205,0,.12); }
+.screen { position: relative; width: 564px; height: 1254px; border-radius: 82px; overflow: hidden; background: #000; }
