@@ -1,0 +1,108 @@
+/* Member screens in liquid glass, the same material as the Chats page.
+   Applies when body.g-on is set (every signed-in screen). Loaded last. */
+body.g-on {
+  --gl-bg: linear-gradient(135deg, rgba(14,14,14,.62), rgba(14,14,14,.34) 55%, rgba(255,255,255,.13));
+  --gl-bg-hi: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.06) 60%, rgba(255,255,255,.12));
+  --gl-line: rgba(255,255,255,.24);
+  --gl-edge: inset 0 1.5px 0 rgba(255,255,255,.42);
+  --gl-shadow: 0 14px 40px rgba(0,0,0,.42);
+  --gl-blur: blur(24px) saturate(1.6);
+}
+
+/* the backdrop drifts slowly so the glass always has something to refract */
+body.g-on .g-art .o1 { animation: glDrift1 26s ease-in-out infinite alternate; }
+body.g-on .g-art .o2 { animation: glDrift2 32s ease-in-out infinite alternate; }
+body.g-on .g-art .ring { animation: glRing 40s linear infinite; }
+@keyframes glDrift1 { to { transform: translate3d(-60px, -90px, 0) scale(1.08); } }
+@keyframes glDrift2 { to { transform: translate3d(70px, -60px, 0) rotate(40deg); } }
+@keyframes glRing { to { transform: rotate(1turn); } }
+body.g-on .g-art::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(circle at 50% 30%, #000, transparent 75%); -webkit-mask-image: radial-gradient(circle at 50% 30%, #000, transparent 75%); }
+
+/* ---- every card surface becomes glass ---- */
+body.g-on :is(.dcard, .tile, .row:not(.chat), .job, .inv-card, .ck-card, .ck-item, .acc-row, .acc-card, .acc-group, .warn-card, .req, .proj-pick, .opt, .fs, .card.c3, .lg, .lg-one, .bn, .cat, .herob, .svc2, .es-card, .es-trust, .es-warn, .es-break, .es-quote, .ms-card, .state, .d-empty) {
+  background: var(--gl-bg);
+  border: 1.5px solid var(--gl-line);
+  box-shadow: var(--gl-shadow), var(--gl-edge);
+  backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur);
+}
+/* glass inside glass stays light: no second blur, no second shadow */
+body.g-on :is(.dcard, .acc-group, .es-card, .ms-card, .fs) :is(.row, .acc-row, .tile, .ck-item) { backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: var(--gl-edge); background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); }
+body.g-on .acc-group .acc-row { background: none; box-shadow: none; border-color: transparent; }
+body.g-on :is(.dcard, .tile, .job, .inv-card, .card.c3, .opt) { border-radius: 22px; }
+body.g-on :is(.row:not(.chat), .ck-item, .acc-row) { border-radius: 18px; }
+body.g-on :is(.tile, .row:not(.chat), .job, .opt, .card.c3) { transition: transform .18s cubic-bezier(.2,.9,.3,1.2), border-color .2s, background .25s; }
+body.g-on :is(.tile, .row:not(.chat), .job, .opt, .card.c3):hover { border-color: rgba(255,255,255,.62); background: var(--gl-bg-hi); }
+body.g-on :is(.tile, .row:not(.chat), .job, .opt):active { transform: scale(.98); }
+
+/* icon chips read as solid white keys on the glass */
+body.g-on :is(.tile, .row, .opt) .ic { background: #fff; color: #000; border: 0; border-radius: 13px; box-shadow: 0 8px 20px -8px rgba(255,255,255,.55); }
+body.g-on .row .ic.ok { background: #34d399; color: #04210f; }
+body.g-on :is(.row, .tile, .dcard, .job) small, body.g-on .dcard p { color: #cfcfcf; }
+body.g-on .sec { color: #e6e6e6; opacity: .78; text-shadow: 0 1px 10px rgba(0,0,0,.7); }
+body.g-on .d-head h1, body.g-on .d-head .sub, body.g-on .appbar { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
+
+/* ---- the greeting hero is the centrepiece ---- */
+body.g-on .hero2 {
+  background: linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.05) 45%, rgba(14,14,14,.4));
+  border: 1.5px solid rgba(255,255,255,.34);
+  box-shadow: 0 30px 70px -20px rgba(0,0,0,.7), inset 0 1.5px 0 rgba(255,255,255,.6), inset 0 -1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(30px) saturate(1.7); -webkit-backdrop-filter: blur(30px) saturate(1.7);
+  border-radius: 28px;
+}
+body.g-on .hero2::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.16) 50%, transparent 65%); transform: translateX(-120%); animation: glSheen 7s ease-in-out 1s infinite; }
+@keyframes glSheen { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+body.g-on .hero2 { color: #fff; }
+body.g-on .hero2::after { background: radial-gradient(circle, rgba(255,255,255,.22), transparent 70%); }
+body.g-on .hero2 .h-greet { color: #fff; } body.g-on .hero2 .h-greet svg { filter: drop-shadow(0 0 8px rgba(255,255,255,.7)); }
+body.g-on .hero2 .h-time { color: #c9c9c9; } body.g-on .hero2 .h-time b { color: #fff; }
+body.g-on .hero2 h1 { color: #fff; font-size: 31px; text-shadow: 0 2px 24px rgba(0,0,0,.35); }
+body.g-on .hero2 h1 em { -webkit-text-fill-color: #fff; color: #fff; }
+body.g-on .hero2 p { color: #d6d6d6; }
+body.g-on .hero2 .h-chip { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.26); color: #f0f0f0; backdrop-filter: blur(8px); }
+body.g-on .hero2 .h-chip.v { background: rgba(56,189,248,.16); border-color: rgba(56,189,248,.45); color: #bae6fd; }
+
+/* ---- stats: glass tiles with large figures ---- */
+body.g-on .dstat { background: var(--gl-bg); border: 1.5px solid var(--gl-line); box-shadow: var(--gl-shadow), var(--gl-edge); backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); border-radius: 20px; padding: 14px 8px; }
+body.g-on .dstat b { font-size: 24px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+body.g-on .dstat .si { background: #fff; color: #000; box-shadow: 0 8px 20px -8px rgba(255,255,255,.55); }
+
+/* ---- money cards ---- */
+body.g-on .wallet { background: linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.04) 50%, rgba(14,14,14,.45)); border: 1.5px solid rgba(255,255,255,.32); border-radius: 26px; box-shadow: 0 26px 60px -20px rgba(0,0,0,.7), inset 0 1.5px 0 rgba(255,255,255,.55); backdrop-filter: blur(28px) saturate(1.7); -webkit-backdrop-filter: blur(28px) saturate(1.7); }
+body.g-on .wallet > b { font-size: 34px; }
+
+/* ---- banners, segments, search ---- */
+body.g-on .banner { background: linear-gradient(135deg, rgba(232,196,106,.2), rgba(14,14,14,.4)); border: 1.5px solid rgba(232,196,106,.45); border-radius: 20px; backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge); }
+body.g-on .segs { background: rgba(14,14,14,.45); border: 1.5px solid var(--gl-line); border-radius: 18px; padding: 4px; backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge); }
+body.g-on .segs button { background: transparent; border: 0; }
+body.g-on .segs button.on { background: #fff; color: #000; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+body.g-on .search { background: var(--gl-bg); border: 1.5px solid var(--gl-line); backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge); }
+body.g-on .bell, body.g-on .icon-btn { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+body.g-on .skel { background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.12), rgba(255,255,255,.05)); background-size: 200% 100%; border: 1px solid rgba(255,255,255,.12); }
+
+/* ---- the bottom bar floats as a glass dock ---- */
+body.g-on .nav { left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 8px 10px; border-radius: 26px; border: 1.5px solid rgba(255,255,255,.26); border-top-color: rgba(255,255,255,.4); background: rgba(12,12,12,.84); backdrop-filter: blur(28px) saturate(1.7); -webkit-backdrop-filter: blur(28px) saturate(1.7); box-shadow: 0 18px 50px rgba(0,0,0,.55), inset 0 1.5px 0 rgba(255,255,255,.35); }
+body.g-on .nav button.on { color: #fff; }
+body.g-on .nav button.on .ni { background: rgba(255,255,255,.16); border-radius: 12px; padding: 4px 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+body.g-on .nav button.on .ni::after { display: none; }
+body.g-on .screen { padding-bottom: calc(var(--nav-h, 64px) + 44px + env(safe-area-inset-bottom)); }
+body.g-on.hide-nav .screen { padding-bottom: 40px; }
+body.g-on .sidebar { background: rgba(14,14,14,.5); backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6); border-right: 1.5px solid rgba(255,255,255,.18); box-shadow: inset -1px 0 0 rgba(255,255,255,.08); }
+body.g-on .sidebar button.on { background: rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.35); border-radius: 14px; }
+
+/* sheets slide up in the same material */
+body.g-on .sheet { background: rgba(22,22,22,.72); backdrop-filter: blur(30px) saturate(1.5); -webkit-backdrop-filter: blur(30px) saturate(1.5); border-top: 1.5px solid rgba(255,255,255,.3); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.4); }
+
+/* cards arrive with a short rise when a screen opens */
+body.g-on .screen.active :is(.hero2, .dstats, .tiles, .dcard, .wallet) { animation: glIn .55s cubic-bezier(.16,1,.3,1) both; }
+body.g-on .screen.active .dstats { animation-delay: .05s; } body.g-on .screen.active .tiles { animation-delay: .1s; }
+@keyframes glIn { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  body.g-on .g-art :is(.o1, .o2, .ring), body.g-on .hero2::before, body.g-on .screen.active * { animation: none !important; }
+}
+
+/* profile header card and empty states */
+body.g-on .acc2 { background: linear-gradient(150deg, rgba(255,255,255,.16), rgba(255,255,255,.04) 45%, rgba(14,14,14,.45)); border: 1.5px solid rgba(255,255,255,.3); border-radius: 28px; box-shadow: 0 26px 60px -20px rgba(0,0,0,.7), inset 0 1.5px 0 rgba(255,255,255,.5); backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6); overflow: hidden; }
+body.g-on .acc2 .a-cover::after { background: linear-gradient(180deg, transparent, rgba(14,14,14,.55)); }
+body.g-on .acc2 .tags span { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(8px); }
+body.g-on :is(.state, .d-empty) { border-radius: 22px; }
