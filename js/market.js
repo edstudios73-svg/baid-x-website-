@@ -24,7 +24,7 @@
 
   let poll = null;
   const stopPoll = () => { if (poll) { clearInterval(poll); poll = null; } };
-  const bubbles = (msgs) => msgs.length ? msgs.map((m) => `<div class="bub ${m.mine ? "me" : ""}"><p>${esc(m.body)}</p><small>${esc(new Date(m.at).toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" }))}</small></div>`).join("") : `<div class="cap2" style="text-align:center;margin:30px 0">Say hello 👋</div>`;
+  const bubbles = (msgs) => msgs.length ? msgs.map((m) => `<div class="bub ${m.mine ? "me" : ""}"><p>${esc(m.body)}</p><small>${esc(new Date(m.at).toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" }))}</small></div>`).join("") : `<div class="cap2" style="text-align:center;margin:30px 0">Say hello</div>`;
   async function chatView(c, id) {
     stopPoll();
     const t = await F().rpc(c, "conversation_thread", { p_conv: id });
