@@ -1,0 +1,5 @@
+out/*
+!out/baidx-store-reel-30s.mp4
+!out/baidx-store-reel-cover.jpg
+review/**/*.png
+!review/**/contact-sheet.png

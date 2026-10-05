@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BAID X store reel · A (0–15 s)</title>
+<link rel="stylesheet" href="motion.css">
+<link rel="stylesheet" href="reel.css">
+<style>
+  .tc { text-align: center; }
+  #q1, #q2 { top: 47%; width: 1000px; }
+  #q1 { font-size: 170px; } #q2 { font-size: 150px; }
+
+  #logo { top: 43%; width: 640px; } #logo img { width: 100%; display: block; }
+  #net { top: 50.5%; }
+  #soonL { top: 56.5%; font: 600 34px/1.3 var(--font); color: var(--muted); width: 900px; text-align: center; }
+
+  /* store */
+  #store { top: 50%; width: 1080px; height: 1920px; }
+  #segWrap { position: absolute; left: 50%; top: 300px; translate: -50% 0; }
+  #seg { position: relative; display: flex; gap: 0; padding: 8px; border-radius: 48px; background: var(--card); box-shadow: inset 0 0 0 2px var(--line); }
+  .sg { position: relative; z-index: 2; width: 300px; height: 76px; border-radius: 38px; display: grid; place-items: center; font: 700 32px/1 var(--font); color: var(--muted); }
+  #knob { position: absolute; left: 8px; top: 8px; width: 300px; height: 76px; border-radius: 38px; background: #fff; z-index: 1; }
+  #segDark { position: absolute; left: 8px; top: 8px; display: flex; z-index: 3; }
+  #segDark .sg { color: #0b0b0b; }
+  #sbar { position: absolute; left: 80px; top: 450px; width: 920px; height: 118px; border-radius: 59px; background: var(--card); box-shadow: inset 0 0 0 2px var(--line);
+          display: flex; align-items: center; gap: 22px; padding: 0 40px; }
+  #sbar .icon { font-size: 40px; color: var(--muted); }
+  #sq { font: 700 44px/1 var(--font); letter-spacing: -0.02em; }
+  #result { position: absolute; left: 80px; top: 610px; width: 920px; padding: 40px; display: flex; align-items: center; gap: 34px; }
+  #result img { width: 150px; height: 150px; border-radius: 36px; flex: none; }
+  #result b { display: block; font: 800 58px/1 var(--font); letter-spacing: -0.04em; }
+  #result .s { display: block; margin-top: 10px; font: 600 30px/1.2 var(--font); color: var(--ink); }
+  #result .d { display: block; margin-top: 8px; font: 500 26px/1.2 var(--font); color: var(--muted); }
+  #getBtn { margin-left: auto; height: 76px; padding: 0 30px; border-radius: 38px; background: #fff; color: #0b0b0b; display: grid; place-items: center; font: 800 28px/1 var(--font); white-space: nowrap; }
+  #strip { position: absolute; left: 80px; top: 870px; display: flex; gap: 26px; }
+  #strip img { width: 270px; height: 584px; object-fit: cover; object-position: top; border-radius: 36px; box-shadow: 0 0 0 2px var(--line); display: block; }
+  #soonTag { position: absolute; left: 80px; top: 1500px; }
+
+  /* don't wait */
+  #w1, #w2 { top: 47%; width: 1000px; }
+
+  /* sign up */
+  #suHead { top: 13.4%; }
+  #railWrap { position: absolute; left: 50%; top: 17.2%; translate: -50% 0; }
+  #rail { position: relative; display: flex; gap: 10px; }
+  .rc { position: relative; z-index: 2; height: 62px; padding: 0 24px; border-radius: 31px; display: grid; place-items: center; font: 600 27px/1 var(--font); color: var(--muted); box-shadow: inset 0 0 0 2px var(--line); white-space: nowrap; }
+  #rsel { position: absolute; left: 0; top: 0; height: 62px; border-radius: 31px; background: #fff; z-index: 1; }
+  #rdark { position: absolute; left: 0; top: 0; display: flex; gap: 10px; z-index: 3; }
+  #rdark .rc { box-shadow: none; color: #0b0b0b; }
+  #phone { top: 61.5%; }
+  .screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="glowA"></div><div id="glowB"></div>
+  <div id="camera" class="camera">
+    <div id="q1" class="layer tc h-xl">Need work?</div>
+    <div id="q2" class="layer tc h-xl"><span class="soft">Need</span> workers?</div>
+
+    <div id="logo" class="layer"><img src="assets/logo-white.png" alt="BAID X"></div>
+    <div id="net" class="layer caps">Ghana's work network</div>
+    <div id="soonL" class="layer">Coming soon to the App Store and Google Play</div>
+
+    <div id="store" class="layer">
+      <div id="segWrap"><div id="seg"><div id="knob"></div><div class="sg" id="sg0">App Store</div><div class="sg" id="sg1">Google Play</div>
+        <div id="segDark"><div class="sg">App Store</div><div class="sg">Google Play</div></div></div></div>
+      <div id="sbar"><i class="icon" data-icon="search"></i><div id="sq"></div></div>
+      <div id="result" class="card"><img src="assets/mark.png" alt=""><div><b>BAID X</b><span class="s">Ghana's work network</span><span class="d">Baiden Creatives</span></div><div id="getBtn">Coming soon</div></div>
+      <div id="strip">
+        <img src="assets/shots/v01-home.png" alt=""><img src="assets/shots/v11-profile-badge.png" alt=""><img src="assets/shots/01-type.png" alt=""><img src="assets/shots/v08-verified.png" alt="">
+      </div>
+    </div>
+
+    <div id="w1" class="layer tc h-xl soft">Don't wait.</div>
+    <div id="w2" class="layer tc h-xl">Sign up today.</div>
+
+    <div id="suHead" class="layer caps">Sign up in about a minute</div>
+    <div id="railWrap"><div id="rail"><div id="rsel"></div>
+      <div class="rc" id="rc0">Type</div><div class="rc" id="rc1">Phone</div><div class="rc" id="rc2">Code</div><div class="rc" id="rc3">Name</div><div class="rc" id="rc4">Work</div><div class="rc" id="rc5">Password</div>
+      <div id="rdark"><div class="rc">Type</div><div class="rc">Phone</div><div class="rc">Code</div><div class="rc">Name</div><div class="rc">Work</div><div class="rc">Password</div></div>
+    </div></div>
+    <div id="phone" class="layer phone"><div class="screen">
+      <img id="p0" src="assets/shots/01-type.png" alt=""><img id="p1" src="assets/shots/03-phone-filled.png" alt=""><img id="p2" src="assets/shots/04-code.png" alt="">
+      <img id="p3" src="assets/shots/05-name.png" alt=""><img id="p4" src="assets/shots/06-cat.png" alt=""><img id="p5" src="assets/shots/07-pass.png" alt="">
+    </div></div>
+  </div>
+  <div class="vignette" style="--vignette:.55"></div>
+  <div class="grain" style="--grain:.05"></div>
+</div>
+<script src="motion.js"></script>
+<script src="sfx.js"></script>
+<script>
+  const m = Motion.scene({ width: 1080, height: 1920, fps: 60, duration: 15 });
+  const B = 60 / 144, BAR = 4 * B, bar = n => n * BAR;     // drop at bar 2 (3.333); break 2nd half of bar 8
+  const DROP = bar(2), STORE = bar(3), WAIT = bar(5), SU = bar(6), STEP = i => SU + i * 2 * B, OUT = 15 - 0.24;
+
+  m.set(['#q2', '#logo', '#net', '#soonL', '#store', '#w1', '#w2', '#suHead', '#railWrap', '#phone', '#p1', '#p2', '#p3', '#p4', '#p5'], { opacity: 0 });
+  m.onFrame(t => {
+    document.getElementById('glowA').style.transform = `translate(${Math.sin(t * .37) * 90}px, ${Math.cos(t * .29) * 70}px) scale(${1 + Math.sin(t * .5) * .05})`;
+    document.getElementById('glowB').style.transform = `translate(${Math.cos(t * .31) * 60}px, ${Math.sin(t * .23) * 50}px)`;
+  });
+
+  // ── 1 · HOOK (bars 0–1): two questions, one per bar ──
+  m.text('#q1', { at: 0.08, style: 'mask', stagger: 0.08 });
+  m.fromTo('#q1', { scale: 0.98 }, { scale: 1.03 }, { at: 0, dur: BAR, ease: 'linear' });
+  m.exit('#q1', { at: BAR - 0.18, style: 'blur', dur: 0.18 });
+  m.set('#q2', { opacity: 1 }, BAR);
+  m.text('#q2', { at: BAR, style: 'mask', stagger: 0.08 });
+  m.fromTo('#q2', { scale: 0.98 }, { scale: 1.04 }, { at: BAR, dur: BAR, ease: 'linear' });
+  m.exit('#q2', { at: DROP - 0.16, style: 'blur', dur: 0.16 });
+  m.sfx('swish', 0.08, { gain: 0.3 }); m.sfx('swish', BAR, { gain: 0.3 });
+
+  // ── 2 · DROP: the logo slams in ──
+  m.set(['#logo', '#net'], { opacity: 1 }, DROP - 0.02);
+  m.fromTo('#logo', { scale: 1.6, blur: 26, opacity: 0 }, { scale: 1, blur: 0, opacity: 1 }, { at: DROP - 0.02, dur: 0.42, ease: 'snap' });
+  m.sfx('thud', DROP, { gain: 0.5 });
+  m.text('#net', { at: DROP + B, by: 'char', style: 'blur', stagger: 0.02 });
+  m.set('#soonL', { opacity: 1 }, DROP + 2 * B);
+  m.text('#soonL', { at: DROP + 2 * B, style: 'rise', stagger: 0.04 });
+  m.to('#logo', { scale: 1.04 }, { at: DROP + 0.45, dur: STORE - DROP - 0.6, ease: 'linear' });
+  m.exit(['#logo', '#net', '#soonL'], { at: STORE - 0.2, style: 'blur', dur: 0.2, stagger: 0.02 });
+
+  // ── 3 · STORE (bars 3–4): segmented toggle, search "BAID X", the listing — Coming soon ──
+  const sg = i => document.getElementById('sg' + i);
+  const segClip = i => () => `inset(0px ${600 - sg(i).offsetLeft - 300}px 0px ${sg(i).offsetLeft}px round 38px)`;
+  m.set('#store', { opacity: 1 }, STORE);
+  m.set('#segDark', { clip: () => `inset(0px 300px 0px 0px round 38px)` }, 0);
+  m.from('#seg', { y: -40, opacity: 0, blur: 10 }, { at: STORE, dur: 0.45, ease: 'out' });
+  m.fromTo('#sbar', { w: 118, opacity: 0 }, { w: 920, opacity: 1 }, { at: STORE + B / 2, dur: 0.36, inertia: true });
+  m.type('#sq', 'BAID X', { at: STORE + B, cps: 14, caretOff: STORE + 3 * B });
+  m.set('#result', { opacity: 0 }, 0);
+  m.set('#result', { opacity: 1 }, STORE + 2.5 * B);
+  m.from('#result', { y: 60, scale: 0.94, blur: 12 }, { at: STORE + 2.5 * B, dur: 0.45, ease: 'out' });
+  m.from('#result img', { scale: 0 }, { at: STORE + 2.5 * B + 0.06, dur: 0.24, inertia: true });
+  m.sfx('pop', STORE + 2.5 * B, { gain: 0.35 });
+  m.from('#strip img', { x: 260, opacity: 0, blur: 12 }, { at: STORE + 3.5 * B, dur: 0.6, ease: 'out', stagger: 0.07 });
+  m.to('#strip', { x: -230 }, { at: STORE + 3.5 * B, dur: WAIT - STORE - 3.5 * B, ease: 'inOut' });
+  // toggle to Google Play on the bar, back to App Store a bar later
+  [[bar(4), 1], [bar(4) + 2 * B, 0]].forEach(([T, i]) => {
+    m.to('#knob', { x: i * 300 }, { at: T - 0.08, dur: 0.38, ease: 'morph' });
+    m.to('#segDark', { clip: i ? 'inset(0px 0px 0px 300px round 38px)' : 'inset(0px 300px 0px 0px round 38px)' }, { at: T - 0.08, dur: 0.38, ease: 'morph' });
+    m.sfx('tick', T, { gain: 0.3 });
+  });
+  m.press('#getBtn', { at: bar(4) + 3 * B });
+  m.exit(['#seg', '#sbar', '#result', '#strip'], { at: WAIT - 0.22, style: 'blur', dur: 0.22, stagger: 0.03 });
+
+  // ── 4 · DON'T WAIT (bar 5) ──
+  m.set('#w1', { opacity: 1 }, WAIT);
+  m.text('#w1', { at: WAIT, style: 'mask', stagger: 0.08 });
+  m.exit('#w1', { at: WAIT + 2 * B - 0.15, style: 'blur', dur: 0.15 });
+  m.set('#w2', { opacity: 1 }, WAIT + 2 * B);
+  m.text('#w2', { at: WAIT + 2 * B, style: 'mask', stagger: 0.07 });
+  m.fromTo(['#w1', '#w2'], { scale: 0.98 }, { scale: 1.03 }, { at: WAIT, dur: BAR, ease: 'linear' });
+  m.exit('#w2', { at: SU - 0.16, style: 'blur', dur: 0.16 });
+
+  // ── 5 · SIGN UP (bars 6–8): the real flow, a step every 2 beats ──
+  m.set(['#suHead', '#railWrap', '#phone'], { opacity: 1 }, SU - 0.1);
+  m.text('#suHead', { at: SU - 0.1, by: 'char', style: 'blur', stagger: 0.015 });
+  m.from('#rail .rc:not(#rdark .rc)', { y: 20, opacity: 0, blur: 8 }, { at: SU, dur: 0.45, ease: 'out', stagger: 0.035 });
+  m.fromTo('#phone', { y: 1150, rotateX: 34, rotateY: -16, rotateZ: -6, scale: 0.92, blur: 12 },
+                     { y: 0, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1, blur: 0 }, { at: SU - 0.12, dur: 0.75, ease: 'outSoft' });
+  m.sfx('whoosh', SU - 0.12, { gain: 0.45 });
+  const rc = i => document.getElementById('rc' + i), RW = () => document.getElementById('rail').offsetWidth;
+  const rclip = i => () => `inset(0px ${RW() - rc(i).offsetLeft - rc(i).offsetWidth}px 0px ${rc(i).offsetLeft}px round 31px)`;
+  m.set('#rsel', { x: () => rc(0).offsetLeft, w: () => rc(0).offsetWidth }, 0);
+  m.set('#rdark', { clip: rclip(0) }, 0);
+  m.set(['#rsel', '#rdark'], { opacity: 0 }, 0);
+  m.to(['#rsel', '#rdark'], { opacity: 1 }, { at: SU + 0.05, dur: 0.25, ease: 'apple' });
+  [1, 2, 3, 4, 5].forEach(i => {
+    const T = STEP(i);
+    m.to('#rsel', { x: () => rc(i).offsetLeft, w: () => rc(i).offsetWidth }, { at: T - 0.1, dur: 0.4, ease: 'morph' });
+    m.to('#rdark', { clip: rclip(i) }, { at: T - 0.1, dur: 0.4, ease: 'morph' });
+    m.swap('#p' + (i - 1), '#p' + i, { at: T - 0.1, dur: 0.32, blur: 12 });
+    m.sfx('tick', T, { gain: 0.25 });
+  });
+  m.to('#camera', { rotateY: 2.5, rotateX: -1.2 }, { at: SU, dur: OUT - SU, ease: 'inOut' });
+  m.float('#phone', { amp: 5, period: 4, from: SU + 0.7 });
+  m.exit(['#suHead', '#railWrap'], { at: OUT, style: 'rise', dur: 0.22, stagger: 0.03 });
+  m.to('#phone', { y: 1300, rotateX: -20, blur: 14 }, { at: OUT, dur: 0.24, ease: 'in' });
+  m.sfx('swoosh-up', OUT - 0.2, { gain: 0.3 });
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BAID X store reel · B (15–30 s)</title>
+<link rel="stylesheet" href="motion.css">
+<link rel="stylesheet" href="reel.css">
+<style>
+  .tc { text-align: center; }
+  #check { top: 37%; width: 150px; height: 150px; border-radius: 75px; background: #fff; color: #0b0b0b; display: grid; place-items: center; font-size: 80px;
+           box-shadow: 0 30px 80px -30px rgba(255,255,255,.4); }
+  #youre { top: 47.5%; width: 1000px; font-size: 168px; }
+  #trust { top: 56%; font: 500 38px/1.3 var(--font); color: var(--muted); white-space: nowrap; }
+
+  #list { top: 47%; left: 50%; width: 900px; }
+  .li { font: 800 92px/1.08 var(--font-display); letter-spacing: -0.05em; }
+
+  #cs { top: 33%; }
+  #st1 { top: 41.5%; } #st2 { top: 50%; }
+  #st1, #st2 { width: 1000px; font-size: 150px; }
+  #spill { top: 61%; height: 104px; padding: 0 40px; border-radius: 52px; display: flex; align-items: center; gap: 20px; background: var(--card);
+           box-shadow: inset 0 0 0 2px var(--line); font: 700 40px/1 var(--font); white-space: nowrap; }
+  #spill .icon { color: var(--muted); font-size: 38px; }
+  #spill .tag { margin-left: 10px; height: 64px; padding: 0 22px; border-radius: 32px; background: #fff; color: #0b0b0b; display: grid; place-items: center; font: 800 26px/1 var(--font); }
+
+  #gwn { top: 47%; width: 1000px; }
+
+  #logo { top: 40%; width: 600px; } #logo img { width: 100%; display: block; }
+  #soon { top: 47.6%; font: 600 36px/1.3 var(--font); color: var(--muted); white-space: nowrap; }
+  #cta { top: 55.5%; height: 124px; padding: 0 58px; border-radius: 62px; background: #fff; color: #0b0b0b; display: grid; place-items: center;
+         font: 800 48px/1 var(--font); letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(255,255,255,.35); }
+  #by { top: 62.5%; font: 500 28px/1 var(--font); color: var(--dim); letter-spacing: .02em; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="glowA"></div><div id="glowB"></div>
+  <div id="camera" class="camera">
+    <div id="check" class="layer"><i class="icon" data-icon="check"></i></div>
+    <div id="youre" class="layer tc h-xl"><span class="soft">You're</span> in.</div>
+    <div id="trust" class="layer">Get verified to earn a trust badge.</div>
+
+    <div id="list" class="layer">
+      <div class="li" id="l0">Find work.</div>
+      <div class="li" id="l1">Hire verified pros.</div>
+      <div class="li" id="l2">Run projects.</div>
+      <div class="li" id="l3">Get paid to<br>mobile money.</div>
+    </div>
+
+    <div id="cs" class="layer caps">Coming soon to</div>
+    <div id="st1" class="layer tc h-xl">App Store</div>
+    <div id="st2" class="layer tc h-xl soft">Google Play</div>
+    <div id="spill" class="layer"><i class="icon" data-icon="search"></i><span id="sq"></span><span class="tag">Coming soon</span></div>
+
+    <div id="gwn" class="layer tc h-xl"><span class="soft">Ghana's</span><br>work network.</div>
+
+    <div id="logo" class="layer"><img src="assets/logo-white.png" alt="BAID X"></div>
+    <div id="soon" class="layer">Coming soon to the App Store and Google Play</div>
+    <div id="cta" class="layer"><span>Join free at baidx.com</span></div>
+    <div id="by" class="layer">Built and powered by Baiden Creatives</div>
+  </div>
+  <div class="vignette" style="--vignette:.55"></div>
+  <div class="grain" style="--grain:.05"></div>
+</div>
+<script src="motion.js"></script>
+<script src="sfx.js"></script>
+<script>
+  const m = Motion.scene({ width: 1080, height: 1920, fps: 60, duration: 15 });
+  const T0 = 15, B = 60 / 144, BAR = 4 * B, bar = n => n * BAR;   // local bar 0 = global bar 9
+  const IN = 0, LIST = bar(1), STORE = bar(3), GWN = bar(5), END = bar(6);
+
+  m.set(['#check', '#trust', '#list', '#cs', '#st1', '#st2', '#spill', '#gwn', '#logo', '#soon', '#cta', '#by'], { opacity: 0 });
+  m.onFrame(t => { const g = t + T0;
+    document.getElementById('glowA').style.transform = `translate(${Math.sin(g * .37) * 90}px, ${Math.cos(g * .29) * 70}px) scale(${1 + Math.sin(g * .5) * .05})`;
+    document.getElementById('glowB').style.transform = `translate(${Math.cos(g * .31) * 60}px, ${Math.sin(g * .23) * 50}px)`; });
+
+  // ── 1 · YOU'RE IN (bar 9) ──
+  m.set('#check', { opacity: 1 }, IN + 0.02);
+  m.from('#check', { scale: 0 }, { at: IN + 0.02, dur: 0.26, inertia: true });
+  m.from('#check .icon', { scale: 0.4, opacity: 0 }, { at: IN + 0.16, dur: 0.35, ease: 'snappy' });
+  m.sfx('pop', IN + 0.02, { gain: 0.4 });
+  m.text('#youre', { at: IN + B / 2, style: 'mask', stagger: 0.08 });
+  m.set('#trust', { opacity: 1 }, IN + 2 * B);
+  m.text('#trust', { at: IN + 2 * B, style: 'rise', stagger: 0.035 });
+  m.fromTo(['#check', '#youre', '#trust'], { scale: 1 }, { scale: 1.03 }, { at: IN, dur: BAR, ease: 'linear' });
+  m.exit(['#check', '#youre', '#trust'], { at: LIST - 0.18, style: 'blur', dur: 0.18, stagger: 0.02 });
+
+  // ── 2 · WHAT YOU CAN DO (bars 10–11): one line per 2 beats, the previous dims ──
+  m.set('#list', { opacity: 1 }, LIST - 0.02);
+  [0, 1, 2, 3].forEach(i => {
+    const T = LIST + i * 2 * B;
+    m.text('#l' + i, { at: T, style: 'mask', stagger: 0.05 });
+    if (i > 0) m.to('#l' + (i - 1), { opacity: 0.3 }, { at: T, dur: 0.25, ease: 'apple' });
+    m.sfx('tick', T, { gain: 0.25, rate: 0.95 + i * 0.05 });
+  });
+  m.fromTo('#list', { scale: 1 }, { scale: 1.03 }, { at: LIST, dur: 2 * BAR, ease: 'linear' });
+  m.exit(['#l0', '#l1', '#l2', '#l3'], { at: STORE - 0.2, style: 'blur', dur: 0.2, stagger: 0.02 });
+
+  // ── 3 · COMING SOON TO THE STORES (bars 12–13) ──
+  m.set(['#cs', '#st1', '#st2'], { opacity: 1 }, STORE - 0.02);
+  m.text('#cs', { at: STORE, by: 'char', style: 'blur', stagger: 0.02 });
+  m.text('#st1', { at: STORE + B / 2, style: 'mask', stagger: 0.08 });
+  m.text('#st2', { at: STORE + B, style: 'mask', stagger: 0.08 });
+  m.sfx('swish', STORE + B / 2, { gain: 0.3 });
+  m.set('#spill', { opacity: 1 }, STORE + 2 * B);
+  m.fromTo('#spill', { scale: 0.6, blur: 10 }, { scale: 1, blur: 0 }, { at: STORE + 2 * B, dur: 0.4, ease: 'snappy' });
+  m.type('#sq', 'BAID X', { at: STORE + 2.5 * B, cps: 14, caretOff: STORE + 4 * B });
+  m.from('#spill .tag', { scale: 0, opacity: 0 }, { at: STORE + 4.5 * B, dur: 0.24, inertia: true });
+  m.sfx('pop', STORE + 4.5 * B, { gain: 0.3 });
+  m.fromTo(['#cs', '#st1', '#st2', '#spill'], { scale: 1 }, { scale: 1.03 }, { at: STORE, dur: 2 * BAR, ease: 'linear' });
+  m.exit(['#cs', '#st1', '#st2', '#spill'], { at: GWN - 0.2, style: 'blur', dur: 0.2, stagger: 0.02 });
+
+  // ── 4 · GHANA'S WORK NETWORK (bar 14) ──
+  m.set('#gwn', { opacity: 1 }, GWN - 0.02);
+  m.text('#gwn', { at: GWN, style: 'mask', stagger: 0.08 });
+  m.fromTo('#gwn', { scale: 0.98 }, { scale: 1.04 }, { at: GWN, dur: BAR, ease: 'linear' });
+  m.exit('#gwn', { at: END - 0.18, style: 'blur', dur: 0.18 });
+
+  // ── 5 · END CARD (bars 15–17, the outro) ──
+  m.set('#logo', { opacity: 1 }, END - 0.02);
+  m.fromTo('#logo', { scale: 1.5, blur: 24, opacity: 0 }, { scale: 1, blur: 0, opacity: 1 }, { at: END - 0.02, dur: 0.45, ease: 'snap' });
+  m.sfx('thud', END, { gain: 0.4 });
+  m.set('#soon', { opacity: 1 }, END + 2 * B);
+  m.text('#soon', { at: END + 2 * B, style: 'rise', stagger: 0.035 });
+  m.set('#cta', { opacity: 1 }, END + 3 * B);
+  m.from('#cta', { w: 124, scale: 0.6 }, { at: END + 3 * B, dur: 0.3, inertia: true });
+  m.from('#cta span', { opacity: 0, blur: 10, y: 14 }, { at: END + 3 * B + 0.15, dur: 0.45, ease: 'out' });
+  m.sfx('pop', END + 3 * B, { gain: 0.35 });
+  m.set('#by', { opacity: 1 }, END + 5 * B);
+  m.text('#by', { at: END + 5 * B, style: 'rise', stagger: 0.03 });
+
+  m.to('#camera', { scale: 1.02 }, { at: 0, dur: END, ease: 'inOut' });
+  m.to('#camera', { scale: 1.06 }, { at: END, dur: 15 - END, ease: 'inOut' });
+</script>
+</body>
+</html>
