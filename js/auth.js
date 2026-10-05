@@ -13,8 +13,8 @@
 
   // "Pro" paths (workers, project managers, suppliers) and "Client" paths (home clients, companies) are different joins.
   const GROUPS = {
-    pro: { roles: ["worker", "project-manager", "business"], title: "Join as a Pro", sub: "Pick how you work on BAID X." },
-    client: { roles: ["individual-employer", "company"], title: "Join as a client", sub: "Hiring for your home, or for your company?" },
+    pro: { roles: ["worker", "project-manager", "business"], title: "Join as a professional", sub: "Pick how you work on BAID X." },
+    client: { roles: ["individual-employer", "company"], title: "Join to hire", sub: "Hiring for your home, or for your company?" },
   };
   const params = new URLSearchParams(location.search);
   const GROUP = GROUPS[params.get("group")] || null;
@@ -360,7 +360,7 @@
   // Sign in from the guest page: pick the account type first, then the credentials step follows.
   function signinIntent() {
     S.mode = "signin"; S.intent = true;
-    $("#typeTitle").textContent = GROUP ? (params.get("group") === "pro" ? "Sign in as a Pro" : "Sign in as a client") : "Sign in";
+    $("#typeTitle").textContent = GROUP ? (params.get("group") === "pro" ? "Professional sign-in" : "Client sign-in") : "Sign in";
     $("#typeSub").textContent = "Choose your account type to continue.";
     $("#goSignin").textContent = "Continue";
     $("#goSignup").textContent = "New here? Create an account";

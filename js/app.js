@@ -52,7 +52,7 @@
       }),
     },
   };
-  const CHIPS = [["all", "All"], ...Object.entries(SOURCES).map(([k, v]) => [k, v.label])];
+  const CHIPS = [["all", "Everyone"], ...Object.entries(SOURCES).map(([k, v]) => [k, v.label])];
   // What each role most likely wants to find first when they open Discover.
   const DEFAULT_CHIP = { company: "professionals", "individual-employer": "professionals", "project-manager": "companies", business: "companies" };
 
@@ -161,15 +161,18 @@
   const BAG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7"/></svg>';
   const KIND_LABEL = { worker: "Professional", company: "Company", pm: "Project manager", business: "Supplier" };
   const SEAL = (tier) => (tier ? window.BX.badge(tier, 17) : "");
+  // Member card: identity row (avatar beside the name), a facts line and a trust line.
   function cardHTML(it) {
     const role = R(), canInvite = (role === "company" && ["worker", "pm"].includes(it.kind)) || (role === "project-manager" && it.kind === "worker");
-    const cover = `<div class="c-cover k-${esc(it.kind)} ${it.cover ? "has" : ""}" ${it.cover ? `style="background-image:url('${esc(it.cover)}')"` : ""}><span class="c-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span></div>`;
-    const av = `<div class="c-av" ${it.image ? `style="background-image:url('${esc(it.image)}')"` : ""}>${it.image ? "" : esc(initials(it.name))}</div>`;
+    const av = `<div class="t-av" ${it.image ? `style="background-image:url('${esc(it.image)}')"` : ""}>${it.image ? "" : esc(initials(it.name))}</div>`;
     const msg = role ? `<button class="b2" data-fx="message" data-id="${esc(it.id)}" data-name="${esc(it.name)}">Message</button>` : "";
-    return `<article class="card c2" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">${cover}
-      <div class="c-head">${av}<div class="c-id"><h3><span class="nm">${esc(it.name)}</span>${SEAL(it.badge)}</h3><div class="c-tag">${esc(it.tag)}</div></div></div>
-      <div class="c-body"><div class="c-loc">${PIN.replace('width="20" height="20"', 'width="15" height="15"')}<span>${esc(it.place)}</span></div><p class="desc">${esc(it.desc)}</p></div>
-      <div class="c-stats">${it.stats.map(([v, l]) => `<div class="c-stat"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("")}</div>
+    const facts = [`<span class="t-place">${PIN.replace('width="20" height="20"', 'width="14" height="14"')}${esc(it.place)}</span>`, ...it.stats.map(([v, l]) => `<span><b>${esc(String(v).replace(/^(\d+) (\d+)$/, "$1–$2"))}</b> ${esc(String(l).toLowerCase())}</span>`)].join('<i class="t-dot"></i>');
+    const b = it.badge && window.BX.BADGES[it.badge];
+    const trust = b ? `<div class="t-trust ok">${SEAL(it.badge)}<span>${esc(b[1])} by BAID X</span></div>` : `<div class="t-trust"><span>Verification in progress</span></div>`;
+    return `<article class="card c3" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">
+      <div class="t-top">${av}<div class="t-id"><h3>${esc(it.name)}</h3><div class="t-tag">${esc(it.tag)}</div></div><span class="t-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span></div>
+      <p class="desc">${esc(it.desc)}</p>
+      <div class="t-facts">${facts}</div>${trust}
       <div class="c-foot"><button class="b1">${canInvite ? "Invite to project" : "View profile"}</button>${msg}</div></article>`;
   }
   const norm = (s) => String(s || "").toLowerCase().replace(/\s*region$/, "").trim();
@@ -205,7 +208,7 @@
   function paintMember() {
     const me = state.me, member = !!me?.role;
     document.body.classList.toggle("is-member", member);
-    $("#joinBtn").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member;
+    $("#joinBtn").hidden = member; $("#guestHero").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member;
     if (member) { $("#dirBell").innerHTML = bellInner(); $$("[data-appbar]").forEach((el) => { el.innerHTML = appbar(); }); }
     $("#chatsGuest").hidden = member; $("#chatsMember").hidden = !member;
     $("#profileGuest").hidden = member; $("#profileMember").hidden = !member;

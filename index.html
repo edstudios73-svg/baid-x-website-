@@ -80,7 +80,7 @@
       <header class="topbar">
         <div class="topbar-row">
           <img class="brand-logo" src="assets/logo.png" alt="BAID X" />
-          <button class="btn-pro" id="joinBtn" data-action="join" data-group="pro">Join as a Pro</button>
+          <button class="btn-pro" id="joinBtn" data-action="join" data-group="pro">Get verified</button>
           <button class="bell" id="dirBell" data-go="notifications" aria-label="Notifications" hidden></button>
           <button class="icon-btn" id="filterBtn" data-go="filters" aria-label="Filters" hidden>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.500V20l-4-2v-4.500z"/></svg>
@@ -93,6 +93,15 @@
         </label>
         <div class="chips" id="chips"></div>
       </header>
+      <section class="g-hero" id="guestHero">
+        <h2>Hire verified people. Pay only when the work is done.</h2>
+        <ul>
+          <li><b>Ghana Card checked</b><span>Every profile is reviewed by BAID X before it shows a badge.</span></li>
+          <li><b>Money held safely</b><span>Your payment waits in escrow until you approve the work.</span></li>
+          <li><b>Run the whole job</b><span>Projects, crews, materials and payments in one place.</span></li>
+        </ul>
+        <button class="btn-light" data-action="join">Get started</button>
+      </section>
       <section class="grid" id="feed" aria-live="polite"></section>
       <section class="intro" aria-labelledby="introH">
         <h1 id="introH">Ghana&rsquo;s work network. Verified people, real projects, one trusted place.</h1>
@@ -126,16 +135,17 @@
       <div data-appbar></div>
       <h1 class="page-title">Chats</h1>
       <div class="empty" id="chatsGuest">
-        <svg width="150" height="150" viewBox="0 0 150 150" fill="none" aria-hidden="true">
-          <path d="M30 70 75 50l45 20v42L75 132 30 112z" fill="#2b2b2b"/>
-          <path d="M30 70 75 90l45-20" stroke="#d9d9d9" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M75 90v42" stroke="#d9d9d9" stroke-width="3"/>
-          <path d="M30 70 45 52l30 10M120 70 105 52 75 62" stroke="#d9d9d9" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M60 28c6-8 20-8 24 2" stroke="#7a7a7a" stroke-width="2.500" stroke-dasharray="3 6" stroke-linecap="round"/>
-          <circle cx="86" cy="32" r="4" fill="#d9d9d9"/><circle cx="26" cy="46" r="2.500" fill="#7a7a7a"/><circle cx="124" cy="96" r="2.500" fill="#7a7a7a"/>
+        <svg width="150" height="130" viewBox="0 0 150 130" fill="none" aria-hidden="true">
+          <rect x="14" y="18" width="84" height="56" rx="18" fill="#2b2b2b" stroke="#d9d9d9" stroke-width="3"/>
+          <path d="M34 74v18l18-18" fill="#2b2b2b" stroke="#d9d9d9" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M34 40h44M34 54h28" stroke="#7a7a7a" stroke-width="3" stroke-linecap="round"/>
+          <rect x="72" y="58" width="64" height="44" rx="15" fill="#1f1f1f" stroke="#d9d9d9" stroke-width="3"/>
+          <path d="M118 102v14l-14-14" fill="#1f1f1f" stroke="#d9d9d9" stroke-width="3" stroke-linejoin="round"/>
+          <rect x="95" y="77" width="18" height="14" rx="3" fill="#d9d9d9"/>
+          <path d="M98 77v-4a6 6 0 0 1 12 0v4" stroke="#d9d9d9" stroke-width="3"/>
         </svg>
-        <h2>Sign in to view chats</h2>
-        <p>Your conversations will appear here after you sign in.</p>
+        <h2>Your messages live here</h2>
+        <p>Sign in to message verified professionals, companies and suppliers. Conversations are private and end-to-end encrypted.</p>
         <button class="btn-light" data-action="signin">Sign in</button>
       </div>
       <div id="chatsMember" hidden></div>
@@ -147,19 +157,19 @@
     <div class="wrap">
       <div id="profileGuest">
         <div class="pg-art" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="ring"></i></div>
-        <h1 class="page-title center">Profile</h1>
+        <h1 class="page-title center">Get started</h1>
         <div class="profile-wrap">
           <div class="guest-avatar">
             <span class="ga-ring"></span><img src="assets/favicon.png" alt="BAID X" />
           </div>
           <button class="opt" data-action="signin" data-group="pro" style="margin-top:20px">
             <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7M3 13h18"/></svg></span>
-            <span><b>Sign in as a Pro</b><small>For professionals, project managers and suppliers</small></span>
+            <span><b>I&rsquo;m a professional</b><small>Workers, project managers and suppliers. Get verified and get hired.</small></span>
             <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
           </button>
           <button class="opt" data-action="signin" data-group="client">
             <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.500 12 4l9 7.500"/><path d="M5.500 10v9.500h13V10"/><path d="M10 19.500v-5h4v5"/></svg></span>
-            <span><b>Sign in as a client</b><small>For homeowners hiring, and for companies</small></span>
+            <span><b>I&rsquo;m hiring</b><small>Homeowners and companies. Hire safely and pay through escrow.</small></span>
             <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
           </button>
           <p class="legal">By continuing you agree to the BAID X <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
