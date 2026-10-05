@@ -1,0 +1,61 @@
+"""Per-trade copy for BAID X's trade pages: what the trade does and the jobs people hire it for.
+Keyed by the trade name used in js/common.js JOB_CATS. Plain facts only; no rates or counts."""
+
+TRADE_INFO = {
+    # structural
+    "Mason / Block Layer": ("Masons lay blocks and bricks, set out walls and build foundations, columns and partitions.", ["Block walls and partitions", "Foundations and footings", "Fence walls", "Plastering and rendering"]),
+    "Steel Bender / Iron Bender": ("Steel benders cut, bend and tie reinforcement bars for columns, beams, slabs and footings.", ["Column and beam cages", "Slab reinforcement", "Footing mats", "Lintels and ring beams"]),
+    "Concrete Worker / Pourer": ("Concrete workers mix, pour, vibrate and cure concrete for slabs, columns and floors.", ["Slab and decking pours", "Columns and beams", "Floor screeds and bases", "Curing and finishing"]),
+    "Carpenter (Structural / Formwork)": ("Structural carpenters build the formwork, shuttering and roof timbers that hold a building's shape.", ["Formwork and shuttering", "Roof trusses", "Props and scaffold boards", "Timber frames"]),
+    "Scaffolder": ("Scaffolders erect, inspect and dismantle the scaffolding that lets crews work safely at height.", ["Facade scaffolding", "Tower scaffolds", "Slab and roof access", "Scaffold inspection"]),
+    "Excavator Operator": ("Excavator operators dig trenches, foundations and site levels with tracked or wheeled machines.", ["Foundation trenches", "Site clearing and levelling", "Drainage channels", "Loading spoil"]),
+    "Bulldozer / Grader Operator": ("Dozer and grader operators push, spread and level earth for roads, plots and platforms.", ["Plot and road levelling", "Access roads", "Spreading laterite", "Bush clearing"]),
+    "Site Foreman / Supervisor": ("Site foremen run the crew on site: daily plans, materials, quality and safety.", ["Daily crew supervision", "Material tracking", "Quality checks", "Progress reports"]),
+    "Borehole Driller": ("Borehole drillers sink wells to groundwater and case them so water can be pumped.", ["Domestic boreholes", "Mechanised boreholes", "Casing and gravel packing", "Yield tests"]),
+    "Land Surveyor Assistant": ("Survey assistants help set out plots, take levels and mark pillars on site.", ["Setting out buildings", "Pillar placement", "Taking levels", "Site measurements"]),
+    # electrical and mechanical
+    "Electrician": ("Electricians install and repair wiring, sockets, lighting, distribution boards and meters.", ["House wiring and rewiring", "Distribution board installation", "Lighting and sockets", "Fault finding and repairs"]),
+    "AC / HVAC Technician": ("AC technicians install, service and repair split units, ducted systems and ventilation.", ["Split AC installation", "Servicing and gas refills", "Fault repairs", "Ventilation and extraction"]),
+    "Generator Technician": ("Generator technicians install, service and repair standby generators and changeover switches.", ["Generator servicing", "Changeover installation", "Fault diagnosis", "Load assessments"]),
+    "Solar Panel Installer": ("Solar installers fit panels, inverters and batteries for homes and businesses.", ["Rooftop solar systems", "Inverter and battery setup", "Solar water pumps", "System maintenance"]),
+    "Elevator / Lift Technician": ("Lift technicians install, maintain and repair passenger and goods lifts.", ["Lift installation", "Routine maintenance", "Breakdown repairs", "Safety inspections"]),
+    "CCTV / Security Systems Installer": ("Security installers fit cameras, recorders, alarms and access control.", ["CCTV cameras and recorders", "Alarm systems", "Access control and intercoms", "Remote viewing setup"]),
+    "Network / Structured Cabling Technician": ("Network technicians run data cabling, patch panels and Wi-Fi for offices and homes.", ["Office data cabling", "Patch panels and racks", "Wi-Fi coverage", "Cable testing"]),
+    "Fire Safety Systems Installer": ("Fire safety installers fit detectors, alarms, hose reels and extinguishers.", ["Smoke and heat detectors", "Fire alarm panels", "Hose reels", "Extinguisher placement"]),
+    "Satellite Dish / TV Aerial Installer": ("Dish installers mount and align satellite dishes and TV aerials.", ["Dish installation and alignment", "Multi-room TV points", "Aerial installation", "Signal repairs"]),
+    "Swimming Pool Technician": ("Pool technicians build, service and repair pools, pumps and filters.", ["Pool cleaning and chemistry", "Pump and filter repairs", "Pool tiling and repairs", "Routine servicing"]),
+    # plumbing and water
+    "Plumber": ("Plumbers install and repair water pipes, tanks, taps, toilets, showers and drains.", ["Bathroom and kitchen plumbing", "Water tanks and pumps", "Leak and blockage repairs", "New-build pipework"]),
+    "Borehole Pump Mechanic": ("Pump mechanics install, service and repair submersible and surface pumps.", ["Submersible pump installation", "Pump repairs", "Pressure systems", "Water storage hookups"]),
+    "Septic Tank / Soakaway Constructor": ("Septic builders construct septic tanks, soakaways and drainage for homes.", ["Septic tank construction", "Soakaway pits", "Drainage lines", "Tank repairs"]),
+    "Waterproofing Specialist": ("Waterproofing specialists seal roofs, slabs, bathrooms and basements against water.", ["Flat roof waterproofing", "Bathroom and wet-area sealing", "Basement tanking", "Leak treatment"]),
+    "Gutter Installer": ("Gutter installers fit and repair gutters, downpipes and rainwater runs.", ["New gutters and downpipes", "Gutter repairs", "Rainwater harvesting runs", "Fascia work"]),
+    # finishing and interior
+    "Painter": ("Painters prepare surfaces and apply paint and finishes inside and outside buildings.", ["Interior painting", "Exterior and facade painting", "Surface preparation", "Texture and special finishes"]),
+    "Tiler": ("Tilers lay floor and wall tiles in kitchens, bathrooms, living areas and outdoors.", ["Floor tiling", "Bathroom and kitchen walls", "Outdoor and step tiling", "Re-grouting and repairs"]),
+    "POP / Ceiling Installer": ("Ceiling installers build POP, gypsum and suspended ceilings and cornices.", ["POP ceilings and cornices", "Gypsum board ceilings", "Suspended ceilings", "Ceiling repairs"]),
+    "Screeder": ("Screeders level floors and walls with screed so finishes sit flat.", ["Floor screeding", "Wall skimming", "Level corrections", "Preparation for tiles"]),
+    "Terrazzo / Granite Fixer": ("Terrazzo and granite fixers lay and polish stone floors, stairs and counters.", ["Terrazzo floors", "Granite stairs", "Counter tops", "Polishing and restoration"]),
+    "Interior Decorator": ("Interior decorators plan and style rooms: colours, furniture, lighting and finishes.", ["Room styling", "Colour and finish plans", "Furniture layout", "Office interiors"]),
+    "Wallpaper Installer": ("Wallpaper installers prepare walls and hang wallpaper and wall panels.", ["Wallpaper hanging", "Feature walls", "Wall panel fitting", "Wallpaper removal"]),
+    "Cabinetmaker / Kitchen Cabinet Installer": ("Cabinetmakers build and fit kitchen cabinets, vanities and storage.", ["Kitchen cabinets", "Bathroom vanities", "Built-in storage", "Cabinet repairs"]),
+    "Wardrobe / Closet Installer": ("Wardrobe installers build and fit wardrobes and closet systems.", ["Built-in wardrobes", "Walk-in closets", "Sliding doors", "Wardrobe repairs"]),
+    "Wood Polisher / Varnisher": ("Wood polishers sand, stain, varnish and restore timber surfaces and furniture.", ["Furniture polishing", "Door and frame varnishing", "Floor finishing", "Restoration"]),
+    "Upholsterer": ("Upholsterers make and re-cover sofas, chairs and headboards.", ["Sofa re-upholstery", "Dining chairs", "Headboards", "Foam replacement"]),
+    "Curtain / Blinds Installer": ("Curtain installers measure and fit curtains, rails and blinds.", ["Curtain rails and tracks", "Blinds", "Measuring and fitting", "Office window treatments"]),
+    "Glass Tinting Technician": ("Tinting technicians apply heat and privacy film to building and vehicle glass.", ["Building window tinting", "Privacy film", "Heat-reduction film", "Vehicle tinting"]),
+    "Aluminium & Glazing Installer": ("Aluminium installers make and fit windows, doors, partitions and glass.", ["Aluminium windows", "Sliding and swing doors", "Glass partitions", "Shopfronts"]),
+    "Locksmith": ("Locksmiths fit, repair and open locks and security hardware.", ["Lock installation", "Lockouts", "Key cutting", "Security upgrades"]),
+    # exterior and compound
+    "Roofer": ("Roofers fit and repair roofing sheets, tiles, flashing and ridges.", ["New roofing", "Roof leak repairs", "Roofing sheet replacement", "Flashing and ridges"]),
+    "Welder / Metal Fabricator": ("Welders cut, weld and fabricate steel and metal for gates, frames and structures.", ["Steel frames and trusses", "Burglar-proofing", "Railings and stairs", "Repairs and fabrication"]),
+    "Fence Wall Builder": ("Fence builders put up compound walls, pillars and boundary fences.", ["Compound walls", "Pillars and copings", "Wire and mesh fencing", "Wall repairs"]),
+    "Gate Fabricator / Installer": ("Gate fabricators make and hang steel and sliding gates, including motorised gates.", ["Swing gates", "Sliding gates", "Gate motors", "Pedestrian gates"]),
+    "Interlock / Paving Block Layer": ("Paving layers lay interlocking blocks for driveways, compounds and walkways.", ["Driveways", "Compound paving", "Walkways and kerbs", "Re-laying and repairs"]),
+    "Landscaper / Gardener": ("Landscapers design, plant and maintain gardens, lawns and compounds.", ["Lawns and planting", "Garden design", "Compound maintenance", "Tree trimming"]),
+    "Fumigation / Pest Control Technician": ("Pest control technicians treat homes, offices and sites for insects and rodents.", ["Termite treatment", "Fumigation", "Rodent control", "Pre-construction treatment"]),
+    # support and general
+    "Furniture Assembler": ("Furniture assemblers put together flat-pack and office furniture.", ["Flat-pack assembly", "Office desks and chairs", "Beds and wardrobes", "Disassembly for moves"]),
+    "Post-Construction Cleaner": ("Post-construction cleaners clear dust, debris and paint marks so a building is ready to use.", ["Final builder's clean", "Window and glass cleaning", "Floor and tile cleaning", "Debris removal"]),
+    "General Handyman (Repairs & Maintenance)": ("Handymen handle small repairs and maintenance around homes and offices.", ["Small repairs", "Fixture installation", "Maintenance visits", "Odd jobs"]),
+}

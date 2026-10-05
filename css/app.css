@@ -177,7 +177,7 @@ img { max-width: 100%; display: block; }
 .screen.sub { padding-bottom: 40px; }
 .wrap.narrow { max-width: 520px; }
 .sub-head { position: sticky; top: 0; z-index: 10; background: var(--bg); display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; padding: 12px 0 10px; }
-.sub-head h1 { margin: 0; font-size: 16px; text-align: center; font-weight: 600; }
+.sub-head h1, .sub-head h2 { margin: 0; font-size: 16px; text-align: center; font-weight: 600; }
 
 .ck-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
 .ck-top { display: flex; align-items: center; gap: 12px; }
@@ -201,7 +201,7 @@ img { max-width: 100%; display: block; }
 
 /* account */
 .acc-head { display: flex; align-items: center; justify-content: center; position: relative; padding: 14px 0 4px; min-height: 56px; }
-.acc-head h1 { margin: 0; font-size: 16px; font-weight: 600; }
+.acc-head h1, .acc-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
 .acc-head .icon-btn { position: absolute; right: 0; top: 8px; }
 .acc-id { text-align: center; padding: 4px 0 14px; }
 .acc-avatar { width: 84px; height: 84px; border-radius: 50%; margin: 4px auto 10px; background: #2f2f2f center/cover; display: grid; place-items: center; font-size: 32px; font-weight: 600; }

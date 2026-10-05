@@ -90,6 +90,15 @@
           "value": "public, max-age=3600"
         }
       ]
+    },
+    {
+      "source": "/(brag-auth|brag-long|brag-output|brag-verify|previews|_preview)/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ],
   "crons": [

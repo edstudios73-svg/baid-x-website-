@@ -4,6 +4,12 @@ Allow: /
 Disallow: /admin.html
 Disallow: /api/
 Disallow: /auth.html
+Disallow: /brag-auth/
+Disallow: /brag-long/
+Disallow: /brag-output/
+Disallow: /brag-verify/
+Disallow: /previews/
+Disallow: /_preview/
 
 User-agent: GPTBot
 Allow: /

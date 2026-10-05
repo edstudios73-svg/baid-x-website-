@@ -16,6 +16,9 @@ BAID X serves Ghana (all 16 regions). It is a web app that installs to a phone's
 - [User guide](https://baid-x-website.vercel.app/docs.html): step-by-step guide per role, including linking a company with a project manager and adding workers to a project
 - [Trades](https://baid-x-website.vercel.app/trades/): the 50 trades supported
 - [Regions of Ghana](https://baid-x-website.vercel.app/ghana/): hiring and finding work in each region
+- [How escrow works](https://baid-x-website.vercel.app/escrow/): money held until the work is approved
+- [Verification badges](https://baid-x-website.vercel.app/verification/): what each of the four badges means
+- [Pricing](https://baid-x-website.vercel.app/pricing/): free to join; plans by account type in GH₵
 - [Terms of service](https://baid-x-website.vercel.app/terms.html)
 - [Privacy policy](https://baid-x-website.vercel.app/privacy.html)
 - [Full details for LLMs](https://baid-x-website.vercel.app/llms-full.txt)
@@ -45,7 +48,71 @@ BAID X serves Ghana (all 16 regions). It is a web app that installs to a phone's
 - Companies own projects and approve all spending. Project managers run a project day to day within limits the company sets.
 - A company links with a project manager by invitation from a project, by a one-time join code (valid 30 days), or through an organization.
 - Messaging supports text, photos, files, voice notes, and voice and video calls.
+- Escrow: the client funds a job from their BAID X wallet (topped up through Paystack). BAID X holds it and releases it on the client's approval, or automatically 3 days after the work is marked done. Disputes freeze the money while BAID X reviews them. A service fee is deducted from the worker's payout.
+- Badges (4 tiers): Verified (profile reviewed), Identity verified (Ghana Card checked), Professional verified (trade proof checked), Advanced verified (background check). Checks carry a one-off review fee (GH₵10 to GH₵50); a paid plan never buys a badge.
+- Pricing: free Access plan for everyone. Pro per month: worker GH₵30, project manager GH₵75, supplier GH₵100, client GH₵100, company GH₵300. Founding members lock a lower price for 12 months.
 - Not a lender, bank or insurer. Work agreements are between the people involved.
 
 ## Optional
 - [Sitemap](https://baid-x-website.vercel.app/sitemap.xml)
+
+## Pricing
+Everyone starts on the free Access plan. Pro per month: Worker GH₵30 (founding GH₵20, yearly GH₵288); Project manager GH₵75 (founding GH₵50, yearly GH₵720); Supplier (business) GH₵100 (founding GH₵70, yearly GH₵960); Client (individual) GH₵100 (founding GH₵70, yearly GH₵960); Company GH₵300 (founding GH₵220, yearly GH₵2,880). Details: https://baid-x-website.vercel.app/pricing/
+
+## Escrow
+Escrow means BAID X holds the client's payment for a job until the work is approved, so the worker knows the money exists and the client only pays for finished work. When the client approves the work, or automatically 3 days after the worker marks the job done if the client does not respond. Either side can report a problem. The job goes into dispute and the money stays held while BAID X reviews it and decides to release or refund. Before the work is submitted the client can cancel and the money goes back to their wallet. A BAID X service fee is deducted from the worker's payout. The worker sees the job total, the fee and the amount received. Clients top up their BAID X wallet through Paystack with card or mobile money. Workers withdraw their earnings to mobile money. Details: https://baid-x-website.vercel.app/escrow/
+
+## Verification badges
+Verified: The profile has been reviewed by a person at BAID X. Identity verified: A Ghana Card or other official ID has been checked against the person. Professional verified: Trade certificates and proof of past work have been checked, on top of identity. Advanced verified: A full background check on top of identity and trade, for sensitive work. Review fees: Identity verification GH₵10; Professional verification GH₵20; Business verification GH₵25; Advanced verification GH₵35; Enhanced verification GH₵35; Enhanced business verification GH₵50. Details: https://baid-x-website.vercel.app/verification/
+
+## Trade pages
+- [Mason / Block Layer](https://baid-x-website.vercel.app/trades/mason-block-layer/)
+- [Steel Bender / Iron Bender](https://baid-x-website.vercel.app/trades/steel-bender-iron-bender/)
+- [Concrete Worker / Pourer](https://baid-x-website.vercel.app/trades/concrete-worker-pourer/)
+- [Carpenter (Structural / Formwork)](https://baid-x-website.vercel.app/trades/carpenter-structural-formwork/)
+- [Scaffolder](https://baid-x-website.vercel.app/trades/scaffolder/)
+- [Excavator Operator](https://baid-x-website.vercel.app/trades/excavator-operator/)
+- [Bulldozer / Grader Operator](https://baid-x-website.vercel.app/trades/bulldozer-grader-operator/)
+- [Site Foreman / Supervisor](https://baid-x-website.vercel.app/trades/site-foreman-supervisor/)
+- [Borehole Driller](https://baid-x-website.vercel.app/trades/borehole-driller/)
+- [Land Surveyor Assistant](https://baid-x-website.vercel.app/trades/land-surveyor-assistant/)
+- [Electrician](https://baid-x-website.vercel.app/trades/electrician/)
+- [AC / HVAC Technician](https://baid-x-website.vercel.app/trades/ac-hvac-technician/)
+- [Generator Technician](https://baid-x-website.vercel.app/trades/generator-technician/)
+- [Solar Panel Installer](https://baid-x-website.vercel.app/trades/solar-panel-installer/)
+- [Elevator / Lift Technician](https://baid-x-website.vercel.app/trades/elevator-lift-technician/)
+- [CCTV / Security Systems Installer](https://baid-x-website.vercel.app/trades/cctv-security-systems-installer/)
+- [Network / Structured Cabling Technician](https://baid-x-website.vercel.app/trades/network-structured-cabling-technician/)
+- [Fire Safety Systems Installer](https://baid-x-website.vercel.app/trades/fire-safety-systems-installer/)
+- [Satellite Dish / TV Aerial Installer](https://baid-x-website.vercel.app/trades/satellite-dish-tv-aerial-installer/)
+- [Swimming Pool Technician](https://baid-x-website.vercel.app/trades/swimming-pool-technician/)
+- [Plumber](https://baid-x-website.vercel.app/trades/plumber/)
+- [Borehole Pump Mechanic](https://baid-x-website.vercel.app/trades/borehole-pump-mechanic/)
+- [Septic Tank / Soakaway Constructor](https://baid-x-website.vercel.app/trades/septic-tank-soakaway-constructor/)
+- [Waterproofing Specialist](https://baid-x-website.vercel.app/trades/waterproofing-specialist/)
+- [Gutter Installer](https://baid-x-website.vercel.app/trades/gutter-installer/)
+- [Painter](https://baid-x-website.vercel.app/trades/painter/)
+- [Tiler](https://baid-x-website.vercel.app/trades/tiler/)
+- [POP / Ceiling Installer](https://baid-x-website.vercel.app/trades/pop-ceiling-installer/)
+- [Screeder](https://baid-x-website.vercel.app/trades/screeder/)
+- [Terrazzo / Granite Fixer](https://baid-x-website.vercel.app/trades/terrazzo-granite-fixer/)
+- [Interior Decorator](https://baid-x-website.vercel.app/trades/interior-decorator/)
+- [Wallpaper Installer](https://baid-x-website.vercel.app/trades/wallpaper-installer/)
+- [Cabinetmaker / Kitchen Cabinet Installer](https://baid-x-website.vercel.app/trades/cabinetmaker-kitchen-cabinet-installer/)
+- [Wardrobe / Closet Installer](https://baid-x-website.vercel.app/trades/wardrobe-closet-installer/)
+- [Wood Polisher / Varnisher](https://baid-x-website.vercel.app/trades/wood-polisher-varnisher/)
+- [Upholsterer](https://baid-x-website.vercel.app/trades/upholsterer/)
+- [Curtain / Blinds Installer](https://baid-x-website.vercel.app/trades/curtain-blinds-installer/)
+- [Glass Tinting Technician](https://baid-x-website.vercel.app/trades/glass-tinting-technician/)
+- [Aluminium & Glazing Installer](https://baid-x-website.vercel.app/trades/aluminium-and-glazing-installer/)
+- [Locksmith](https://baid-x-website.vercel.app/trades/locksmith/)
+- [Roofer](https://baid-x-website.vercel.app/trades/roofer/)
+- [Welder / Metal Fabricator](https://baid-x-website.vercel.app/trades/welder-metal-fabricator/)
+- [Fence Wall Builder](https://baid-x-website.vercel.app/trades/fence-wall-builder/)
+- [Gate Fabricator / Installer](https://baid-x-website.vercel.app/trades/gate-fabricator-installer/)
+- [Interlock / Paving Block Layer](https://baid-x-website.vercel.app/trades/interlock-paving-block-layer/)
+- [Landscaper / Gardener](https://baid-x-website.vercel.app/trades/landscaper-gardener/)
+- [Fumigation / Pest Control Technician](https://baid-x-website.vercel.app/trades/fumigation-pest-control-technician/)
+- [Furniture Assembler](https://baid-x-website.vercel.app/trades/furniture-assembler/)
+- [Post-Construction Cleaner](https://baid-x-website.vercel.app/trades/post-construction-cleaner/)
+- [General Handyman (Repairs & Maintenance)](https://baid-x-website.vercel.app/trades/general-handyman-repairs-and-maintenance/)
