@@ -10,7 +10,7 @@ body.auth { background: #050505; }
 
 /* brand frame */
 .auth-brand { display: flex; justify-content: center; padding: 6px 0 0; }
-body.auth:not([data-view="type"]):not([data-view="signin"]):not([data-view="choose"]) .auth-brand { display: none; }
+body.auth:not([data-view="entry"]):not([data-view="type"]):not([data-view="signin"]):not([data-view="choose"]) .auth-brand { display: none; }
 .ab-frame { position: relative; width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.07)); border: 1.5px solid rgba(255,255,255,.5); box-shadow: 0 20px 50px rgba(0,0,0,.55), inset 0 1.5px 0 rgba(255,255,255,.7), 0 0 0 8px rgba(255,255,255,.06); backdrop-filter: blur(22px) saturate(1.5); }
 .ab-frame img { width: 58px; height: 58px; border-radius: 17px; box-shadow: 0 8px 22px rgba(0,0,0,.45); }
 .ab-ring { position: absolute; inset: -13px; border-radius: 50%; border: 1px dashed rgba(255,255,255,.4); animation: abSpin 28s linear infinite; }
@@ -96,3 +96,31 @@ a { color: #fff; }
   .seal.on svg, .seal.on .word { opacity: 1; transform: none; } .seal .c, .seal .k { stroke-dashoffset: 0; }
 }
 .otp.is-ok ~ #resend { opacity: 0; transition: opacity .2s; }
+
+/* ───────── entry: professional or client ───────── */
+#v-entry { text-align: center; }
+#v-entry .entry-h { font-size: clamp(28px, 7.4vw, 36px); letter-spacing: -.035em; margin-top: 14px; }
+.gates { display: grid; gap: 14px; margin-top: 22px; text-align: left; }
+.gate { position: relative; overflow: hidden; border-radius: 26px; padding: 18px; isolation: isolate;
+  background: linear-gradient(135deg, rgba(14,14,14,.66), rgba(14,14,14,.36) 55%, rgba(255,255,255,.14));
+  border: 1.5px solid rgba(255,255,255,.28); box-shadow: 0 22px 54px rgba(0,0,0,.45), inset 0 1.5px 0 rgba(255,255,255,.45);
+  backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  animation: gateIn .7s cubic-bezier(.16,1,.3,1) both; }
+.gate + .gate { animation-delay: .09s; }
+@keyframes gateIn { from { opacity: 0; transform: translateY(18px) scale(.98); } }
+/* a soft sheen follows the pointer across the glass */
+.gate::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(240px circle at var(--x, 50%) var(--y, 0%), rgba(255,255,255,.16), transparent 70%); }
+.gate:hover::before { opacity: 1; }
+.gate .g-top { display: flex; gap: 14px; align-items: center; }
+.gate .g-ic { flex: none; width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; background: #fff; color: #000; box-shadow: 0 10px 24px -8px rgba(255,255,255,.5); }
+.gate .g-ic svg { width: 24px; height: 24px; }
+.gate b { display: block; font-size: 19px; letter-spacing: -.02em; }
+.gate small { display: block; font-size: 13px; color: #cfcfcf; margin-top: 2px; }
+.gate ul { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.gate li { font-size: 12px; font-weight: 600; color: #e6e6e6; padding: 6px 10px; border-radius: 99px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); }
+.gate .g-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.gate .g-acts button { height: 48px; border-radius: 99px; font-weight: 800; font-size: 14.5px; cursor: pointer; width: 100%; }
+.gate .g-acts .btn-ghost { border-radius: 99px; }
+.entry-foot { margin: 22px 0 28px; font-size: 13.5px; } .entry-foot a { color: #e6e6e6; opacity: .85; }
+@media (prefers-reduced-motion: reduce) { .gate { animation: none; } }

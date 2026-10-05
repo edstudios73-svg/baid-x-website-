@@ -57,8 +57,27 @@
 
     <div class="auth-brand" aria-hidden="true"><span class="ab-frame"><span class="ab-ring"></span><img src="assets/favicon.png" alt="" /></span></div>
 
+    <!-- Entry: professional or client, then sign in or create an account -->
+    <section class="view active" id="v-entry">
+      <h1 class="h1 entry-h">Welcome to BAID X</h1>
+      <p class="sub">Ghana&rsquo;s work network. How will you use it?</p>
+      <div class="gates">
+        <article class="gate" data-gate="pro">
+          <div class="g-top"><span class="g-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span><div><b>Professional</b><small>Workers, project managers and suppliers</small></div></div>
+          <ul><li>Get verified and found</li><li>Jobs, projects and payouts</li></ul>
+          <div class="g-acts"><button class="btn-light" data-gate-act="signin">Sign in</button><button class="btn-ghost" data-gate-act="signup">Create account</button></div>
+        </article>
+        <article class="gate" data-gate="client">
+          <div class="g-top"><span class="g-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><div><b>Client</b><small>Homeowners and companies hiring</small></div></div>
+          <ul><li>Hire verified people</li><li>Pay through escrow</li></ul>
+          <div class="g-acts"><button class="btn-light" data-gate-act="signin">Sign in</button><button class="btn-ghost" data-gate-act="signup">Create account</button></div>
+        </article>
+      </div>
+      <p class="entry-foot"><a href="index.html">Explore BAID X first</a></p>
+    </section>
+
     <!-- 0. Choose type -->
-    <section class="view active" id="v-type">
+    <section class="view" id="v-type">
       <a class="browse" href="index.html">Browse professionals</a>
       <h1 class="h1" id="typeTitle">Choose type</h1>
       <p class="sub" id="typeSub">Pick the account that fits how you use BAID X.</p>

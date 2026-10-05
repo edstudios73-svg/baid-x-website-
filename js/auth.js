@@ -17,9 +17,11 @@
     client: { roles: ["individual-employer", "company"], title: "Join to hire", sub: "Hiring for your home, or for your company?" },
   };
   const params = new URLSearchParams(location.search);
-  const GROUP = GROUPS[params.get("group")] || null;
-  const ROLE_KEYS = GROUP ? GROUP.roles : Object.keys(ROLES);
-  const S = { role: ROLE_KEYS[0], mode: "signup", country: COUNTRIES[0], phone: "", name: "", cat: null, user: null, siMode: "phone", history: ["type"], view: "type" };
+  let GROUP = GROUPS[params.get("group")] || null;
+  let ROLE_KEYS = GROUP ? GROUP.roles : Object.keys(ROLES);
+  // with no group in the link, the page opens on the professional / client entry
+  const START = GROUP ? "type" : "entry";
+  const S = { role: ROLE_KEYS[0], mode: "signup", country: COUNTRIES[0], phone: "", name: "", cat: null, user: null, siMode: "phone", history: [START], view: START, gate: null };
   if (ROLE_KEYS.includes(params.get("role"))) S.role = params.get("role");
 
   /* ---------- navigation ---------- */
@@ -29,7 +31,7 @@
     S.view = view; document.body.dataset.view = view;
     const flow = FLOWS[S.mode] || [];
     const idx = flow.indexOf(view);
-    $("#head").classList.toggle("hide", view === "type");
+    $("#head").classList.toggle("hide", S.history.length <= 1 || view === "entry");
     $("#progress").style.visibility = idx >= 0 ? "visible" : "hidden";
     $("#stepLabel").textContent = idx >= 0 ? `Step ${idx + 1} of ${flow.length}` : "";
     $("#bar").style.width = idx >= 0 ? `${((idx + 1) / flow.length) * 100}%` : "0";
@@ -45,6 +47,26 @@
     show(prev, { push: false });
   }
   $("#back").addEventListener("click", back);
+
+  /* ---------- entry: professional or client, then sign in or create ---------- */
+  const GATE_NAME = { pro: "Professional", client: "Client" };
+  $$(".gate").forEach((g) => g.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-gate-act]"); if (!b) return;
+    const key = g.dataset.gate; S.gate = key; GROUP = GROUPS[key]; ROLE_KEYS = GROUP.roles; S.role = ROLE_KEYS[0];
+    if (b.dataset.gateAct === "signin") {
+      S.mode = "signin"; S.intent = false;
+      $("#signinSub").textContent = `${GATE_NAME[key]} sign-in. Use the phone or email on your account.`;
+      $("#siErr").textContent = "";
+      show("signin");
+      return;
+    }
+    S.mode = "signup"; S.skipChooser = true;
+    $("#typeTitle").textContent = GROUP.title; $("#typeSub").textContent = GROUP.sub;
+    $("#goSignin").hidden = true; $("#goSignup").textContent = "Continue"; $("#goSignup").className = "btn-light wide"; $(".browse").hidden = true;
+    renderTypes(); show("type");
+  }));
+
+  $$(".gate").forEach((g) => g.addEventListener("pointermove", (e) => { const r = g.getBoundingClientRect(); g.style.setProperty("--x", `${e.clientX - r.left}px`); g.style.setProperty("--y", `${e.clientY - r.top}px`); }));
 
   /* ---------- 0. choose type ---------- */
   function renderTypes() {
@@ -342,6 +364,13 @@
       $("#siErr").textContent = `That account is a ${ROLES[me.role].label} account. Go back and choose ${ROLES[me.role].label}.`;
       return;
     }
+    // signed in from the professional or client panel: the account has to belong to that side
+    if (S.gate && me?.role && !GROUPS[S.gate].roles.includes(me.role)) {
+      await sb.auth.signOut();
+      const other = S.gate === "pro" ? "Client" : "Professional";
+      $("#siErr").textContent = `That is a ${ROLES[me.role].label} account. Go back and use ${other} sign in.`;
+      return;
+    }
     if (me?.role) location.href = HOME; else startOnboard();
   });
   $("#siPass").addEventListener("keydown", (e) => e.key === "Enter" && $("#doSignin").click());
@@ -402,8 +431,15 @@
     }
     prefillSignin(a);
   });
-  $("#useOther").addEventListener("click", () => { S.skipChooser = true; S.history = ["choose"]; signinIntent(); S.history = ["choose", "type"]; });
-  $("#chooseNew").addEventListener("click", () => { S.mode = "signup"; S.history = ["type"]; renderTypes(); $("#goSignin").hidden = false; show("type", { push: false }); });
+  $("#useOther").addEventListener("click", () => {
+    S.skipChooser = true;
+    if (!params.get("group")) { S.history = ["choose"]; show("entry"); return; }
+    S.history = ["choose"]; signinIntent(); S.history = ["choose", "type"];
+  });
+  $("#chooseNew").addEventListener("click", () => {
+    if (!params.get("group")) { S.history = ["choose"]; show("entry"); return; }
+    S.mode = "signup"; S.history = ["type"]; renderTypes(); $("#goSignin").hidden = false; show("type", { push: false });
+  });
 
   /* ---------- boot ---------- */
   if (GROUP) { $("#typeTitle").textContent = GROUP.title; $("#typeSub").textContent = GROUP.sub; }
@@ -416,7 +452,8 @@
     if (me?.role && S.mode !== "reset" && !adding) { location.replace(HOME); return; }
     if (me && !me.role && !adding) { startOnboard(); return; }
     if (params.get("acc") && ACCS().some((x) => x.id === params.get("acc"))) { S.mode = "signin"; prefillSignin(ACCS().find((x) => x.id === params.get("acc"))); return; }
-    if (params.get("mode") === "signin") { if (ACCS().length && !adding) openChooser(); else signinIntent(); }
+    if (params.get("mode") === "signin") { if (ACCS().length && !adding) openChooser(); else if (GROUP) signinIntent(); else show("entry", { push: false }); }
+    else if (!GROUP) show("entry", { push: false });
   })();
 
 })();
