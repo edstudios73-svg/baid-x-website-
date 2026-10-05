@@ -192,11 +192,11 @@
     state.loading = true; state.failed = false; renderFeed();
     try {
       const results = await Promise.all(Object.entries(SOURCES).map(async ([group, s]) => {
-        const { data, error } = await sb.from(s.table).select(s.cols).or("account_status.is.null,account_status.eq.active").order("created_at", { ascending: false }).limit(100);
+        const { data, error } = await sb.from(s.table).select(`${s.cols},created_at`).or("account_status.is.null,account_status.eq.active").order("created_at", { ascending: true }).limit(100);
         if (error) throw error;
-        return (data || []).map((r) => ({ ...s.map(r), group }));
+        return (data || []).map((r) => ({ ...s.map(r), group, joined: Date.parse(r.created_at) || Infinity }));
       }));
-      state.items = results.flat().sort((a, b) => (b.badge ? 1 : 0) - (a.badge ? 1 : 0)); // verified members first
+      state.items = results.flat().sort((a, b) => a.joined - b.joined); // the earliest members first
     } catch (e) { console.error("directory load failed", e); state.failed = true; }
     state.loading = false; renderFeed();
   }
