@@ -131,3 +131,44 @@ body.is-guest { padding-bottom: 0 !important; }
   .lp-roles b { font-size: 15px; margin-bottom: 2px; } .lp-roles small { font-size: 13px; }
   .lp-final .box { padding: 44px 18px; }
 }
+
+/* ---------- liquid glass: the landing in the same material as Chats and sign-in ----------
+   A still backdrop (soft shapes, a ring and a gold glow) sits behind frosted panels. Nothing moves. */
+.lp { --gl: linear-gradient(135deg, rgba(14,14,14,.6), rgba(14,14,14,.32) 55%, rgba(255,255,255,.12)); --gl-line: rgba(255,255,255,.22); --gl-edge: inset 0 1.5px 0 rgba(255,255,255,.4); --gl-blur: blur(26px) saturate(1.6); }
+.lp > *:not(.lp-art) { position: relative; z-index: 1; }
+.lp-art { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.lp-art::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(circle at 50% 30%, #000, transparent 78%); -webkit-mask-image: radial-gradient(circle at 50% 30%, #000, transparent 78%); }
+.lp-art i { position: absolute; display: block; }
+.lp-art .o1 { width: 340px; height: 340px; border-radius: 50%; right: -120px; top: 16%; background: linear-gradient(135deg, #fff, #6d6d6d); opacity: .3; }
+.lp-art .o2 { width: 240px; height: 240px; border-radius: 70px; left: -100px; top: 58%; background: #fff; opacity: .22; transform: rotate(18deg); }
+.lp-art .o3 { width: 520px; height: 520px; border-radius: 50%; left: 38%; top: -10%; background: radial-gradient(circle, rgba(232,217,168,.38), transparent 68%); }
+.lp-art .ring { width: 380px; height: 380px; border-radius: 50%; left: 8%; top: 30%; border: 30px solid rgba(255,255,255,.1); }
+
+/* frosted panels */
+.lp-bar { background: rgba(10,10,10,.45); backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6); border-bottom: 1px solid rgba(255,255,255,.1); }
+.lp-steps li, .lp-roles a, .lp-faq details, .lp-final .box, .lp-chip {
+  background: var(--gl); border: 1.5px solid var(--gl-line); box-shadow: 0 14px 40px rgba(0,0,0,.42), var(--gl-edge);
+  backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur);
+}
+.lp-roles a:hover, .lp-steps li:hover { border-color: rgba(255,255,255,.55); background: linear-gradient(135deg, rgba(255,255,255,.2), rgba(255,255,255,.05) 60%, rgba(255,255,255,.12)); }
+.lp-faq details[open] { border-color: rgba(255,255,255,.45); }
+.lp-steps b { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: #fff; color: #000; letter-spacing: 0; box-shadow: 0 10px 24px -10px rgba(255,255,255,.6); }
+
+/* the phone becomes a glass device */
+.lp-phone { background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(14,14,14,.55) 40%, rgba(14,14,14,.7)); border: 1.5px solid rgba(255,255,255,.28); box-shadow: 0 40px 120px -30px rgba(232,217,168,.4), inset 0 1.5px 0 rgba(255,255,255,.5), inset 0 0 0 7px rgba(255,255,255,.04); backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6); }
+.lp-phone .notch { background: rgba(0,0,0,.6); }
+.lp-phone .ph-card { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14); box-shadow: inset 0 1px 0 rgba(255,255,255,.18); }
+
+/* closing card: gold-tinted glass */
+.lp-final .box { background: radial-gradient(500px 260px at 50% 0%, rgba(232,217,168,.22), transparent 70%), var(--gl); border-color: rgba(232,217,168,.45); }
+
+/* footer pills and divider in the same glass */
+.lp-foot { background: linear-gradient(180deg, transparent, rgba(5,5,5,.6)); border-top-color: rgba(255,255,255,.1); }
+.lp-foot .f-social a { background: var(--gl); border: 1.5px solid var(--gl-line); box-shadow: var(--gl-edge); backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); }
+.lp .btn.ghost { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.28); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 1px 0 rgba(255,255,255,.3); }
+
+@media (max-width: 560px) {
+  .lp-art .o1 { width: 240px; height: 240px; right: -130px; top: 62%; opacity: .2; }
+  .lp-art .ring { width: 280px; height: 280px; left: -60px; top: 52%; border-width: 24px; }
+  .lp-art .o3 { width: 380px; height: 380px; left: 10%; top: -6%; }
+}
