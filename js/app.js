@@ -203,7 +203,6 @@
       state.items = results.flat().sort((a, b) => a.joined - b.joined); // the earliest members first
     } catch (e) { console.error("directory load failed", e); state.failed = true; }
     state.loading = false; renderFeed();
-    if (!R()) window.LANDING?.feed(state.items);
   }
 
   /* ---------- Member shell: account screen, chats ---------- */
@@ -332,7 +331,7 @@
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });
   window.addEventListener("hashchange", route);
-  window.APP = { state, go, route, cardHTML, dashCtx, appbar, updateBell, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
+  window.APP = { state, go, route, dashCtx, appbar, updateBell, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
 
   /* ---------- Boot ---------- */
   renderChips(); renderNav(); runSplash();

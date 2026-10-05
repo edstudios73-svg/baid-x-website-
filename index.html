@@ -84,13 +84,15 @@
           <nav aria-label="Landing"><a href="#lp-how" data-lp-jump>How it works</a><a href="#lp-escrow" data-lp-jump>Escrow</a><a href="#lp-roles" data-lp-jump>Who it's for</a><a href="#lp-price" data-lp-jump>Pricing</a><a href="#lp-faq" data-lp-jump>FAQ</a></nav>
           <div class="acts"><button class="btn ghost" data-action="signin">Sign in</button><button class="btn primary" data-action="join">Get started</button></div>
         </div>
+        <i class="prog" id="lpProg"></i>
       </header>
 
-      <section class="lp-hero">
+      <section class="lp-hero" id="lpHero">
+        <div class="lp-beams" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <div class="wrap">
           <div>
             <span class="eyebrow" data-rv>Ghana&rsquo;s work network</span>
-            <h1 data-rv="2">Hire verified people. <span class="gold">Pay only when the work is done.</span></h1>
+            <h1 data-split>Hire verified people. <span class="gold">Pay only when the work is done.</span></h1>
             <p class="sub" data-rv="3">BAID X brings workers, companies, project managers, suppliers and clients onto one trusted platform. Every badge is earned through a real check, every payment waits in escrow until the work is approved, and every job leaves a record that follows you.</p>
             <div class="cta" data-rv="4"><button class="btn primary" data-action="join">Create your free account</button><button class="btn ghost" data-action="signin">I already have an account</button></div>
             <div class="proof" data-rv="4"><span><b>5</b>account types</span><span><b>50</b>trades</span><span><b>16</b>regions of Ghana</span><span><b>GH&#8373;</b>mobile money payouts</span></div>
@@ -98,9 +100,10 @@
           <div class="lp-phone-wrap" aria-hidden="true">
             <div class="lp-phone">
               <div class="notch"></div>
+              <div class="ph-toast" id="phToast"><span class="ok"></span><div><b>Payment received</b><small>GH&#8373;900.00 to MTN MoMo</small></div></div>
               <div class="ph-top"><img src="assets/logo.png" alt="" /><span class="ph-status" id="phStatus">Held</span></div>
               <div class="ph-card"><div class="ph-who"><div class="ph-av">KA</div><div><b>Kwame A.</b><small>Electrician &middot; East Legon</small></div></div></div>
-              <div class="ph-card ph-amt"><small>In escrow</small><b>GH&#8373;900.00</b></div>
+              <div class="ph-card ph-amt" id="phAmt"><small id="phAmtL">In escrow</small><b id="phAmtV">GH&#8373;900.00</b><span class="ph-bar"><i id="phBar"></i></span></div>
               <div class="ph-card">
                 <div class="ph-steps" id="phSteps">
                   <div class="ph-step done"><i></i>Hired and funded</div>
@@ -118,12 +121,12 @@
         </div>
       </section>
 
-      <section class="lp-ticker" aria-label="Trades on BAID X"><div class="track" id="lpTicker"></div></section>
+      <section class="lp-ticker" aria-label="Trades on BAID X"><div class="track" id="lpTicker"></div><div class="track rev" id="lpTicker2"></div></section>
 
       <section id="lp-why">
         <div class="wrap">
           <span class="eyebrow" data-rv>Why BAID X</span>
-          <h2 data-rv="2">Work in Ghana runs on trust. Trust deserves infrastructure.</h2>
+          <h2 data-split>Work in Ghana runs on trust. Trust deserves infrastructure.</h2>
           <p class="sub" data-rv="3">Most jobs are still found through a friend of a friend, paid in cash up front and forgotten the day they end. Good workers can&rsquo;t prove their record. Clients can&rsquo;t tell who is real. BAID X turns that informal handshake into an organised, verified and paid workflow.</p>
           <div class="lp-ps">
             <div class="col bad" data-rv><h3>The way it works today</h3><ul>
@@ -145,7 +148,7 @@
       <section id="lp-how">
         <div class="wrap">
           <span class="eyebrow" data-rv>How it works</span>
-          <h2 data-rv="2">From first message to final payment.</h2>
+          <h2 data-split>From first message to final payment.</h2>
           <div class="lp-steps" id="lpSteps">
             <i class="bar"></i>
             <div class="st" data-rv><div class="n">1</div><h3>Join and verify</h3><p>Pick your account type, build your profile and submit your Ghana Card and trade proof for a BAID X badge.</p></div>
@@ -159,16 +162,18 @@
       <section id="lp-escrow">
         <div class="wrap">
           <span class="eyebrow" data-rv>Escrow</span>
-          <h2 data-rv="2">The money moves only when the work does.</h2>
+          <h2 data-split>The money moves only when the work does.</h2>
           <p class="sub" data-rv="3">When you hire on BAID X, you fund the job through Paystack. BAID X holds the money while the work happens, then releases it to the worker the moment you approve.</p>
           <div class="lp-flow" id="lpFlow" data-rv>
             <div class="nodes">
               <div class="node"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.400 3.600-7 8-7s8 2.600 8 7"/></svg></div><b>Client</b><small>Funds the job</small></div>
-              <div class="node mid"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.500 8 8 9 4.500-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div><b>BAID X escrow</b><small>Holds it safely</small></div>
+              <div class="node mid"><div class="ic"><span class="seal-ok"></span><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.500 8 8 9 4.500-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div><b>BAID X escrow</b><small>Holds it safely</small></div>
               <div class="node"><div class="ic"><svg viewBox="0 0 24 24"><path d="M14.700 6.300a4 4 0 0 0-5.400 5.400L3 18v3h3l6.300-6.300a4 4 0 0 0 5.400-5.400l-2.600 2.600-2.400-.6-.6-2.400z"/></svg></div><b>Worker</b><small>Paid on approval</small></div>
               <div class="lane l1"><span class="coin">&#8373;</span></div>
               <div class="lane l2"><span class="coin">&#8373;</span></div>
+              <span class="plus">+GH&#8373;900</span>
             </div>
+            <div class="say"><div class="dots" id="flowDots"><i></i><i></i><i></i><i></i></div><b id="flowSay">The client funds the job</b></div>
             <div class="rules">
               <div class="rule"><b>Funded before work starts</b>The worker sees the money is there, so nobody works on a promise.</div>
               <div class="rule"><b>Released on your approval</b>Pay in milestones. Each one releases only when you mark it done.</div>
@@ -181,7 +186,7 @@
       <section id="lp-roles">
         <div class="wrap">
           <span class="eyebrow" data-rv>Who it&rsquo;s for</span>
-          <h2 data-rv="2">One network. Five ways in.</h2>
+          <h2 data-split>One network. Five ways in.</h2>
           <p class="sub" data-rv="3">Every account type gets its own dashboard, built around the work it actually does.</p>
           <div class="lp-roles" data-rv>
             <div class="tabs" role="tablist" id="lpTabs">
@@ -205,7 +210,7 @@
       <section id="lp-feats">
         <div class="wrap">
           <span class="eyebrow" data-rv>The platform</span>
-          <h2 data-rv="2">Everything a job needs, nothing it doesn&rsquo;t.</h2>
+          <h2 data-split>Everything a job needs, nothing it doesn&rsquo;t.</h2>
           <div class="lp-feats">
             <div class="lp-feat wide" data-rv><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.500 8 8 9 4.500-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div><h3>Escrow and milestones</h3><p>Fund a job up front, split it into milestones, and release each payment only when you approve the work.</p></div>
             <div class="lp-feat" data-rv="2"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.500"/><path d="M14 10h4M14 14h3M5.500 16c.6-1.600 2-2.400 3.500-2.400s2.900.8 3.500 2.400"/></svg></div><h3>Real verification</h3><p>Ghana Card and trade checks reviewed by people, not bought.</p></div>
@@ -221,7 +226,7 @@
       <section id="lp-trust">
         <div class="wrap">
           <span class="eyebrow" data-rv>Trust you can see</span>
-          <h2 data-rv="2">Four badges. Each one means a real check.</h2>
+          <h2 data-split>Four badges. Each one means a real check.</h2>
           <div class="lp-badges">
             <div class="lp-badge" data-rv><span class="seal" data-seal="verified"></span><b>Verified</b><small>The profile has been reviewed by BAID X.</small></div>
             <div class="lp-badge" data-rv="2"><span class="seal" data-seal="identity"></span><b>Identity verified</b><small>Ghana Card or another ID document checked.</small></div>
@@ -229,15 +234,6 @@
             <div class="lp-badge" data-rv="4"><span class="seal" data-seal="advanced"></span><b>Advanced verified</b><small>A full background check on top of ID and trade.</small></div>
           </div>
           <div class="lp-note" data-rv>A paid plan never buys a badge. Verification and subscriptions are kept separate on purpose.</div>
-        </div>
-      </section>
-
-      <section id="lp-net" hidden>
-        <div class="wrap">
-          <span class="eyebrow" data-rv>Already on BAID X</span>
-          <h2 data-rv="2">Meet some of the first members.</h2>
-          <div class="lp-net" id="lpNet"></div>
-          <div style="margin-top:22px"><button class="btn ghost" data-action="join">Sign up to see everyone</button></div>
         </div>
       </section>
 
@@ -255,7 +251,7 @@
       <section id="lp-price">
         <div class="wrap">
           <span class="eyebrow" data-rv>Pricing</span>
-          <h2 data-rv="2">Free to start. Upgrade when the work grows.</h2>
+          <h2 data-split>Free to start. Upgrade when the work grows.</h2>
           <p class="sub" data-rv="3">Every account starts on the free Access plan: profile, search, messaging, applications and reviews. Pro plans add more reach and tools. Founding members keep a lower price for 12 months.</p>
           <div class="lp-price">
             <div class="lp-plan" data-rv><small>Worker</small><b>GH&#8373;30<span> /mo</span></b><p>Pro plan. Access is free.</p><span class="fd">Founding: GH&#8373;20</span></div>
@@ -270,7 +266,7 @@
       <section id="lp-faq">
         <div class="wrap">
           <span class="eyebrow" data-rv>Questions</span>
-          <h2 data-rv="2">Good to know.</h2>
+          <h2 data-split>Good to know.</h2>
           <div class="lp-faq" data-rv="3">
             <details><summary>Is BAID X free?</summary><p>Yes. Every account type can join on the free Access plan and use the profile, search, messaging, applications and reviews. Paid plans are optional.</p></details>
             <details><summary>How does escrow protect me?</summary><p>When you hire, you pay into escrow through Paystack. The worker can see the job is funded, but the money is only released when you approve the work or a milestone.</p></details>
@@ -284,7 +280,7 @@
 
       <section class="lp-final">
         <div class="wrap">
-          <div class="box" data-rv>
+          <div class="box" data-rv><i class="ring" aria-hidden="true"></i>
             <img src="assets/logo.png" alt="BAID X" />
             <h2>The future of work in Africa is about capability.</h2>
             <p class="sub" style="margin:0 auto">Show what you can do, hire people who have proven it, and get paid when the job is done.</p>
