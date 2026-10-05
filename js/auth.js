@@ -20,7 +20,8 @@
   let GROUP = GROUPS[params.get("group")] || null;
   let ROLE_KEYS = GROUP ? GROUP.roles : Object.keys(ROLES);
   // with no group in the link, the page opens on the professional / client entry
-  const START = GROUP ? "type" : "entry";
+  // "Get started" / "Create account" (mode=signup) opens straight on all five account types
+  const START = GROUP || params.get("mode") === "signup" ? "type" : "entry";
   const S = { role: ROLE_KEYS[0], mode: "signup", country: COUNTRIES[0], phone: "", name: "", cat: null, user: null, siMode: "phone", history: [START], view: START, gate: null };
   if (ROLE_KEYS.includes(params.get("role"))) S.role = params.get("role");
 
@@ -60,11 +61,17 @@
       show("signin");
       return;
     }
-    S.mode = "signup"; S.skipChooser = true;
-    $("#typeTitle").textContent = GROUP.title; $("#typeSub").textContent = GROUP.sub;
-    $("#goSignin").hidden = true; $("#goSignup").textContent = "Continue"; $("#goSignup").className = "btn-light wide"; $(".browse").hidden = true;
-    renderTypes(); show("type");
+    openCreate(GROUP.roles[0]);
   }));
+
+  // Creating an account always lists all five account types; the side the visitor came from is pre-selected.
+  function openCreate(preselect, push = true) {
+    GROUP = null; ROLE_KEYS = Object.keys(ROLES); S.gate = null;
+    S.mode = "signup"; S.skipChooser = true; S.role = ROLE_KEYS.includes(preselect) ? preselect : ROLE_KEYS[0];
+    $("#typeTitle").textContent = "Create your account"; $("#typeSub").textContent = "Choose the account that fits how you use BAID X.";
+    $("#goSignin").hidden = true; $("#goSignup").textContent = "Continue"; $("#goSignup").className = "btn-light wide"; $(".browse").hidden = true;
+    renderTypes(); show("type", { push });
+  }
 
   $$(".gate").forEach((g) => g.addEventListener("pointermove", (e) => { const r = g.getBoundingClientRect(); g.style.setProperty("--x", `${e.clientX - r.left}px`); g.style.setProperty("--y", `${e.clientY - r.top}px`); }));
 
@@ -80,6 +87,7 @@
   });
   $("#goSignup").addEventListener("click", () => {
     if (S.mode === "onboard") { prepName(); show("name"); return; }
+    if (S.intent) { S.intent = false; openCreate(S.role); return; } // "New here? Create an account" from sign-in: pick from all five first
     S.mode = "signup"; resetPhoneView(); show("phone");
   });
   $("#goSignin").addEventListener("click", () => {
@@ -437,8 +445,7 @@
     S.history = ["choose"]; signinIntent(); S.history = ["choose", "type"];
   });
   $("#chooseNew").addEventListener("click", () => {
-    if (!params.get("group")) { S.history = ["choose"]; show("entry"); return; }
-    S.mode = "signup"; S.history = ["type"]; renderTypes(); $("#goSignin").hidden = false; show("type", { push: false });
+    S.history = ["choose"]; openCreate(GROUP?.roles[0]);
   });
 
   /* ---------- boot ---------- */
@@ -453,6 +460,7 @@
     if (me && !me.role && !adding) { startOnboard(); return; }
     if (params.get("acc") && ACCS().some((x) => x.id === params.get("acc"))) { S.mode = "signin"; prefillSignin(ACCS().find((x) => x.id === params.get("acc"))); return; }
     if (params.get("mode") === "signin") { if (ACCS().length && !adding) openChooser(); else if (GROUP) signinIntent(); else show("entry", { push: false }); }
+    else if (params.get("mode") === "signup" && !adding) openCreate(params.get("role") || GROUP?.roles[0], false);
     else if (!GROUP) show("entry", { push: false });
   })();
 
