@@ -350,11 +350,3 @@ body.g-on .chat-head small { white-space: nowrap; font-size: 11.5px; } body.g-on
 .c3 .c-foot { display: flex; gap: 8px; margin-top: 12px; }
 .c3 .c-foot button { flex: 1; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 800; }
 .c3 .c-foot .b1 { background: #fff; color: #000; } .c3 .c-foot .b2 { background: rgba(255,255,255,.06); border: 1px solid var(--line); }
-/* Signed-out Home intro */
-.g-hero { margin: 12px 0 4px; padding: 18px; border-radius: 20px; background: var(--card); border: 1px solid var(--line); }
-.g-hero[hidden] { display: none; }
-.g-hero h2 { margin: 0 0 12px; font-size: 19px; line-height: 1.25; letter-spacing: -.01em; }
-.g-hero ul { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 10px; }
-.g-hero li { padding-left: 14px; border-left: 2px solid #fff; }
-.g-hero li b { display: block; font-size: 13.5px; } .g-hero li span { font-size: 12.5px; color: var(--muted); }
-.g-hero .btn-light { width: 100%; }

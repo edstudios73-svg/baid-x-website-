@@ -81,7 +81,7 @@
   }
   function allowed(name) {
     const r = R();
-    if (!r) return ["home", "chats", "profile"].includes(name);
+    if (!r) return name === "home"; // signed-out visitors only see the landing page
     return COMMON_ROUTES.includes(name) || (ROLE_ROUTES[r] || []).includes(name);
   }
   function route() {
@@ -98,7 +98,7 @@
     document.title = name === "home" ? "BAID X · Ghana's work network" : `${T[name] || "BAID X"} · BAID X`;
     const member = !!R();
     let screen;
-    if (!member) screen = name === "home" ? "directory" : name;
+    if (!member) screen = "landing";
     else if (name === "discover") screen = "directory";
     else if (["chats", "profile", ...SUBS].includes(name)) screen = name;
     else screen = "dash";
@@ -108,7 +108,8 @@
     const tab = cfg.parent[name] || name;
     $$("#navIn [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
     $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}` || (name === "org" && b.dataset.tab === "orgs")));
-    const hideNav = SUBS.includes(name) || (name === "chat" && member);
+    document.body.classList.toggle("is-guest", !member);
+    const hideNav = !member || SUBS.includes(name) || name === "chat";
     $("#nav").hidden = hideNav;
     document.body.classList.toggle("hide-nav", hideNav);
 
@@ -202,13 +203,14 @@
       state.items = results.flat().sort((a, b) => a.joined - b.joined); // the earliest members first
     } catch (e) { console.error("directory load failed", e); state.failed = true; }
     state.loading = false; renderFeed();
+    if (!R()) window.LANDING?.feed(state.items);
   }
 
   /* ---------- Member shell: account screen, chats ---------- */
   function paintMember() {
     const me = state.me, member = !!me?.role;
     document.body.classList.toggle("is-member", member);
-    $("#joinBtn").hidden = member; $("#guestHero").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member;
+    $("#joinBtn").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member;
     if (member) { $("#dirBell").innerHTML = bellInner(); $$("[data-appbar]").forEach((el) => { el.innerHTML = appbar(); }); }
     $("#chatsGuest").hidden = member; $("#chatsMember").hidden = !member;
     $("#profileGuest").hidden = member; $("#profileMember").hidden = !member;
@@ -330,7 +332,7 @@
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });
   window.addEventListener("hashchange", route);
-  window.APP = { state, go, route, dashCtx, appbar, updateBell, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
+  window.APP = { state, go, route, cardHTML, dashCtx, appbar, updateBell, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
 
   /* ---------- Boot ---------- */
   renderChips(); renderNav(); runSplash();

@@ -44,6 +44,7 @@
   <link rel="stylesheet" href="css/wallet.css" />
   <link rel="stylesheet" href="css/escrow.css" />
   <link rel="stylesheet" href="css/mobile.css" />
+  <link rel="stylesheet" href="css/landing.css" />
 <!--seo:start-->
 <meta name="geo.region" content="GH" /><meta name="geo.placename" content="Ghana" /><meta name="geo.position" content="7.9465;-1.0232" /><meta name="ICBM" content="7.9465, -1.0232" />
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" /><link rel="alternate" hreflang="en-GH" href="https://baid-x-website.vercel.app/" /><link rel="alternate" hreflang="x-default" href="https://baid-x-website.vercel.app/" />
@@ -74,7 +75,239 @@
     </div>
   </div>
 
-  <!-- Directory: guest Home, member Discover -->
+  <!-- Landing: what signed-out visitors see -->
+  <main class="screen" id="screen-landing">
+    <div class="lp">
+      <header class="lp-bar" id="lpBar">
+        <div class="wrap">
+          <img src="assets/logo.png" alt="BAID X" />
+          <nav aria-label="Landing"><a href="#lp-how" data-lp-jump>How it works</a><a href="#lp-escrow" data-lp-jump>Escrow</a><a href="#lp-roles" data-lp-jump>Who it's for</a><a href="#lp-price" data-lp-jump>Pricing</a><a href="#lp-faq" data-lp-jump>FAQ</a></nav>
+          <div class="acts"><button class="btn ghost" data-action="signin">Sign in</button><button class="btn primary" data-action="join">Get started</button></div>
+        </div>
+      </header>
+
+      <section class="lp-hero">
+        <div class="wrap">
+          <div>
+            <span class="eyebrow" data-rv>Ghana&rsquo;s work network</span>
+            <h1 data-rv="2">Hire verified people. <span class="gold">Pay only when the work is done.</span></h1>
+            <p class="sub" data-rv="3">BAID X brings workers, companies, project managers, suppliers and clients onto one trusted platform. Every badge is earned through a real check, every payment waits in escrow until the work is approved, and every job leaves a record that follows you.</p>
+            <div class="cta" data-rv="4"><button class="btn primary" data-action="join">Create your free account</button><button class="btn ghost" data-action="signin">I already have an account</button></div>
+            <div class="proof" data-rv="4"><span><b>5</b>account types</span><span><b>50</b>trades</span><span><b>16</b>regions of Ghana</span><span><b>GH&#8373;</b>mobile money payouts</span></div>
+          </div>
+          <div class="lp-phone-wrap" aria-hidden="true">
+            <div class="lp-phone">
+              <div class="notch"></div>
+              <div class="ph-top"><img src="assets/logo.png" alt="" /><span class="ph-status" id="phStatus">Held</span></div>
+              <div class="ph-card"><div class="ph-who"><div class="ph-av">KA</div><div><b>Kwame A.</b><small>Electrician &middot; East Legon</small></div></div></div>
+              <div class="ph-card ph-amt"><small>In escrow</small><b>GH&#8373;900.00</b></div>
+              <div class="ph-card">
+                <div class="ph-steps" id="phSteps">
+                  <div class="ph-step done"><i></i>Hired and funded</div>
+                  <div class="ph-step now"><i></i>Work submitted</div>
+                  <div class="ph-step"><i></i>Approved by client</div>
+                  <div class="ph-step"><i></i>Paid to mobile money</div>
+                </div>
+                <div class="ph-btn" id="phBtn">Approve and release</div>
+              </div>
+            </div>
+            <div class="lp-chip c1"><span class="d"></span>Ghana Card checked</div>
+            <div class="lp-chip c2"><span class="d" style="background:#e8d9a8;box-shadow:0 0 10px #e8d9a8"></span>GH&#8373;900 held safely</div>
+            <div class="lp-chip c3"><span class="d"></span>Identity verified</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-ticker" aria-label="Trades on BAID X"><div class="track" id="lpTicker"></div></section>
+
+      <section id="lp-why">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>Why BAID X</span>
+          <h2 data-rv="2">Work in Ghana runs on trust. Trust deserves infrastructure.</h2>
+          <p class="sub" data-rv="3">Most jobs are still found through a friend of a friend, paid in cash up front and forgotten the day they end. Good workers can&rsquo;t prove their record. Clients can&rsquo;t tell who is real. BAID X turns that informal handshake into an organised, verified and paid workflow.</p>
+          <div class="lp-ps">
+            <div class="col bad" data-rv><h3>The way it works today</h3><ul>
+              <li><i>&times;</i>Hiring on word of mouth, with no way to check who you are letting in</li>
+              <li><i>&times;</i>Paying everything up front and hoping the job gets finished</li>
+              <li><i>&times;</i>Skilled people with years of work and nothing to show for it</li>
+              <li><i>&times;</i>Projects run on WhatsApp threads, paper receipts and memory</li>
+            </ul></div>
+            <div class="col good" data-rv="2"><h3>The way it works on BAID X</h3><ul>
+              <li><i>&#10003;</i>Badges issued only after BAID X reviews the person&rsquo;s ID and trade</li>
+              <li><i>&#10003;</i>Money held in escrow and released only when you approve the work</li>
+              <li><i>&#10003;</i>Every finished job, review and payment builds a lasting record</li>
+              <li><i>&#10003;</i>Projects, crews, tasks, materials and payments in one workspace</li>
+            </ul></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lp-how">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>How it works</span>
+          <h2 data-rv="2">From first message to final payment.</h2>
+          <div class="lp-steps" id="lpSteps">
+            <i class="bar"></i>
+            <div class="st" data-rv><div class="n">1</div><h3>Join and verify</h3><p>Pick your account type, build your profile and submit your Ghana Card and trade proof for a BAID X badge.</p></div>
+            <div class="st" data-rv="2"><div class="n">2</div><h3>Connect</h3><p>Search verified people by trade and region, post a job, or bring a crew and project manager into your project.</p></div>
+            <div class="st" data-rv="3"><div class="n">3</div><h3>Run the work</h3><p>Agree milestones, track tasks and site reports, and talk in end-to-end encrypted chat with voice and video.</p></div>
+            <div class="st" data-rv="4"><div class="n">4</div><h3>Get paid</h3><p>The client approves, escrow releases, and the money lands in the worker&rsquo;s wallet, ready for mobile money.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lp-escrow">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>Escrow</span>
+          <h2 data-rv="2">The money moves only when the work does.</h2>
+          <p class="sub" data-rv="3">When you hire on BAID X, you fund the job through Paystack. BAID X holds the money while the work happens, then releases it to the worker the moment you approve.</p>
+          <div class="lp-flow" id="lpFlow" data-rv>
+            <div class="nodes">
+              <div class="node"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.400 3.600-7 8-7s8 2.600 8 7"/></svg></div><b>Client</b><small>Funds the job</small></div>
+              <div class="node mid"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.500 8 8 9 4.500-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div><b>BAID X escrow</b><small>Holds it safely</small></div>
+              <div class="node"><div class="ic"><svg viewBox="0 0 24 24"><path d="M14.700 6.300a4 4 0 0 0-5.400 5.400L3 18v3h3l6.300-6.300a4 4 0 0 0 5.400-5.400l-2.600 2.600-2.400-.6-.6-2.400z"/></svg></div><b>Worker</b><small>Paid on approval</small></div>
+              <div class="lane l1"><span class="coin">&#8373;</span></div>
+              <div class="lane l2"><span class="coin">&#8373;</span></div>
+            </div>
+            <div class="rules">
+              <div class="rule"><b>Funded before work starts</b>The worker sees the money is there, so nobody works on a promise.</div>
+              <div class="rule"><b>Released on your approval</b>Pay in milestones. Each one releases only when you mark it done.</div>
+              <div class="rule"><b>Disputes are reviewed</b>If something goes wrong, the money stays held while BAID X reviews it.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lp-roles">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>Who it&rsquo;s for</span>
+          <h2 data-rv="2">One network. Five ways in.</h2>
+          <p class="sub" data-rv="3">Every account type gets its own dashboard, built around the work it actually does.</p>
+          <div class="lp-roles" data-rv>
+            <div class="tabs" role="tablist" id="lpTabs">
+              <button class="tab on" role="tab" data-role="w">Workers</button>
+              <button class="tab" role="tab" data-role="c">Companies</button>
+              <button class="tab" role="tab" data-role="p">Project managers</button>
+              <button class="tab" role="tab" data-role="s">Suppliers</button>
+              <button class="tab" role="tab" data-role="h">Clients</button>
+            </div>
+            <div class="panel">
+              <div class="pane on" data-pane="w"><h3>Your skill, on record.</h3><p>Electricians, masons, plumbers, carpenters, welders, painters and 40+ more trades. Get verified once and let your work speak for you.</p><ul><li>A verified profile clients can trust</li><li>Find jobs near you and apply in a tap</li><li>Join project crews through invitations</li><li>Get paid from escrow to mobile money</li><li>Reviews and completed jobs that follow you</li><li>Free to join on the Access plan</li></ul><button class="btn primary" style="margin-top:24px" data-action="join" data-group="pro">Join as a worker</button></div>
+              <div class="pane" data-pane="c"><h3>Run every site from one place.</h3><p>Create projects, hire verified crews, bring in project managers and approve every payment before it leaves.</p><ul><li>Projects with tasks, milestones and reports</li><li>Invite workers and project managers by ID</li><li>Approve PM access and crew invitations</li><li>Escrow-backed milestone payments</li><li>Team roles and company profile</li><li>Plans for growing teams</li></ul><button class="btn primary" style="margin-top:24px" data-action="join" data-group="client">Join as a company</button></div>
+              <div class="pane" data-pane="p"><h3>Deliver the build, show the proof.</h3><p>Link to a company with your PM ID, get approved, and run delivery: crew, tasks, site reports, expenses and requests.</p><ul><li>Request company access with your ID</li><li>Assigned projects in one workspace</li><li>Invite and manage your crew</li><li>Daily reports and expense tracking</li><li>Mark milestones complete for approval</li><li>A record of every project you delivered</li></ul><button class="btn primary" style="margin-top:24px" data-action="join" data-group="pro">Join as a project manager</button></div>
+              <div class="pane" data-pane="s"><h3>Sell where the work is.</h3><p>List cement, sand, blocks, PPE, tools and heavy equipment for sale or rent, right where projects are being planned.</p><ul><li>A catalog for materials and equipment</li><li>Sale or rental with location and pricing</li><li>Inquiries straight from buyers</li><li>Orders tracked to delivery</li><li>Boost listings when you need reach</li><li>A verified supplier badge</li></ul><button class="btn primary" style="margin-top:24px" data-action="join" data-group="pro">Join as a supplier</button></div>
+              <div class="pane" data-pane="h"><h3>Hire for your home without the gamble.</h3><p>Need a wiring fix, a new roof or a full renovation? Find someone verified, agree the price and pay through escrow.</p><ul><li>Search verified people by trade and area</li><li>Post a job and compare applicants</li><li>Pay into escrow, release on approval</li><li>Private, encrypted chat and calls</li><li>Reviews from people who actually hired</li><li>Free to start</li></ul><button class="btn primary" style="margin-top:24px" data-action="join" data-group="client">Start hiring</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lp-feats">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>The platform</span>
+          <h2 data-rv="2">Everything a job needs, nothing it doesn&rsquo;t.</h2>
+          <div class="lp-feats">
+            <div class="lp-feat wide" data-rv><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.500 8 8 9 4.500-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div><h3>Escrow and milestones</h3><p>Fund a job up front, split it into milestones, and release each payment only when you approve the work.</p></div>
+            <div class="lp-feat" data-rv="2"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.500"/><path d="M14 10h4M14 14h3M5.500 16c.6-1.600 2-2.400 3.500-2.400s2.900.8 3.500 2.400"/></svg></div><h3>Real verification</h3><p>Ghana Card and trade checks reviewed by people, not bought.</p></div>
+            <div class="lp-feat" data-rv="3"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3>Encrypted chat</h3><p>End-to-end encrypted messages, voice and video calls.</p></div>
+            <div class="lp-feat" data-rv><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 7h18v13H3zM8 7V4h8v3"/><path d="M3 12h18"/></svg></div><h3>Job marketplace</h3><p>Post jobs, review applicants, hire and track the engagement.</p></div>
+            <div class="lp-feat" data-rv="2"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><h3>Project workspace</h3><p>Tasks, crew, site reports, expenses and approvals per project.</p></div>
+            <div class="lp-feat" data-rv="3"><div class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M16 12h2M2 10h20"/></svg></div><h3>Wallet and payouts</h3><p>Earnings in Ghana cedis, withdrawn to MTN MoMo and other wallets.</p></div>
+            <div class="lp-feat" data-rv="4"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 9 12 4l9 5v10H3z"/><path d="M9 19v-6h6v6"/></svg></div><h3>Materials and equipment</h3><p>Cement, sand, blocks, PPE and heavy equipment for sale or rent.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lp-trust">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>Trust you can see</span>
+          <h2 data-rv="2">Four badges. Each one means a real check.</h2>
+          <div class="lp-badges">
+            <div class="lp-badge" data-rv><span class="seal" data-seal="verified"></span><b>Verified</b><small>The profile has been reviewed by BAID X.</small></div>
+            <div class="lp-badge" data-rv="2"><span class="seal" data-seal="identity"></span><b>Identity verified</b><small>Ghana Card or another ID document checked.</small></div>
+            <div class="lp-badge" data-rv="3"><span class="seal" data-seal="professional"></span><b>Professional verified</b><small>Trade certificates and ID both checked.</small></div>
+            <div class="lp-badge" data-rv="4"><span class="seal" data-seal="advanced"></span><b>Advanced verified</b><small>A full background check on top of ID and trade.</small></div>
+          </div>
+          <div class="lp-note" data-rv>A paid plan never buys a badge. Verification and subscriptions are kept separate on purpose.</div>
+        </div>
+      </section>
+
+      <section id="lp-net" hidden>
+        <div class="wrap">
+          <span class="eyebrow" data-rv>Already on BAID X</span>
+          <h2 data-rv="2">Meet some of the first members.</h2>
+          <div class="lp-net" id="lpNet"></div>
+          <div style="margin-top:22px"><button class="btn ghost" data-action="join">Sign up to see everyone</button></div>
+        </div>
+      </section>
+
+      <section id="lp-stats" style="padding-top:20px">
+        <div class="wrap">
+          <div class="lp-stats">
+            <div class="lp-stat" data-rv><b data-count="5">0</b><small>Account types, one network</small></div>
+            <div class="lp-stat" data-rv="2"><b data-count="50">0</b><small>Trades you can hire or list</small></div>
+            <div class="lp-stat" data-rv="3"><b data-count="16">0</b><small>Regions of Ghana covered</small></div>
+            <div class="lp-stat" data-rv="4"><b data-count="0" data-suffix="%">0%</b><small>Of your payment released before you approve</small></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lp-price">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>Pricing</span>
+          <h2 data-rv="2">Free to start. Upgrade when the work grows.</h2>
+          <p class="sub" data-rv="3">Every account starts on the free Access plan: profile, search, messaging, applications and reviews. Pro plans add more reach and tools. Founding members keep a lower price for 12 months.</p>
+          <div class="lp-price">
+            <div class="lp-plan" data-rv><small>Worker</small><b>GH&#8373;30<span> /mo</span></b><p>Pro plan. Access is free.</p><span class="fd">Founding: GH&#8373;20</span></div>
+            <div class="lp-plan" data-rv="2"><small>Project manager</small><b>GH&#8373;75<span> /mo</span></b><p>Pro plan. Access is free.</p><span class="fd">Founding: GH&#8373;50</span></div>
+            <div class="lp-plan" data-rv="3"><small>Supplier</small><b>GH&#8373;100<span> /mo</span></b><p>Pro plan. Access is free.</p><span class="fd">Founding: GH&#8373;70</span></div>
+            <div class="lp-plan" data-rv="4"><small>Client</small><b>GH&#8373;100<span> /mo</span></b><p>Pro plan. Access is free.</p><span class="fd">Founding: GH&#8373;70</span></div>
+            <div class="lp-plan" data-rv="4"><small>Company</small><b>GH&#8373;300<span> /mo</span></b><p>Pro plan. Access is free.</p><span class="fd">Founding: GH&#8373;220</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lp-faq">
+        <div class="wrap">
+          <span class="eyebrow" data-rv>Questions</span>
+          <h2 data-rv="2">Good to know.</h2>
+          <div class="lp-faq" data-rv="3">
+            <details><summary>Is BAID X free?</summary><p>Yes. Every account type can join on the free Access plan and use the profile, search, messaging, applications and reviews. Paid plans are optional.</p></details>
+            <details><summary>How does escrow protect me?</summary><p>When you hire, you pay into escrow through Paystack. The worker can see the job is funded, but the money is only released when you approve the work or a milestone.</p></details>
+            <details><summary>What does a badge mean?</summary><p>A badge means BAID X reviewed that person&rsquo;s documents: their profile, their ID, their trade proof or a full background check, depending on the badge. Badges cannot be bought.</p></details>
+            <details><summary>How do workers get paid?</summary><p>Released escrow goes into the worker&rsquo;s BAID X wallet in Ghana cedis, from where it can be withdrawn to mobile money.</p></details>
+            <details><summary>Are my messages private?</summary><p>Chats are end-to-end encrypted, so only the people in the conversation can read them.</p></details>
+            <details><summary>Is there an app?</summary><p>Yes. BAID X runs in any browser and can be installed on your phone, and an Android app is on the way.</p></details>
+          </div>
+        </div>
+      </section>
+
+      <section class="lp-final">
+        <div class="wrap">
+          <div class="box" data-rv>
+            <img src="assets/logo.png" alt="BAID X" />
+            <h2>The future of work in Africa is about capability.</h2>
+            <p class="sub" style="margin:0 auto">Show what you can do, hire people who have proven it, and get paid when the job is done.</p>
+            <div class="cta"><button class="btn primary" data-action="join" data-group="pro">I&rsquo;m a professional</button><button class="btn ghost" data-action="join" data-group="client">I&rsquo;m hiring</button></div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="lp-foot">
+        <div class="wrap">
+          <div class="cols">
+            <div><img src="assets/logo.png" alt="BAID X" /><p>Ghana&rsquo;s work network. Verified people, real projects and protected payments, across all 16 regions.</p></div>
+            <div><h4>For you</h4><a href="/for/workers/">Workers</a><a href="/for/companies/">Companies</a><a href="/for/project-managers/">Project managers</a><a href="/for/suppliers/">Suppliers</a><a href="/for/clients/">Clients</a></div>
+            <div><h4>Explore</h4><a href="/trades/">50 trades</a><a href="/ghana/">All 16 regions</a><a href="/ghana/greater-accra/">Accra</a><a href="/ghana/ashanti/">Kumasi</a><a href="/ghana/western/">Takoradi</a><a href="/ghana/northern/">Tamale</a></div>
+            <div><h4>Company</h4><a href="/about.html">About</a><a href="/docs.html">User guide</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></div>
+          </div>
+          <div class="base"><span>&copy; <span id="lpYear">2026</span> BAID X &middot; Powered by Baiden Creatives</span><span>Made in Ghana</span></div>
+        </div>
+      </footer>
+    </div>
+  </main>
+
+  <!-- Directory: member Discover -->
   <main class="screen" id="screen-directory">
     <div class="wrap">
       <header class="topbar">
@@ -93,15 +326,6 @@
         </label>
         <div class="chips" id="chips"></div>
       </header>
-      <section class="g-hero" id="guestHero">
-        <h2>Hire verified people. Pay only when the work is done.</h2>
-        <ul>
-          <li><b>Ghana Card checked</b><span>Every profile is reviewed by BAID X before it shows a badge.</span></li>
-          <li><b>Money held safely</b><span>Your payment waits in escrow until you approve the work.</span></li>
-          <li><b>Run the whole job</b><span>Projects, crews, materials and payments in one place.</span></li>
-        </ul>
-        <button class="btn-light" data-action="join">Get started</button>
-      </section>
       <section class="grid" id="feed" aria-live="polite"></section>
       <section class="intro" aria-labelledby="introH">
         <h1 id="introH">Ghana&rsquo;s work network. Verified people, real projects, one trusted place.</h1>
@@ -262,5 +486,6 @@
   <script src="js/milestones.js"></script>
   <script src="js/chat.js"></script>
   <script src="js/notify.js"></script>
+  <script src="js/landing.js"></script>
 </body>
 </html>
