@@ -30,11 +30,26 @@
     const { head, empty, sec } = U();
     if (!jobId) return head("Applicants") + empty("hire", "Choose a job", "Open a job from your list to see who applied.", `<button class="btn-light sm" data-go="hires">Back to jobs</button>`);
     const [{ data: job }, apps] = await Promise.all([c.sb.from("jobs").select("id,title,status,daily_rate_ghs,workers_needed,city_town").eq("id", jobId).maybeSingle(), rpc(c, "job_applicants", { p_job: jobId }).catch(() => [])]);
+    // profile and reviews for each applicant (reviews are private, so they come through applicant_details)
+    const det = new Map((await rpc(c, "applicant_details", { p_job: jobId }).catch(() => []) || []).map((d) => [d.worker_id, d]));
     if (!job) return head("Applicants") + empty("hire", "Job not found", "It may have been removed.", `<button class="btn-light sm" data-go="hires">Back to jobs</button>`);
+    const stars = (r) => `<span class="ap-stars" aria-label="${r} out of 5">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= Math.round(r) ? "on" : ""}"></i>`).join("")}</span>`;
+    const profile = (a) => {
+      const d = det.get(a.worker_id); if (!d) return "";
+      const place = [d.city_town, d.region].filter(Boolean).join(", ");
+      const revs = (d.reviews || []).map((r) => `<li><div class="ap-r-top">${stars(Number(r.rating) || 0)}<b>${esc(r.by)}</b><small>${esc(ago(r.at))}</small></div>${r.comment ? `<p>${esc(r.comment)}</p>` : ""}</li>`).join("");
+      const pics = (d.portfolio || []).slice(0, 4).map((u) => `<span class="ap-pic" style="background-image:url('${esc(u)}')"></span>`).join("");
+      return `<details class="ap-more"><summary>${d.review_count ? `${stars(Number(d.rating) || 0)}<b>${Number(d.rating).toFixed(1)}</b><small>${d.review_count} review${d.review_count > 1 ? "s" : ""}</small>` : `<small>No reviews yet</small>`}<span class="ap-open">Profile and reviews</span></summary>
+        ${d.bio ? `<p class="ap-bio">${esc(d.bio)}</p>` : ""}
+        <div class="ap-facts">${place ? `<span>${esc(place)}</span>` : ""}${d.daily_rate ? `<span>${money(d.daily_rate)}/day</span>` : ""}${d.rank ? `<span>${esc(pretty(d.rank))} · ${Number(d.xp || 0)} XP</span>` : ""}${d.available ? `<span class="ok">Available for work</span>` : ""}</div>
+        ${pics ? `<div class="ap-pics">${pics}</div>` : ""}
+        ${revs ? `<ul class="ap-revs">${revs}</ul>` : `<p class="ap-none">No reviews yet. Reviews appear here after this professional finishes jobs on BAID X.</p>`}</details>`;
+    };
     const card = (a) => {
       const hired = a.status === "accepted";
       return `<div class="es-ap"><div class="es-ap-top"><span class="av" ${a.photo ? `style="background-image:url('${esc(a.photo)}')"` : ""}>${a.photo ? "" : esc(initials(a.name))}</span>
         <span class="tx"><b>${esc(a.name)} ${a.verified ? `<span class="pill ok">Verified</span>` : ""}</b><small>${esc([a.trade, a.years && a.years !== "null" ? pretty(a.years) : ""].filter(Boolean).join(" · ") || "Professional")} · applied ${esc(ago(a.applied_at))}</small></span></div>
+        ${profile(a)}
         <div class="es-ap-meta"><div><small>Asking</small><b>${a.proposed_rate ? money(a.proposed_rate) + "/day" : job.daily_rate_ghs ? money(job.daily_rate_ghs) + "/day" : "Not set"}</b></div><div><small>Trust score</small><b>${Number(a.trust || 0).toFixed(1)}</b></div></div>
         <div class="es-ap-act">${hired ? `<button class="btn-dark sm" data-es="open" data-id="${esc(a.engagement_id || "")}">View engagement</button>` : job.status === "open" && ["submitted", "shortlisted"].includes(a.status) ? `<button class="btn-dark sm" data-es="message" data-id="${esc(a.worker_id)}" data-name="${esc(a.name)}">Message</button><button class="btn-light sm" data-es="hire" data-app="${esc(a.application_id)}" data-name="${esc(a.name)}" data-rate="${esc(a.proposed_rate || job.daily_rate_ghs || "")}" data-job="${esc(job.title)}">Hire</button>` : `<span class="pill">${esc(pretty(a.status))}</span>`}</div></div>`;
     };

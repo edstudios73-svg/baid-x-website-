@@ -25,3 +25,20 @@
 .ms-wrap { display: grid; gap: 10px; } .ms-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; } .ms-tiles div { background: #101010; border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; } .ms-tiles small { display: block; color: var(--muted); font-size: 11px; } .ms-tiles b { font-size: 14px; color: #e8d9a8; }
 .ms-card { background: #101010; border: 1px solid var(--line); border-radius: 16px; padding: 14px; } .ms-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; } .ms-top b { font-size: 15px; }
 .ms-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--muted); font-size: 12.5px; margin-top: 6px; } .ms-meta span:nth-child(2) { color: #e8d9a8; font-weight: 700; } .ms-d { font-size: 13px; color: #cfcfcf; line-height: 1.5; margin: 10px 0 0; } .ms-n { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+
+/* applicant: profile and reviews, opened from View applicants */
+.ap-more { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.ap-more summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.ap-more summary::-webkit-details-marker { display: none; }
+.ap-more summary small { color: var(--muted); }
+.ap-more .ap-open { margin-left: auto; font-weight: 700; font-size: 12.5px; color: #fff; }
+.ap-more .ap-open::after { content: " +"; color: #e8d9a8; } .ap-more[open] .ap-open::after { content: " \2212"; }
+.ap-stars { display: inline-flex; gap: 2px; } .ap-stars i { width: 11px; height: 11px; clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); background: #3a3a3a; } .ap-stars i.on { background: #e8c46a; }
+.ap-bio { margin: 10px 0 0; color: #cfcfcf; font-size: 13.5px; line-height: 1.5; }
+.ap-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; } .ap-facts span { font-size: 12px; padding: 5px 9px; border-radius: 99px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); } .ap-facts .ok { color: #34d399; border-color: rgba(52,211,153,.35); }
+.ap-pics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; } .ap-pic { aspect-ratio: 1; border-radius: 10px; background: #1a1a1a center/cover; }
+.ap-revs { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 8px; }
+.ap-revs li { border-radius: 12px; padding: 10px 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); }
+.ap-r-top { display: flex; gap: 8px; align-items: center; font-size: 12.5px; } .ap-r-top small { margin-left: auto; color: var(--muted); }
+.ap-revs p { margin: 6px 0 0; font-size: 13px; color: #d0d0d0; line-height: 1.45; }
+.ap-none { color: var(--muted); font-size: 12.5px; margin: 10px 0; }

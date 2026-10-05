@@ -19,7 +19,7 @@ body.g-on .g-art .ring { animation: glRing 40s linear infinite; }
 body.g-on .g-art::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(circle at 50% 30%, #000, transparent 75%); -webkit-mask-image: radial-gradient(circle at 50% 30%, #000, transparent 75%); }
 
 /* ---- every card surface becomes glass ---- */
-body.g-on :is(.dcard, .tile, .row:not(.chat), .job, .inv-card, .ck-card, .ck-item, .acc-row, .acc-card, .acc-group, .warn-card, .req, .proj-pick, .opt, .fs, .card.c3, .lg, .lg-one, .bn, .cat, .herob, .svc2, .es-card, .es-trust, .es-warn, .es-break, .es-quote, .ms-card, .state, .d-empty) {
+body.g-on :is(.dcard, .tile, .row:not(.chat), .job, .inv-card, .ck-card, .ck-item, .acc-row, .acc-card, .acc-group, .warn-card, .req, .proj-pick, .opt, .fs, .card.c3, .lg, .lg-one, .bn, .cat, .herob, .svc2, .es-card, .es-ap, .es-trust, .es-warn, .es-break, .es-quote, .ms-card, .state, .d-empty) {
   background: var(--gl-bg);
   border: 1.5px solid var(--gl-line);
   box-shadow: var(--gl-shadow), var(--gl-edge);
