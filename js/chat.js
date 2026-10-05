@@ -75,7 +75,7 @@
     sharedCache.set(ck, key); return key;
   }
   async function encryptFor(peerId, payload) {
-    await ensureKeys(); const list = await peerKeys(peerId, true), pk = list.find((x) => x.current) || list[0];
+    await ensureKeys(); let list = await peerKeys(peerId); if (!list.length) list = await peerKeys(peerId, true); const pk = list.find((x) => x.current) || list[0]; // opening a chat refreshes the keys, so sends skip the extra round trip
     if (!pk) return null; // the other person has not set up secure chat yet
     const key = await shared(K.ring.current, pk.id, pk.jwk), iv = crypto.getRandomValues(new Uint8Array(12));
     const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, te.encode(JSON.stringify(payload)));
@@ -305,7 +305,7 @@
         m.status = "sending"; refreshOne(m);
         try {
           const payload = { t: type, x: text || "" }; let attach = [];
-          const pk = peer.admin ? null : (await peerKeys(peer.id, true))[0]; // the support team reads replies in the admin console T.noKey = !pk; banner();
+          const pk = peer.admin ? null : ((await peerKeys(peer.id))[0] || (await peerKeys(peer.id, true))[0]); // the support team reads replies in the admin console T.noKey = !pk; banner();
           if (file || blob) {
             let f = blob || file; if (type === "image") f = await shrink(f);
             const { ct, key, iv } = await encryptBytes(await f.arrayBuffer()), path = `${u}/${uid4()}`;

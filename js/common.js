@@ -236,9 +236,10 @@
     // own full row via a server function (so other members' private columns can be locked down later); falls back to a direct read
     let { data: profile } = await sb.rpc("my_profile");
     if (!profile) ({ data: profile } = await sb.from(ROLES[role].table).select("*").eq("id", session.user.id).maybeSingle());
-    // once a member confirms their own email, mirror it on their profile (the internal placeholder is never copied)
+    // a sign-in email the member added themselves (Profile, Add email) is mirrored once confirmed; the address someone signed up
+    // with is never copied in: the profile email stays empty until the member types one in Edit profile
     const col = { worker: "email", company: "contact_email", "project-manager": "email", business: "contact_email", "individual-employer": "email" }[role], ue = session.user.email;
-    if (profile && col && ue && !/\.invalid$/i.test(ue) && profile[col] !== ue) { profile[col] = ue; sb.from(ROLES[role].table).update({ [col]: ue }).eq("id", session.user.id).then(() => {}, () => {}); }
+    if (profile && col && ue && session.user.user_metadata?.email_added && !/\.invalid$/i.test(ue) && profile[col] !== ue) { profile[col] = ue; sb.from(ROLES[role].table).update({ [col]: ue }).eq("id", session.user.id).then(() => {}, () => {}); }
     accounts.remember(session, role, profile);
     return { session, role, profile: profile || {} };
   }

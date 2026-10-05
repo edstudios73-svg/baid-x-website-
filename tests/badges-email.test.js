@@ -22,8 +22,10 @@ test("billing: services have real icons, badge colours, and plans open a benefit
 test("email: the internal placeholder is never shown, stored or counted as a real email", () => {
   const c = read("js/common.js"), a = read("js/auth.js"), f = read("js/features.js");
   assert.match(c, /real = \(v\) => [^\n]*\\\.invalid/);
-  assert.match(a, /\\\.invalid\$\/i\.test\(user\.email/);
+  assert.match(a, /const email = null; \/\/ no email is assigned at sign-up/, "sign-up never writes an email onto a profile");
+  assert.match(c, /user_metadata\?\.email_added/, "only an email the member added is mirrored");
   assert.doesNotMatch(f, /val: c\.me\.session\.user\.email/);
-  assert.match(f, /step-email/); assert.match(f, /updateUser\(\{ email \}/);
+  assert.match(f, /step-email/); assert.match(f, /updateUser\(\{ email, data: \{ email_added: true \} \}/);
+  assert.match(f, /worker: \[\["full_name", "Full name", "text"\], \["email", "Email", "email"\]/, "workers type their email in Edit profile");
   assert.match(c, /worker: \[[^\]]*"Email"|\["Email", "Add your own email/);
 });
