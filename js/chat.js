@@ -173,7 +173,9 @@
     listBox.innerHTML = alert + bk + (S.convs.length ? `<div class="list">${S.convs.map(rowHtml).join("")}</div>` : `<div class="empty">${icon("chat", 56)}<h2>No conversations yet</h2><p>Open someone's profile in Discover and tap Message to start a chat.</p><button class="btn-light" data-tab="${window.APP.state.me.role === "worker" ? "jobs" : "discover"}">${window.APP.state.me.role === "worker" ? "Browse jobs" : "Find people"}</button></div>`);
   }
   async function list(box) {
-    listBox = box; box.innerHTML = '<div class="skel" style="height:72px;margin-top:14px"></div>'.repeat(3);
+    listBox = box;
+    if (S.convs && S.convs.length) renderList(); // instant on return; refreshed below
+    else box.innerHTML = '<div class="skel" style="height:72px;margin-top:14px"></div>'.repeat(3);
     try { await loadConvs(); startRealtime(); renderList(); syncNav(); loadPresence(); S.convs.slice(0, 12).forEach((c) => { /* warm previews for encrypted chats */ }); } catch (e) { console.error(e); box.innerHTML = '<div class="state"><b>Couldn\'t load chats</b>Check your connection and try again.</div>'; }
   }
 

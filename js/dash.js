@@ -214,13 +214,18 @@
   /* ---------- Render + events ---------- */
   const VIEWS = { jobs: jobsView, work: workView, wallet: walletView, growth: growthView, catalog: catalogView, inquiries: inquiriesView, hires: hiresView, payments: () => resView("payments"), equipment: () => resView("equipment"), materials: () => resView("materials") };
   let token = 0;
+  // Lists and dashboards keep their last result so switching tabs is instant; forms and
+  // live screens (chat thread, workspace, steps) always render fresh.
+  const CACHEABLE = new Set(["home", "jobs", "work", "projects", "catalog", "inquiries", "hires", "wallet", "growth", "notifications", "orders", "invites", "approvals", "payments", "equipment", "materials", "orgs", "billing"]);
+  const shown = new Map();
   async function render(name, arg, c) {
-    const my = ++token, el = body();
-    el.innerHTML = '<div class="skel" style="height:90px;margin-top:16px"></div><div class="skel" style="height:140px;margin-top:12px"></div><div class="skel" style="height:140px;margin-top:12px"></div>';
-    let html;
+    const my = ++token, el = body(), key = `${c.uid}:${name}/${arg || ""}`;
+    const last = CACHEABLE.has(name) ? shown.get(key) : null;
+    el.innerHTML = last || '<div class="skel" style="height:90px;margin-top:16px"></div><div class="skel" style="height:140px;margin-top:12px"></div><div class="skel" style="height:140px;margin-top:12px"></div>';
+    let html, ok = true;
     try { html = name === "home" ? (await HOME[c.role](c)) + (await inbox(c)) : await VIEWS[name](c, arg); }
-    catch (e) { console.error(e); html = '<div class="state"><b>Something went wrong</b>Please refresh and try again.</div>'; }
-    if (my === token) el.innerHTML = html;
+    catch (e) { console.error(e); ok = false; html = last || '<div class="state"><b>Something went wrong</b>Please refresh and try again.</div>'; }
+    if (my === token) { el.innerHTML = html; if (ok && CACHEABLE.has(name)) shown.set(key, html); }
   }
 
   document.addEventListener("click", async (e) => {

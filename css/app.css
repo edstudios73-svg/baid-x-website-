@@ -508,3 +508,6 @@ body.sx-open { overflow: hidden; }
 /* chats with BAID X Admin: official tag, messages only */
 .offi { display: inline-block; vertical-align: 2px; margin-left: 4px; font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #14110a; background: linear-gradient(135deg, #f1d58a, #c99a2e); border-radius: 99px; padding: 2px 7px; }
 #comp.adm label.ib, #comp.adm .mic { display: none !important; }
+
+/* job posts: actions on their own line so the title keeps its width */
+.row.jobrow { flex-wrap: wrap; }
