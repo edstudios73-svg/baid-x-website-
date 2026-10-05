@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="/app/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="The BAID X app on the web: the same account, members and checklist as the mobile app.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#050505">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="BAID X">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <title>BAID X App</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: #050505; color: #f6f6f7; color-scheme: dark; }
+    #boot { position: fixed; inset: 0; display: grid; place-items: center; font: 600 12px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .3em; color: #8c8c8c; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div id="boot">Loading BAID X…</div>
+  <script>window.addEventListener('flutter-first-frame', function () { var b = document.getElementById('boot'); if (b) b.remove(); });</script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
