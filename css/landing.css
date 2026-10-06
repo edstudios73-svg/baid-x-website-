@@ -215,8 +215,7 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-stack { height: auto; } .lp-stack .stage { position: static; height: auto; padding: 64px 0; } }
 
-/* ---------- one section per screen: each part of the page fills the screen on its own,
-   content centred, so the next one only appears once you scroll ---------- */
-.lp > section:not(.lp-stack) { min-height: calc(100vh - 68px); min-height: calc(100svh - 68px); display: flex; flex-direction: column; justify-content: center; }
-.lp > section:not(.lp-stack) > .wrap { width: 100%; }
-.lp-final { padding-block: 40px !important; }
+/* ---------- the first two sections each fill the screen (the hero, then the trust stack);
+   everything after them flows normally ---------- */
+.lp-hero { min-height: calc(100vh - 68px); min-height: calc(100svh - 68px); display: flex; flex-direction: column; justify-content: center; }
+.lp-hero > .wrap { width: 100%; }
