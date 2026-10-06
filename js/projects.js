@@ -125,6 +125,7 @@
     let html = stats([[ov.team_active, "Workers"], [`${ov.tasks_done}/${ov.tasks_total}`, "Tasks done"], [ov.tasks_overdue, "Overdue"]])
       + card("Progress", `${pct}%`, `${bar(pct)}<div class="cap2">Updates automatically as tasks are completed.</div>`);
     if (role === "company" && ov.awaiting_approval > 0) html += `<button class="inv-card warn" data-go="approvals"><span class="ic">${icon("task", 20)}</span><span class="tx"><b>${ov.awaiting_approval} item${ov.awaiting_approval > 1 ? "s" : ""} waiting for you</b><small>Workers, requests, payments or reports</small></span><span class="pill warn">${ov.awaiting_approval}</span></button>`;
+    if ((role === "company" || role === "pm") && window.JOBCARD) { const jc = await window.JOBCARD.projectRows(c, pid).catch(() => ""); if (jc) html += sec("Job cards") + jc; }
 
     const skills = (ov.required_skills || []).map((s) => `<span class="chip-s">${esc(s)}</span>`).join("");
     html += card("About this project", "", `${ov.description ? `<p class="body-t">${esc(ov.description)}</p>` : ""}

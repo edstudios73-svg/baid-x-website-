@@ -9,7 +9,6 @@
   const rpc = async (c, fn, args) => { const { data, error } = await c.sb.rpc(fn, args); if (error) throw error; return data; };
   const val = (n) => document.querySelector(`#sheetRoot [name="${n}"]`)?.value ?? "";
   const initials = (n) => String(n || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-  const when = (iso) => new Date(iso).toLocaleString("en-GH", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
   const ST = {
     active: ["In progress", "warn"], submitted: ["Awaiting approval", "warn"], released: ["Paid", "ok"], disputed: ["In dispute", "bad"], refunded: ["Refunded", ""], cancelled: ["Cancelled", ""],
   };
@@ -51,7 +50,7 @@
         <span class="tx"><b>${esc(a.name)} ${a.verified ? `<span class="pill ok">Verified</span>` : ""}</b><small>${esc([a.trade, a.years && a.years !== "null" ? pretty(a.years) : ""].filter(Boolean).join(" · ") || "Professional")} · applied ${esc(ago(a.applied_at))}</small></span></div>
         ${profile(a)}
         <div class="es-ap-meta"><div><small>Asking</small><b>${a.proposed_rate ? money(a.proposed_rate) + "/day" : job.daily_rate_ghs ? money(job.daily_rate_ghs) + "/day" : "Not set"}</b></div><div><small>Trust score</small><b>${Number(a.trust || 0).toFixed(1)}</b></div></div>
-        <div class="es-ap-act">${hired ? `<button class="btn-dark sm" data-es="open" data-id="${esc(a.engagement_id || "")}">View engagement</button>` : job.status === "open" && ["submitted", "shortlisted"].includes(a.status) ? `<button class="btn-dark sm" data-es="message" data-id="${esc(a.worker_id)}" data-name="${esc(a.name)}">Message</button><button class="btn-light sm" data-es="hire" data-app="${esc(a.application_id)}" data-name="${esc(a.name)}" data-rate="${esc(a.proposed_rate || job.daily_rate_ghs || "")}" data-job="${esc(job.title)}">Hire</button>` : `<span class="pill">${esc(pretty(a.status))}</span>`}</div></div>`;
+        <div class="es-ap-act">${hired ? `<button class="btn-dark sm" data-es="open" data-id="${esc(a.engagement_id || "")}">View job card</button>` : job.status === "open" && ["submitted", "shortlisted"].includes(a.status) ? `<button class="btn-dark sm" data-es="message" data-id="${esc(a.worker_id)}" data-name="${esc(a.name)}">Message</button><button class="btn-light sm" data-es="hire" data-app="${esc(a.application_id)}" data-name="${esc(a.name)}" data-rate="${esc(a.proposed_rate || job.daily_rate_ghs || "")}" data-job="${esc(job.title)}">Hire</button>` : `<span class="pill">${esc(pretty(a.status))}</span>`}</div></div>`;
     };
     return head(job.title, `<button class="btn-dark sm" data-go="hires">Jobs</button>`) + `<p class="es-sub">${esc(pretty(job.status))} · ${esc(job.city_town || "Ghana")} · needs ${job.workers_needed || 1} worker${job.workers_needed > 1 ? "s" : ""}</p>`
       + (apps.length ? apps.map(card).join("") : empty("hire", "No applicants yet", "When professionals apply, they are listed here so you can message and hire them."))
@@ -93,35 +92,7 @@
     }
   }
 
-  /* ---- engagement detail ---- */
-  async function engagementView(c, id) {
-    const { head, empty } = U();
-    const list = await rpc(c, "my_engagements").catch(() => []);
-    const e = list.find((x) => x.id === id);
-    if (!e) return head("Engagement") + empty("work", "Not found", "This engagement doesn't exist or isn't yours.", `<button class="btn-light sm" data-go="${c.role === "worker" ? "work" : "hires"}">Back</button>`);
-    const mine = e.role === "worker", back = mine ? "work/active" : "hires";
-    const net = e.net_ghs != null ? Number(e.net_ghs) : null, fee = e.commission_ghs != null ? Number(e.commission_ghs) : null;
-    const step = (t, st, sub) => `<li class="${st}"><i>${st === "done" ? icon("check", 13) : ""}</i><div><b>${t}</b>${sub ? `<small>${sub}</small>` : ""}</div></li>`;
-    const done = e.status === "released", dis = e.status === "disputed", sub = ["submitted", "released"].includes(e.status) || (dis && e.submitted_at);
-    const steps = `<ol class="es-steps">${step("Hired · money held in escrow", "done", e.started_at ? when(e.started_at) : "")}${step(mine ? "You submit the work" : "Worker submits the work", sub ? "done" : e.status === "active" ? "now" : "", e.submitted_at ? when(e.submitted_at) : "")}${step(mine ? "Client approves" : "You approve", done ? "done" : e.status === "submitted" ? "now" : "", e.status === "submitted" && e.auto_release_at ? `Releases automatically ${when(e.auto_release_at)}` : done && e.released_at ? when(e.released_at) : "")}${step(mine ? "Money lands in your wallet" : "Worker is paid", done ? "done" : "", "")}</ol>`;
-    let acts = "";
-    if (mine && e.status === "active") acts = `<button class="es-btn" data-es="submit" data-id="${esc(e.id)}">${icon("check", 18)} Mark work as done</button><div class="es-2"><button class="es-btn ghost" data-es="dispute" data-id="${esc(e.id)}">Report a problem</button><button class="es-btn ghost" data-es="cancel" data-id="${esc(e.id)}">Decline job</button></div>`;
-    else if (!mine && e.status === "active") acts = `<button class="es-btn" data-es="approve" data-id="${esc(e.id)}">${icon("check", 18)} Approve and release payment</button><div class="es-2"><button class="es-btn ghost" data-es="dispute" data-id="${esc(e.id)}">Report a problem</button><button class="es-btn ghost" data-es="cancel" data-id="${esc(e.id)}">Cancel and refund</button></div>`;
-    else if (!mine && e.status === "submitted") acts = `<button class="es-btn" data-es="approve" data-id="${esc(e.id)}">${icon("check", 18)} Approve and release payment</button><button class="es-btn ghost" data-es="dispute" data-id="${esc(e.id)}">Report a problem</button>`;
-    else if (mine && e.status === "submitted") acts = `<button class="es-btn ghost" data-es="dispute" data-id="${esc(e.id)}">Report a problem</button>`;
-    const money2 = done && net != null ? `<div class="es-break"><div class="wl-kv"><span>Job total</span><b>${money(e.amount_ghs)}</b></div>${mine ? `<div class="wl-kv"><span>BAID X fee</span><b>− ${money(fee)}</b></div><div class="wl-kv"><span>You received</span><b class="g">${money(net)}</b></div>` : `<div class="wl-kv"><span>Paid to worker</span><b>${money(e.amount_ghs)}</b></div>`}</div>` : "";
-    return head(e.title, `<button class="btn-dark sm" data-go="${back}">Back</button>`)
-      + `<div class="es-card"><div class="es-top"><small>${mine ? "Client" : "Worker"}</small>${pill(e.status)}</div><div class="es-who">${esc(e.counterpart || "—")}</div>
-        <div class="es-amt"><small>${mine ? "Secured for you" : "Held in escrow"}</small><b>${money(e.amount_ghs)}</b><span>${money(e.rate_ghs)} × ${e.days} day${e.days > 1 ? "s" : ""}</span></div></div>
-        ${steps}${money2}
-        ${e.submit_note ? `<div class="es-quote"><small>Note from worker</small><p>${esc(e.submit_note)}</p></div>` : ""}
-        ${dis ? `<div class="es-warn">${icon("shield", 18)}<div><b>This is in dispute.</b> The money stays safe in escrow while BAID X reviews it. ${esc(e.dispute_reason || "")}</div></div>` : ""}
-        ${e.resolution_note ? `<div class="es-quote"><small>BAID X decision</small><p>${esc(e.resolution_note)}</p></div>` : ""}
-        ${e.status === "refunded" ? `<div class="es-quote"><small>Refunded</small><p>${mine ? "This job was cancelled or refunded to the client." : "The money was returned to your wallet."}</p></div>` : ""}
-        ${acts ? `<div class="es-acts">${acts}</div>` : ""}
-        <div class="es-trust">${icon("shield", 18)}<div>${mine ? "The client's payment is already held by BAID X. It is released to you when they approve, or automatically 3 days after you submit." : "Your money is held by BAID X. It only goes to the worker when you approve, or 3 days after they submit if you do nothing."}</div></div>
-        <p class="es-fine">Ref ${esc(e.public_id)}</p>`;
-  }
+  // The engagement detail is the Digital Job Card (js/jobcard.js).
 
   /* ---- lists used inside hires / work views ---- */
   async function engagementRows(c, role, filter) {
@@ -172,5 +143,4 @@
 
   window.ESCROW = { hiresSection, workSection };
   window.DASH.register("applicants", applicantsView);
-  window.DASH.register("engagement", engagementView);
 })();

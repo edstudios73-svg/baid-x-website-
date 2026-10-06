@@ -343,7 +343,7 @@
   const ROLE_ROUTES = {
     worker: ["jobs", "work", "engagement", "wallet", "growth", "projects", "ws", "invites", "portfolio", "certs"],
     company: ["discover", "orders", "order", "applicants", "engagement", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials", "wallet", "team-link", "hires", "post-job"],
-    "project-manager": ["discover", "projects", "ws", "invites", "wallet", "portfolio", "certs", "team-link"],
+    "project-manager": ["discover", "projects", "ws", "engagement", "invites", "wallet", "portfolio", "certs", "team-link"],
     business: ["discover", "catalog", "inquiries", "orders", "order", "wallet", "portfolio"],
     "individual-employer": ["discover", "hires", "post-job", "wallet", "applicants", "engagement", "equipment", "materials", "orders", "order"],
   };
