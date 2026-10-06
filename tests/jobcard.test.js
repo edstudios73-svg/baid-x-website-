@@ -47,3 +47,18 @@ test("job card UI: replaces the engagement page, wired for worker, client and PM
   assert.doesNotMatch(css, /backdrop-filter/);
   new Function(jc); new Function(esc);
 });
+
+test("my build: client-only, read-only table, built from job cards; wired on web", () => {
+  const sql = read("supabase/phase15_my_build.sql"), b = read("js/build.js"), html = read("index.html"), common = read("js/common.js"), dash = read("js/dash.js");
+  assert.match(sql, /alter table public\.client_builds enable row level security/);
+  assert.match(sql, /revoke insert, update, delete on public\.client_builds from anon, authenticated/);
+  assert.match(sql, /my build is for client accounts/);
+  assert.match(sql, /where g\.payer_id = auth\.uid\(\) and g\.payer_role = 'individual_employer'/, "only the caller's own hires");
+  assert.match(sql, /worker_signed and not client_signed/, "waiting = cards the worker signed and the client has not");
+  assert.ok(html.indexOf("js/build.js") > html.indexOf("js/jobcard.js"));
+  assert.match(b, /window\.DASH\.register\("build", view\)/);
+  assert.match(common, /"individual-employer": \[[^\]]*"build"/); assert.match(common, /\["build", "My build", "site"\]/);
+  assert.match(dash, /window\.BUILD\.homeCard\(c\)/);
+  for (const t of ["Held in escrow", "Waiting for you", "Finish date", "Jobs in this build"]) assert.match(b, new RegExp(t));
+  new Function(b);
+});

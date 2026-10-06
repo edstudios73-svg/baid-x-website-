@@ -324,8 +324,8 @@
     },
     "individual-employer": {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile" },
+      side: [["home", "Home", "home"], ["build", "My build", "site"], ["discover", "Discover", "disc"], ["hires", "Hires", "hire"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile", build: "home" },
     },
   };
   for (const k of Object.keys(NAV)) {
@@ -345,7 +345,7 @@
     company: ["discover", "orders", "order", "applicants", "engagement", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials", "wallet", "team-link", "hires", "post-job"],
     "project-manager": ["discover", "projects", "ws", "engagement", "invites", "wallet", "portfolio", "certs", "team-link"],
     business: ["discover", "catalog", "inquiries", "orders", "order", "wallet", "portfolio"],
-    "individual-employer": ["discover", "hires", "post-job", "wallet", "applicants", "engagement", "equipment", "materials", "orders", "order"],
+    "individual-employer": ["discover", "hires", "post-job", "wallet", "applicants", "engagement", "equipment", "materials", "orders", "order", "build"],
   };
 
   // Verification badge colours: blue = reviewed by BAID X (free); green / purple / gold = paid verification tiers.

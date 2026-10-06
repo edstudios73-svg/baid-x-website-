@@ -101,7 +101,7 @@
       const hired = ids.length ? await count(c, "job_applications", (x) => x.in("job_id", ids).eq("status", "accepted")) : 0;
       const trades = ["Electrician", "Plumber", "Painter", "General Handyman"];
       return hero(esc(first(c.profile.full_name)), "Need something fixed or built?", [], c.profile.verification_status === "verified")
-        + banner(c) + stats([[jobs.length, "Jobs posted", "work"], [jobs.filter((j) => j.status === "open").length, "Open", "mail"], [hired, "Hired", "hire"]])
+        + banner(c) + (window.BUILD ? await window.BUILD.homeCard(c) : "") + stats([[jobs.length, "Jobs posted", "work"], [jobs.filter((j) => j.status === "open").length, "Open", "mail"], [hired, "Hired", "hire"]])
         + sec("Find a trade") + tiles(trades.map((t) => ["work", t, "Browse pros", `trade:${t}`]));
     },
   };

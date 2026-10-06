@@ -63,7 +63,7 @@ button.jc-main, button.jc-mat { cursor: pointer; } button.jc-main:active, button
 .jc-st-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } .jc-st-h b { font-size: 14px; } .jc-st-h small { color: var(--muted); font-size: 12px; flex: 1; }
 .jc-up { display: inline-flex; align-items: center; gap: 4px; padding: 6px 11px; border-radius: 99px; border: 1.5px solid rgba(255,255,255,.25); font-size: 12.5px; font-weight: 700; cursor: pointer; }
 .jc-pics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.jc-pic { position: relative; aspect-ratio: 1; border-radius: 12px; background: #1a1a1a center/cover; border: 1px solid rgba(255,255,255,.14); overflow: hidden; }
+.jc-pic { position: relative; padding: 0; cursor: pointer; width: 100%; aspect-ratio: 1; border-radius: 12px; background: #1a1a1a center/cover; border: 1px solid rgba(255,255,255,.14); overflow: hidden; }
 .jc-pic em { position: absolute; left: 5px; bottom: 5px; font-style: normal; font-size: 10px; color: #eee; background: rgba(0,0,0,.6); padding: 2px 5px; border-radius: 6px; }
 .jc-nopic { font-size: 12.5px; color: #8a8a8a; padding: 14px; border-radius: 12px; border: 1px dashed rgba(255,255,255,.14); text-align: center; }
 .jc-pay { display: flex; gap: 2px; height: 8px; border-radius: 9px; overflow: hidden; margin-top: 10px; background: rgba(255,255,255,.12); } .jc-pay i:first-child { background: #34d399; } .jc-pay i:last-child { background: rgba(255,255,255,.32); }
@@ -71,3 +71,9 @@ button.jc-main, button.jc-mat { cursor: pointer; } button.jc-main:active, button
 .jc-sign { min-width: 0; text-align: center; padding: 10px 6px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.14); display: flex; flex-direction: column; align-items: center; gap: 2px; } .jc-sign.on { border-color: rgba(52,211,153,.5); }
 .jc-sign .ic { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: #fff; color: #000; margin-bottom: 4px; } .jc-sign .ic.ok { background: #34d399; color: #04210f; }
 .jc-sign b { font-size: 13px; } .jc-sign small { font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+
+/* My build (js/build.js): the homeowner's build, made from their job cards */
+.bd-name { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 4px; } .bd-name h2, .bd-set { font-size: 20px; font-weight: 800; letter-spacing: -.01em; margin: 0; text-wrap: balance; } .bd-name small { color: var(--muted); font-size: 13px; }
+.bd-set { margin-bottom: 6px; }
+.bd-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 14px; }
+.bd-stats div { min-width: 0; padding: 10px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.14); } .bd-stats b { display: block; font-size: 15px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; } .bd-stats small { color: var(--muted); font-size: 11.5px; }

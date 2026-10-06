@@ -94,7 +94,7 @@
     if (!allowed(name)) name = "home";
     state.route = { name, arg };
     document.body.classList.toggle("g-on", !!R()); // every signed-in screen sits on the glass backdrop, like Chats
-    const T = { home: "Ghana's work network", discover: "Discover verified professionals", jobs: "Job marketplace", work: "Work", projects: "Projects", ws: "Project workspace", chats: "Chats", chat: "Chat", profile: "Profile", notifications: "Notifications", wallet: "Wallet", invites: "Invitations", approvals: "Approvals", orgs: "Organizations", billing: "Plans & billing", catalog: "Catalog", inquiries: "Inquiries", hires: "Hires", applicants: "Applicants", step: "Complete your profile", orders: "Orders", order: "Order", engagement: "Job card" };
+    const T = { home: "Ghana's work network", discover: "Discover verified professionals", jobs: "Job marketplace", work: "Work", projects: "Projects", ws: "Project workspace", chats: "Chats", chat: "Chat", profile: "Profile", notifications: "Notifications", wallet: "Wallet", invites: "Invitations", approvals: "Approvals", orgs: "Organizations", billing: "Plans & billing", catalog: "Catalog", inquiries: "Inquiries", hires: "Hires", applicants: "Applicants", step: "Complete your profile", orders: "Orders", order: "Order", engagement: "Job card", build: "My build" };
     document.title = name === "home" ? (R() ? "BAID X · Ghana's work network" : "BAID X · Hire verified professionals in Ghana, pay through escrow") : `${T[name] || "BAID X"} · BAID X`;
     const member = !!R();
     let screen;
