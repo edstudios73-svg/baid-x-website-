@@ -8904,7 +8904,7 @@ s=A.bU5(d)
 switch(c.a){case 0:return m
 case 1:r=B.c.b6(d,k)?B.c.bF(d,6):l
 if(r!=null){$.ai2=r
-return j}if(d==="/splash")return j
+return j}if(d==="/splash")return i
 if(A.bnJ(d))return i
 return s?l:j
 case 2:q=B.c.b6(d,k)?B.c.bF(d,6):l
