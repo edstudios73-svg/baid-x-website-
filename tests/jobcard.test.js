@@ -117,3 +117,13 @@ test("member cards: glass with the cover photo, three fact tiles and the join da
   assert.ok(html.indexOf('class="dir-head"') > html.indexOf('</header>', html.indexOf('id="screen-directory"')), "the heading scrolls away, outside the sticky bar");
   new Function(app);
 });
+
+test("members' console: live total, five counted parts with a sliding highlight, verified share and search count", () => {
+  const app = read("js/app.js"), html = read("index.html"), css = read("css/glass-dash.css");
+  for (const id of ["dhTotal", "chips", "dhPct", "dhBar", "q", "dhFound"]) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(app, /SEG_ORDER = \["all", "professionals", "companies", "managers", "businesses"\]/);
+  assert.match(app, /setProperty\("--at", at\)/);
+  assert.match(app, /state\.loading = false; renderChips\(\); renderFeed\(\);/, "counts fill in once the directory loads");
+  assert.match(css, /\.seg \.seg-hl \{[^}]*translateX\(calc\(var\(--at\) \* 100%\)\)/);
+  new Function(app);
+});

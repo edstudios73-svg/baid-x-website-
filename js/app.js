@@ -52,7 +52,6 @@
       }),
     },
   };
-  const CHIPS = [["all", "Everyone"], ...Object.entries(SOURCES).map(([k, v]) => [k, v.label])];
   // What each role most likely wants to find first when they open Discover.
   const DEFAULT_CHIP = { company: "professionals", "individual-employer": "professionals", "project-manager": "companies", business: "companies" };
 
@@ -155,8 +154,22 @@
     $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}` || (name === "org" && b.dataset.tab === "orgs"))); };
 
   /* ---------- Directory ---------- */
+  // The members' console (same as the app's Home): five parts, each with its group's real
+  // count, under a white highlight that slides to the chosen one; the member total and
+  // the share verified by BAID X fill in once the directory has loaded.
+  const SEG_LABEL = { all: "All", professionals: "Pros", companies: "Companies", managers: "PMs", businesses: "Suppliers" };
+  const SEG_ORDER = ["all", "professionals", "companies", "managers", "businesses"];
   function renderChips() {
-    $("#chips").innerHTML = CHIPS.map(([k, l]) => `<button class="chip ${state.filter === k ? "on" : ""}" data-chip="${k}">${esc(l)}</button>`).join("");
+    const items = state.items || [], loaded = !state.loading && !state.failed && items.length > 0;
+    const n = (k) => (k === "all" ? items.length : items.filter((it) => it.group === k).length);
+    const at = Math.max(0, SEG_ORDER.indexOf(state.filter));
+    $("#chips").style.setProperty("--at", at);
+    $("#chips").innerHTML = '<i class="seg-hl"></i>' + SEG_ORDER.map((k) => `<button class="${state.filter === k ? "on" : ""}" role="tab" aria-selected="${state.filter === k}" data-chip="${k}"><b>${loaded ? n(k) : "&ndash;"}</b><span>${esc(SEG_LABEL[k])}</span></button>`).join("");
+    const total = $("#dhTotal"), pct = $("#dhPct"), bar = $("#dhBar");
+    if (total) total.textContent = loaded ? `${items.length} member${items.length === 1 ? "" : "s"}` : "";
+    const share = loaded ? Math.round((items.filter((it) => it.badge).length / items.length) * 100) : null;
+    if (pct) pct.textContent = share == null ? "\u2013" : `${share}%`;
+    if (bar) bar.style.width = `${share || 0}%`;
   }
   const PIN = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 21s7-6.200 7-11.500A7 7 0 0 0 5 9.500C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>';
   const BAG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7"/></svg>';
@@ -198,6 +211,7 @@
     if (state.loading) { feed.innerHTML = '<div class="skel"></div>'.repeat(3); return; }
     if (state.failed) { feed.innerHTML = '<div class="state" style="grid-column:1/-1"><b>Couldn\'t load the directory</b>Check your connection and try again.</div>'; return; }
     const list = visible();
+    const found = $("#dhFound"); if (found) { found.hidden = !state.q.trim(); found.textContent = `${list.length} found`; }
     feed.innerHTML = list.length ? list.map(cardHTML).join("") : '<div class="state" style="grid-column:1/-1"><b>No results</b>Try another search, category or location.</div>';
   }
   async function loadDirectory() {
@@ -210,7 +224,7 @@
       }));
       state.items = results.flat().sort((a, b) => a.joined - b.joined); // the earliest members first
     } catch (e) { console.error("directory load failed", e); state.failed = true; }
-    state.loading = false; renderFeed();
+    state.loading = false; renderChips(); renderFeed();
   }
 
   /* ---------- Member shell: account screen, chats ---------- */
