@@ -159,3 +159,11 @@ test("BAID Bot: floating on the landing for visitors, answers from the baid-bot 
   assert.match(fn, /if \(!key\) return json\(\{ reply: topicAnswer/, "works without a key, from BAID X's facts");
   new Function(bot);
 });
+
+test("app on the web: an animated splash in the page while the app loads, never the old loading text", () => {
+  const html = read("app/index.html");
+  assert.doesNotMatch(html, /Loading BAID X/);
+  for (const c of ["r1", "orbit", "logo", "word", "tag", "BAIDEN CREATIVES", "prog"]) assert.ok(html.includes(c), c);
+  assert.match(html, /flutter-first-frame/); assert.match(html, /onSplash\(\)/, "stays until the app leaves its splash route");
+  assert.match(html, /prefers-reduced-motion: reduce/);
+});
