@@ -9,7 +9,7 @@ P1="(($T-2)/0.9)"; P2="(($T-3)/0.5)"
 S="if(lt($T,2),1+0.02*$T,if(lt($T,2.9),1.04+0.16*$(sw $P1),if(lt($T,3),1.2,if(lt($T,3.5),1.2-0.18*$(sw $P2),if(lt($T,5),1.02+0.04*($T-3.5)/1.5,if(lt($T,17),1.06,if(lt($T,18),1.06+0.04*($T-17),1.1)))))))"
 TY="if(lt($T,2),0,if(lt($T,2.9),-460*$(sw $P1),if(lt($T,3),-460,if(lt($T,3.5),-460+460*$(sw $P2),0))))"
 # person prep: feather the plate's own edges (the drawn desk continues past them), decontaminate edge colour, scale into place
-PREP="fps=30,format=rgba,geq=r='r(X,Y)*if(lt(alpha(X,Y),247),pow(alpha(X,Y)/255,1.6),1)':g='g(X,Y)*if(lt(alpha(X,Y),247),pow(alpha(X,Y)/255,1.6),1)':b='b(X,Y)*if(lt(alpha(X,Y),247),pow(alpha(X,Y)/255,1.6),1)':a='alpha(X,Y)*clip(X/46,0,1)*clip((1080-X)/46,0,1)*clip((1920-Y)/140,0,1)',scale=1858:3302:flags=lanczos,unsharp=5:5:0.45:5:5:0"
+PREP="fps=30,format=rgba,geq=r='r(X,Y)*if(lt(alpha(X,Y),247),pow(alpha(X,Y)/255,0.8),1)':g='g(X,Y)*if(lt(alpha(X,Y),247),pow(alpha(X,Y)/255,0.8),1)':b='b(X,Y)*if(lt(alpha(X,Y),247),pow(alpha(X,Y)/255,0.8),1)':a='alpha(X,Y)*clip(X/46,0,1)*clip((1080-X)/46,0,1)*clip((1920-Y)/140,0,1)',scale=1858:3302:flags=lanczos,unsharp=5:5:0.45:5:5:0"
 ffmpeg -v error -stats -y \
   -loop 1 -framerate 30 -t 20 -i out/bg/t1_00.png \
   -i out/plate/a-color.mp4 -i out/plate/a-mask.mp4 \
