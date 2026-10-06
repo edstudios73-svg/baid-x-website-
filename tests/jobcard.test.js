@@ -166,5 +166,7 @@ test("app on the web: an animated splash in the page while the app loads, never 
   for (const c of ["r1", "orbit", "logo", "word", "tag", "BAIDEN CREATIVES", "prog"]) assert.ok(html.includes(c), c);
   assert.match(html, /flutter-first-frame/); assert.match(html, /onSplash\(\)/, "stays until the app leaves its splash route");
   assert.match(html, /prefers-reduced-motion: reduce/);
-  assert.match(html, /minMs = calm \? 600 : 5000/, "5 seconds"); assert.match(html, /animation: bFill 5s linear forwards/, "the bar fills across the 5 seconds");
+  assert.match(html, /minMs = calm \? 600 : 4000/, "4 seconds"); assert.match(html, /animation: bFill 4s linear forwards/, "the bar fills across the 4 seconds");
+  const v = JSON.parse(read("vercel.json"));
+  assert.ok(v.headers.some((h) => h.source.startsWith("/app/(assets|canvaskit") && /stale-while-revalidate/.test(h.headers[0].value)), "the app's files are kept by the browser so later visits open fast");
 });

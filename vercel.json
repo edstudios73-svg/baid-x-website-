@@ -99,6 +99,24 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/app/(main.dart.js|flutter_bootstrap.js|flutter.js)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/app/(assets|canvaskit|icons)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
     }
   ],
   "crons": [
