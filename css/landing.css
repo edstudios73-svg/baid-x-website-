@@ -153,7 +153,7 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
 .lp-hero .proof b { color: #fff; font-size: 13.5px; font-weight: 800; }
 
 /* ---------- trust stack: four glass layers fold into one card as you scroll ---------- */
-.lp-stack { height: 320vh; height: 320svh; padding: 0 !important; --p: 0; }
+.lp-stack { height: 230vh; height: 230svh; padding: 0 !important; --p: 0; }
 .lp-stack .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; display: flex; align-items: center; }
 .lp-stack .wrap { display: grid; gap: 8px; width: 100%; }
 .lp-stack .copy { order: 2; }
@@ -167,9 +167,9 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
 .lp-stack .checks li.on i::after { content: ""; width: 7px; height: 4px; border-left: 2px solid #000; border-bottom: 2px solid #000; transform: rotate(-45deg) translate(1px, -1px); }
 .lp-stack .checks b { display: block; font-size: 15px; } .lp-stack .checks small { color: #9a9a9a; font-size: 13px; }
 .lp-stack .scene { order: 1; height: 42svh; min-height: 270px; display: grid; place-items: center; perspective: 1100px; }
-.lp-stack .rig { position: relative; width: min(310px, 80vw); aspect-ratio: 1.55; transform-style: preserve-3d;
+.lp-stack .rig { position: relative; width: min(310px, 80vw); aspect-ratio: 1.55; transform-style: preserve-3d; will-change: transform;
   transform: rotateX(calc((1 - var(--p)) * 58deg)) rotateZ(calc((1 - var(--p)) * -34deg)) scale(calc(.84 + var(--p) * .16)); }
-.lp-stack .layer { position: absolute; inset: 0; border-radius: 22px; transform: translateZ(calc(var(--i) * (1 - var(--p)) * 36px));
+.lp-stack .layer { position: absolute; inset: 0; border-radius: 22px; transform: translate3d(calc(var(--i) * (1 - var(--p)) * 9px), 0, calc(var(--i) * (1 - var(--p)) * 36px)); will-change: transform;
   display: flex; align-items: flex-end; gap: 10px; padding: 14px 16px;
   background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.2); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 30px 60px -30px rgba(0,0,0,calc(.9 * (1 - var(--p)))); }
 /* once the card has formed, the layers under it fade so they don't show through the glass */
@@ -197,7 +197,7 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
   .lp-stack .wrap { grid-template-columns: 1fr 1.1fr; align-items: center; gap: 40px; }
   .lp-stack .copy { order: 1; } .lp-stack .scene { order: 2; height: 70svh; }
   .lp-stack .rig { width: 400px; transform: rotateX(calc((1 - var(--p)) * 58deg)) rotateZ(calc((1 - var(--p)) * -34deg)) scale(calc(.74 + var(--p) * .26)); }
-  .lp-stack .layer { transform: translateZ(calc(var(--i) * (1 - var(--p)) * 52px)); }
+  .lp-stack .layer { transform: translate3d(calc(var(--i) * (1 - var(--p)) * 14px), 0, calc(var(--i) * (1 - var(--p)) * 52px)); }
   .lp-stack .top .amt b { font-size: 34px; }
   .lp-stack .checks { gap: 16px; } .lp-stack .checks b { font-size: 16.5px; }
 }
@@ -256,3 +256,27 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
 .lp-rate .mid { position: absolute; top: 0; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #fff; border: 2px solid #000; box-shadow: 0 0 10px rgba(255,255,255,.5); }
 .lp-rate .ends { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11.5px; color: #8a8a8a; font-variant-numeric: tabular-nums; }
 .lp-fine { margin: 14px 0 0; font-size: 12px; line-height: 1.45; color: #7a7a7a; }
+
+/* ---------- motion: the hero rises in on load; the stack glides, fans, and the card
+   catches a sweep of light as it locks together. All of it stops under reduced motion. ---------- */
+@keyframes lpUp { from { opacity: 0; transform: translateY(18px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes lpFade { from { opacity: 0; } to { opacity: 1; } }
+.lp-bg { animation: lpFade .9s ease-out both; }
+.lp-hero .wrap > div > * { animation: lpUp .7s cubic-bezier(.2,.8,.2,1) both; }
+.lp-hero .eyebrow { animation-delay: .05s !important; }
+.lp-hero h1 { animation-delay: .12s !important; }
+.lp-hero .sub { animation-delay: .22s !important; }
+.lp-hero .cta { animation-delay: .3s !important; }
+.lp-hero .proof { animation-delay: .38s !important; }
+.lp-stack .layer.top { overflow: hidden; box-shadow: 0 30px 70px -30px rgba(0,0,0,.9), 0 0 calc(var(--p) * 40px) calc(var(--p) * -6px) rgba(255,255,255,.18), inset 0 1px 0 rgba(255,255,255,.2); }
+.lp-stack .layer.top::after { content: ""; position: absolute; inset: -20% auto -20% 0; width: 45%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+  transform: translateX(calc((var(--p) * 1.6 - .4) * 260%)) skewX(-18deg); opacity: clamp(0, calc((var(--p) - .5) * 3), .9); }
+@keyframes lpTick { 0% { transform: scale(.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.lp-stack .checks li.on i { animation: lpTick .38s cubic-bezier(.2,.9,.3,1.3) both; }
+.lp-stack .checks li { transform: translateX(calc(var(--off, 0) * 1px)); transition: opacity .35s, transform .35s cubic-bezier(.2,.8,.2,1); }
+.lp-stack .checks li:not(.on) { --off: 8; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-bg, .lp-hero .wrap > div > *, .lp-stack .checks li.on i { animation: none !important; }
+  .lp-stack .checks li { transition: none; }
+}

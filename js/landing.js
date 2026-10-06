@@ -25,17 +25,28 @@
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   // how far the visitor has scrolled through an element taller than the screen, 0 to 1
   const through = (el) => { const r = el.getBoundingClientRect(), span = r.height - innerHeight; return span > 0 ? clamp(-r.top / span) : 0; };
+  // The card glides toward where the scroll says it should be (a short ease each frame)
+  // instead of jumping with every wheel step, so the fold feels smooth at any speed.
+  let shown = 0, goal = 0, gliding = false;
+  const glide = () => {
+    shown += (goal - shown) * 0.2;
+    if (Math.abs(goal - shown) < 0.001) shown = goal;
+    stack.style.setProperty("--p", shown.toFixed(4));
+    gliding = shown !== goal;
+    if (gliding) requestAnimationFrame(glide);
+  };
   const paint = () => {
     if (!stack) return;
     const sp = calm ? 1 : through(stack);
-    stack.style.setProperty("--p", ease(clamp((sp - 0.1) / 0.75)).toFixed(4));
-    checks.forEach((li, i) => li.classList.toggle("on", sp > 0.12 + i * 0.18));
+    goal = ease(clamp((sp - 0.08) / 0.7));
+    checks.forEach((li, i) => li.classList.toggle("on", sp > 0.1 + i * 0.16));
+    if (calm) { shown = goal; stack.style.setProperty("--p", goal); return; }
+    if (!gliding) { gliding = true; requestAnimationFrame(glide); }
   };
-  let queued = false;
   addEventListener("scroll", () => {
     if (!root.parentElement.classList.contains("active")) return;
     bar.classList.toggle("scrolled", scrollY > 8);
-    if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; paint(); }); }
+    paint();
   }, { passive: true });
   addEventListener("resize", paint);
   paint();

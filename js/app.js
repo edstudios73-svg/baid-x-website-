@@ -58,17 +58,6 @@
   const state = { me: null, route: { name: "home", arg: "" }, filter: "all", q: "", items: [], loading: false, failed: false, f: { type: "all", cat: null, region: null }, draft: null, dirInit: false, unread: 0, notif: 0, projectId: null };
   const R = () => state.me?.role || null;
 
-  /* ---------- Splash ---------- */
-  const ssGet = (k) => { try { return sessionStorage.getItem(k); } catch { return null; } };
-  const ssSet = (k, v) => { try { sessionStorage.setItem(k, v); } catch { /* private mode */ } };
-  function runSplash() {
-    const el = $("#splash");
-    // First visit this session: the full sequence. Any refresh after that: the same sequence, very fast and a little soft.
-    const seen = ssGet("baidx_splash"), calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (seen) el.classList.add("quick");
-    const hold = calm ? 700 : seen ? 800 : 3300, out = seen ? 300 : 750;
-    setTimeout(() => { el.classList.add("leave"); ssSet("baidx_splash", "1"); setTimeout(() => el.classList.add("hide"), out); }, hold);
-  }
 
   /* ---------- Routing ---------- */
   const SUBS = ["checklist", "filters", "picker"];
@@ -357,7 +346,9 @@
   window.APP = { state, go, route, dashCtx, appbar, updateBell, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
 
   /* ---------- Boot ---------- */
-  renderChips(); renderNav(); runSplash();
+  renderChips(); renderNav(); // a website opens straight on the page: no splash
+  // visitors (no saved session) see the landing at once instead of waiting on the account check
+  try { if (!Object.keys(localStorage).some((k) => /^sb-.+-auth-token$/.test(k))) route(); } catch { /* storage blocked: the boot below routes */ }
   (async () => {
     state.me = await loadMe();
     if (state.me && !(await window.BX.sessionAlive())) { toast("Your sign-in expired. Please sign in again."); setTimeout(() => location.replace("auth.html"), 1200); return; }

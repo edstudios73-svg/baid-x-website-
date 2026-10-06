@@ -138,3 +138,13 @@ test("visitor tools on the landing: check a badge and the price guide, from the 
   assert.match(land, /Not verified yet/);
   new Function(land);
 });
+
+test("website opens straight on the landing: no splash; the stack glides and the hero rises in", () => {
+  const html = read("index.html"), app = read("js/app.js"), land = read("js/landing.js"), css = read("css/landing.css");
+  assert.doesNotMatch(html, /id="splash"/); assert.doesNotMatch(app, /runSplash/);
+  assert.match(app, /sb-\.\+-auth-token/, "visitors are routed before the account check");
+  assert.match(land, /shown \+= \(goal - shown\) \* 0\.2/);
+  assert.match(css, /\.lp-stack \{ height: 230vh; height: 230svh;/);
+  assert.match(css, /@keyframes lpUp/); assert.match(css, /prefers-reduced-motion: reduce\) \{\n  \.lp-bg, \.lp-hero/);
+  new Function(land); new Function(app);
+});
