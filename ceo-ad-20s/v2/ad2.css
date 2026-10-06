@@ -5,7 +5,8 @@
 @font-face { font-family: "Inter"; src: url("../assets/fonts/inter-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: block; }
 :root { --font: "Inter", sans-serif; --or: #ff7a1a; --ink: #111; --muted: #9a968f; --line: rgba(255,255,255,.12); }
 #stage { background: #0c0c0d; font-family: var(--font); color: #fff; overflow: hidden; }
-body.fg #stage { background: transparent; }
+body.fg #stage, body.desk #stage, body.gfx #stage { background: transparent; }
+body.desk .L-bg, body.desk .L-person, body.desk #gfx, body.gfx .L-bg, body.gfx .L-person, body.gfx #desk { display: none !important; }
 body.bg .L-fg, body.fg .L-bg, body.bg .L-person, body.fg .L-person { display: none !important; }
 .full { position: absolute; inset: 0; }
 .ab { position: absolute; }
@@ -129,3 +130,5 @@ body.bg .L-fg, body.fg .L-bg, body.bg .L-person, body.fg .L-person { display: no
 #eurl { left: 540px; top: 1040px; translate: -50% -50%; font: 700 30px/1 var(--font); letter-spacing: .2em; color: var(--muted); white-space: nowrap; }
 #ebtn { left: 540px; top: 1170px; height: 116px; padding: 0 64px; translate: -50% -50%; border-radius: 58px; background: var(--or); color: var(--ink); display: grid; place-items: center;
   font: 800 44px/1 var(--font); letter-spacing: .04em; white-space: nowrap; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(255,122,26,.6); }
+#touch { left: 760px; top: 1500px; width: 90px; height: 90px; translate: -50% -50%; border-radius: 50%; background: rgba(255,255,255,.22); box-shadow: inset 0 0 0 3px rgba(255,255,255,.7); }
+#sweep { left: 0; top: 0; width: 700px; height: 1920px; background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,.07) 45%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.07) 55%, transparent 100%); }

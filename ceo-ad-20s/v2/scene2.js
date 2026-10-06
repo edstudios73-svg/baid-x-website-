@@ -5,19 +5,22 @@ feed.innerHTML = Array.from({ length: 16 }, (_, i) => `<div class="res"><div cla
 
 const m = Motion.scene({ width: 1080, height: 1920, fps: 30, duration: 20 });
 const LAYER = document.body.className;
+const CAM = LAYER === 'all';   // in the final the camera move is applied in ffmpeg to studio + CEO + desk together (tools/view.py)
 const OPEN = 0, PUSH = 2.0, SEARCH = 3.0, DIVE = 5.0, SLOW = 8.6, STILL = 9.5, SEAM = 10.3, HIT = 11.0, UI = 14.0, CEO = 17.0, END = 18.0;
 
 if (LAYER === 'all') [['#pA', 0, 2.0], ['#pB', 2.0, 3.6], ['#pC', 3.6, 17], ['#pD', 17, 20]].forEach(([s, a, b]) => m.show(s, a, b));
-m.set(['#n1', '#n2', '#n3', '#n4', '#s1', '#pfs', '#full', '#hero', '#ui', '#end', '#still', '#seam', '#htag', '#hline'], { opacity: 0 });
+m.set(['#touch', '#n1', '#n2', '#n3', '#n4', '#s1', '#pfs', '#full', '#hero', '#ui', '#end', '#still', '#seam', '#htag', '#hline'], { opacity: 0 });
 
 // ── camera: slow push, then into the desk, back out for the search ──
+if (CAM) {
 m.fromTo('#view', { scale: 1 }, { scale: 1.04 }, { at: 0, dur: PUSH, ease: 'linear' });
 m.to('#view', { scale: 1.2, y: -230 }, { at: PUSH, dur: 0.9, ease: 'swoop' });
 m.to('#view', { scale: 1.02, y: 0 }, { at: SEARCH, dur: 0.5, ease: 'swoop' });
-m.sfx('whoosh', PUSH, { gain: 0.3 }); m.sfx('whoosh', SEARCH, { gain: 0.35, rate: 1.2 });
 m.to('#view', { scale: 1.06 }, { at: SEARCH + 0.5, dur: 1.5, ease: 'linear' });
 m.to('#view', { scale: 1.06 }, { at: CEO, dur: 0.01 });
 m.fromTo('#view', { scale: 1.06 }, { scale: 1.1 }, { at: CEO, dur: 1, ease: 'linear' });
+}
+m.sfx('whoosh', PUSH, { gain: 0.3 }); m.sfx('whoosh', SEARCH, { gain: 0.35, rate: 1.2 });
 
 // ── 0–3 · opening type ──
 m.text('#h1', { at: 0.3, style: 'mask', stagger: 0.09 });
@@ -55,6 +58,13 @@ m.set('#tabSel', { w: el => document.querySelector('#t0').offsetWidth, x: 0 }, 0
 m.set('#t0', { color: '#111' }, 0);
 for (let i = 0; i < 14; i++) m.sfx('tick', DIVE + 0.5 + i * (0.26 - i * 0.008), { gain: 0.16, rate: 1 + (i % 4) * 0.05 });
 
+// finger swipes on the feed (a micro-interaction per flick)
+[5.55, 6.2, 6.85, 7.45, 8.0].forEach((t, i) => {
+  m.set('#touch', { opacity: 1 }, t);
+  m.fromTo('#touch', { y: 0, scale: 0.7 }, { y: -520, scale: 1 }, { at: t, dur: 0.32, ease: 'out' });
+  m.to('#touch', { opacity: 0, scale: 0.6 }, { at: t + 0.3, dur: 0.12, ease: 'in' });
+});
+
 // ── 9–11 · frustration: everything slows and empties ──
 m.to('#feed .res', { opacity: 0, y: 30, blur: 6 }, { at: SLOW + 0.5, dur: 0.4, ease: 'in', stagger: { each: 0.02, from: 'random' } });
 m.to('#fullHead', { opacity: 0.35 }, { at: SLOW + 0.6, dur: 0.5, ease: 'apple' });
@@ -71,6 +81,7 @@ m.fromTo('#hero', { clip: 'inset(0px 537px 0px 537px)' }, { clip: 'inset(0px 0px
 m.fromTo('#hlogo', { x: -520, scaleX: 1.35, blur: 26, opacity: 0 }, { x: 0, scaleX: 1, blur: 0, opacity: 1 }, { at: HIT, dur: 0.32, ease: 'snap' });
 m.fromTo('#hlogo', { scale: 1.08 }, { scale: 1 }, { at: HIT + 0.3, dur: 0.6, ease: 'out' });
 m.sfx('thud', HIT, { gain: 1 });
+m.fromTo('#sweep', { x: -800 }, { x: 1180 }, { at: HIT + 0.5, dur: 1.1, ease: 'inOut' });
 m.set('#hline', { opacity: 1 }, HIT + 0.55);
 m.fromTo('#hline', { scaleX: 0 }, { scaleX: 1 }, { at: HIT + 0.55, dur: 0.5, ease: 'out' });
 m.set('#htag', { opacity: 1 }, HIT + 0.85);

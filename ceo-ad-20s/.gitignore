@@ -6,3 +6,8 @@ board/**/*.png
 board/person-*.png
 assets/plate/*
 board/cut/*.png
+assets/audio/pad.wav
+assets/audio/bass.wav
+assets/audio/arp.wav
+assets/audio/drums.wav
+assets/audio/fx.wav
