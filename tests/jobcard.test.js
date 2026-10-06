@@ -148,3 +148,14 @@ test("website opens straight on the landing: no splash; the stack glides and the
   assert.match(css, /@keyframes lpUp/); assert.match(css, /prefers-reduced-motion: reduce\) \{\n  \.lp-bg, \.lp-hero/);
   new Function(land); new Function(app);
 });
+
+test("BAID Bot: floating on the landing for visitors, answers from the baid-bot function, text escaped, no secrets in the page", () => {
+  const html = read("index.html"), bot = read("js/baidbot.js"), css = read("css/baidbot.css"), fn = read("supabase/functions/baid-bot/index.ts");
+  assert.ok(html.indexOf("js/baidbot.js") > html.indexOf("js/landing.js")); assert.match(html, /css\/baidbot\.css/);
+  assert.match(bot, /functions\/v1\/baid-bot/); assert.match(bot, /esc\(text\)/, "replies are escaped before they are shown");
+  assert.match(css, /body:not\(\.is-guest\) \.bb \{ display: none; \}/, "visitors only");
+  assert.doesNotMatch(bot + html, /sk-ant-|ANTHROPIC_API_KEY/, "the AI key lives only in the function's secrets");
+  assert.match(fn, /Deno\.env\.get\("ANTHROPIC_API_KEY"\)/); assert.match(fn, /function limited\(ip/); assert.match(fn, /MAX_CHARS = 600/);
+  assert.match(fn, /if \(!key\) return json\(\{ reply: topicAnswer/, "works without a key, from BAID X's facts");
+  new Function(bot);
+});

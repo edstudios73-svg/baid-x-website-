@@ -1,0 +1,57 @@
+/* BAID Bot: the floating assistant on the landing (visitors only). Black, white and glass. */
+.bb { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; font-family: inherit; }
+body:not(.is-guest) .bb { display: none; }
+.bb-fab { position: relative; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #000; background: #fff; border: 0;
+  box-shadow: 0 18px 40px -10px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.4), 0 0 30px -6px rgba(255,255,255,.45); transition: transform .2s cubic-bezier(.2,.9,.3,1.3); }
+.bb-fab:hover { transform: translateY(-2px) scale(1.04); }
+.bb.open .bb-fab { transform: scale(.9); }
+.bb-ping { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(255,255,255,.7); animation: bbPing 2.4s ease-out 1s 3; pointer-events: none; }
+@keyframes bbPing { from { transform: scale(1); opacity: .9; } to { transform: scale(1.6); opacity: 0; } }
+.bb-hint { position: absolute; right: 72px; bottom: 14px; white-space: nowrap; padding: 8px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; color: #fff;
+  background: rgba(20,20,20,.75); border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  opacity: 0; transform: translateX(8px); transition: opacity .3s, transform .3s; pointer-events: none; }
+.bb.hint:not(.open) .bb-hint { opacity: 1; transform: none; }
+
+.bb-panel { position: absolute; right: 0; bottom: 74px; width: min(380px, calc(100vw - 32px)); height: min(560px, calc(100svh - 120px)); display: flex; flex-direction: column;
+  border-radius: 26px; overflow: hidden; color: #fff;
+  background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.03) 50%, rgba(255,255,255,.06)), rgba(10,10,10,.88);
+  border: 1px solid rgba(255,255,255,.22); box-shadow: 0 40px 80px -20px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter: blur(26px) saturate(1.3); -webkit-backdrop-filter: blur(26px) saturate(1.3);
+  transform-origin: bottom right; animation: bbIn .26s cubic-bezier(.2,.9,.3,1.15) both; }
+.bb-panel[hidden] { display: none; }
+@keyframes bbIn { from { opacity: 0; transform: translateY(12px) scale(.94); } to { opacity: 1; transform: none; } }
+.bb-head { display: flex; align-items: center; gap: 12px; padding: 14px 14px 12px 16px; border-bottom: 1px solid rgba(255,255,255,.1); }
+.bb-av { width: 40px; height: 40px; flex: none; border-radius: 14px; display: grid; place-items: center; background: #fff; color: #000; }
+.bb-av svg { width: 22px; height: 22px; }
+.bb-head div { flex: 1; min-width: 0; display: grid; }
+.bb-head b { font-size: 15.5px; font-weight: 800; letter-spacing: -.01em; }
+.bb-head small { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #a3a3a3; }
+.bb-head small i { width: 6px; height: 6px; border-radius: 50%; background: #3ddc84; }
+.bb-x { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #fff; cursor: pointer; }
+.bb-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
+.bb-msg { max-width: 86%; padding: 10px 13px; border-radius: 18px; font-size: 14px; line-height: 1.45; white-space: normal; overflow-wrap: anywhere; animation: bbMsg .22s ease-out both; }
+@keyframes bbMsg { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.bb-msg.bot { align-self: flex-start; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-bottom-left-radius: 6px; }
+.bb-msg.me { align-self: flex-end; background: #fff; color: #000; font-weight: 500; border-bottom-right-radius: 6px; }
+.bb-msg.typing { display: inline-flex; gap: 4px; padding: 13px 14px; }
+.bb-msg.typing i { width: 6px; height: 6px; border-radius: 50%; background: #bdbdbd; animation: bbDot 1s infinite ease-in-out; }
+.bb-msg.typing i:nth-child(2) { animation-delay: .15s; } .bb-msg.typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes bbDot { 0%, 80%, 100% { opacity: .3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+.bb-sugs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 10px; }
+.bb-sugs[hidden] { display: none; }
+.bb-sugs button { padding: 7px 12px; border-radius: 99px; font: inherit; font-size: 12.5px; font-weight: 600; color: #e6e6e6; cursor: pointer; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); }
+.bb-sugs button:hover { background: rgba(255,255,255,.12); }
+.bb-form { display: flex; gap: 8px; padding: 10px 12px 6px; border-top: 1px solid rgba(255,255,255,.1); }
+.bb-in, .bb-in:focus { flex: 1; min-width: 0; height: 46px; padding: 0 14px; border-radius: 15px; font: inherit; font-size: 15px; color: #fff; outline: 0;
+  background: rgba(0,0,0,.45) !important; border: 1px solid rgba(255,255,255,.18) !important; box-shadow: none !important; }
+.bb-in:focus { border-color: rgba(255,255,255,.45) !important; }
+.bb-send { width: 46px; height: 46px; flex: none; border-radius: 15px; display: grid; place-items: center; background: #fff; color: #000; border: 0; cursor: pointer; }
+.bb-fine { margin: 0; padding: 2px 14px 12px; font-size: 11px; color: #7a7a7a; text-align: center; }
+
+@media (max-width: 560px) {
+  .bb { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .bb.open { left: 0; right: 0; bottom: 0; }
+  .bb.open .bb-fab, .bb.open .bb-hint { display: none; }
+  .bb-panel { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; height: min(78svh, 640px); border-radius: 26px; transform-origin: bottom center; }
+}
+@media (prefers-reduced-motion: reduce) { .bb-ping, .bb-panel, .bb-msg, .bb-msg.typing i { animation: none !important; } .bb-fab, .bb-hint { transition: none; } }
