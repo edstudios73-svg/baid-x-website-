@@ -77,3 +77,10 @@ button.jc-main, button.jc-mat { cursor: pointer; } button.jc-main:active, button
 .bd-set { margin-bottom: 6px; }
 .bd-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 14px; }
 .bd-stats div { min-width: 0; padding: 10px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.14); } .bd-stats b { display: block; font-size: 15px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; } .bd-stats small { color: var(--muted); font-size: 11.5px; }
+
+/* House logbook (js/house.js) */
+.hl-list { display: grid; gap: 8px; } .hl-list .row { margin: 0; }
+.hl-team .av { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: #262626 center/cover; border: 1.5px solid rgba(255,255,255,.3); }
+.hl-team .tx { flex: 1; min-width: 0; }
+.hl-ideas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; } .hl-ideas .chip-s { cursor: pointer; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.05); color: #fff; font: inherit; font-size: 12.5px; }
+.jc-add + .sec, .es-card + .jc-add { margin-top: 10px; }

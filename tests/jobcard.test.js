@@ -62,3 +62,21 @@ test("my build: client-only, read-only table, built from job cards; wired on web
   for (const t of ["Held in escrow", "Waiting for you", "Finish date", "Jobs in this build"]) assert.match(b, new RegExp(t));
   new Function(b);
 });
+
+test("house logbook: client-only reminders, trusted team from paid jobs, daily notice; wired on web", () => {
+  const sql = read("supabase/phase16_house_logbook.sql"), h = read("js/house.js"), html = read("index.html"), common = read("js/common.js"), dash = read("js/dash.js");
+  assert.match(sql, /alter table public\.house_reminders enable row level security/);
+  assert.match(sql, /revoke insert, update, delete on public\.house_reminders from anon, authenticated/);
+  assert.match(sql, /the house logbook is for client accounts/);
+  assert.match(sql, /choose someone from your trusted team/, "a reminder can only name someone the client has paid");
+  assert.match(sql, /status = 'released'\)/);
+  assert.doesNotMatch(sql, /\bdelete from\b/i);
+  assert.match(sql, /cron\.schedule\('house-reminders'/);
+  assert.match(sql, /h\.notified_on is null or h\.notified_on < h\.due_on/, "one notice per due date");
+  assert.ok(html.indexOf("js/house.js") > html.indexOf("js/build.js"));
+  assert.match(h, /window\.DASH\.register\("house", view\)/);
+  assert.match(common, /"individual-employer": \[[^\]]*"house"/); assert.match(common, /\["house", "House logbook", "home"\]/);
+  assert.match(dash, /window\.HOUSE\.homeCard\(c\)/);
+  for (const t of ["Who did what", "Coming up", "My trusted team", "Add reminder"]) assert.match(h, new RegExp(t));
+  new Function(h);
+});
