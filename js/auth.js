@@ -471,7 +471,7 @@
     if (me && !me.role && !adding) { startOnboard(); return; }
     if (params.get("acc") && ACCS().some((x) => x.id === params.get("acc"))) { S.mode = "signin"; prefillSignin(ACCS().find((x) => x.id === params.get("acc"))); return; }
     if (params.get("mode") === "signin") { if (ACCS().length && !adding) openChooser(); else if (GROUP) signinIntent(); else show("entry", { push: false }); }
-    else if (params.get("mode") === "signup" && !adding) openCreate(params.get("role") || GROUP?.roles[0], false);
+    else if (params.get("mode") === "signup" && !adding && (params.get("role") || GROUP)) openCreate(params.get("role") || GROUP?.roles[0], false);
     else if (!GROUP) show("entry", { push: false });
   })();
 

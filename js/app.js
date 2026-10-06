@@ -320,7 +320,7 @@
     if (t.closest("#logout")) { const me = state.me?.session?.user?.id; if (me) window.BX.accounts.signedOut(me); await sb.auth.signOut(); location.hash = "#/home"; location.reload(); return; }
     if (t.closest("[data-soon]")) return toast("This screen is built in the next stage.");
     const sign = t.closest("[data-action='join'],[data-action='signin']");
-    if (sign) { const gr = sign.dataset.group; const mode = sign.dataset.action === "signin" ? "signin" : "signup"; return void (location.href = `auth.html?mode=${mode}${gr ? `&group=${gr}` : ""}`); }
+    if (sign) { const gr = sign.dataset.group; const mode = sign.dataset.action === "signin" ? "signin" : "signup"; return void (location.href = gr ? `auth.html?mode=${mode}&group=${gr}` : "auth.html"); }
     const card = t.closest(".card");
     if (card && !t.closest("[data-fx]")) {
       const role = R(), kind = card.dataset.kind;
