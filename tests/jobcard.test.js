@@ -80,3 +80,17 @@ test("house logbook: client-only reminders, trusted team from paid jobs, daily n
   for (const t of ["Who did what", "Coming up", "My trusted team", "Add reminder"]) assert.match(h, new RegExp(t));
   new Function(h);
 });
+
+test("marketplace: every role browses photo listings; suppliers add up to 6 photos; ordering stays with buyers", () => {
+  const cat = read("js/catalog.js"), mk = read("js/market.js"), common = read("js/common.js"), html = read("index.html"), sql = read("supabase/phase17_catalog_gallery.sql"), css = read("css/escrow.css");
+  assert.ok(html.indexOf("js/catalog.js") > html.indexOf("js/market.js"));
+  assert.match(cat, /window\.DASH\.register\("equipment", view\("equipment"\)\)/); assert.match(cat, /window\.DASH\.register\("materials", view\("products"\)\)/);
+  assert.doesNotMatch(mk, /register\("equipment"/, "only one buyer view");
+  for (const r of ["worker", "company", "\"project-manager\"", "\"individual-employer\""]) assert.match(common, new RegExp(`${r}: \\[[^\\]]*"equipment"[^\\]]*\\]`));
+  assert.match(cat, /const CAN_ORDER = \["company", "individual-employer"\]/, "matches place_order's buyer roles");
+  assert.match(cat, /const MAX = 6/); assert.match(mk, /multiple hidden data-mk-pick/); assert.match(mk, /window\.CATALOG\.uploadPhotos/);
+  assert.match(cat, /mk-slides/); assert.match(cat, /function lightbox/); assert.match(cat, /\.eq\("business_id", c\.uid\)/, "suppliers only edit their own listings");
+  assert.match(sql, /'images', coalesce\(e\.image_urls, '\{\}'\)/); assert.match(sql, /'images', coalesce\(p\.image_urls, '\{\}'\)/);
+  assert.doesNotMatch(css, /backdrop-filter/);
+  new Function(cat); new Function(mk);
+});

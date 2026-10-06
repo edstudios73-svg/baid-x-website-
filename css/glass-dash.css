@@ -106,3 +106,6 @@ body.g-on .acc2 { background: linear-gradient(150deg, rgba(255,255,255,.16), rgb
 body.g-on .acc2 .a-cover::after { background: linear-gradient(180deg, transparent, rgba(14,14,14,.55)); }
 body.g-on .acc2 .tags span { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(8px); }
 body.g-on :is(.state, .d-empty) { border-radius: 22px; }
+
+/* marketplace photo badges read over any photo */
+body.g-on :is(.mk-n, .mk-v) { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }

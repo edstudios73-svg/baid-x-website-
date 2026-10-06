@@ -294,6 +294,9 @@
     seal: '<path d="M12 2.500 14.600 4.400 17.800 4.300 18.800 7.300 21.400 9.200 20.400 12.200 21.400 15.200 18.800 17.100 17.800 20.100 14.600 20 12 21.900 9.400 20 6.200 20.100 5.200 17.100 2.600 15.200 3.600 12.200 2.600 9.200 5.200 7.300 6.200 4.300 9.400 4.400z" fill="currentColor" stroke="none"/><path d="m8.300 12.200 2.600 2.600 4.800-5.200" stroke="#06121c" stroke-width="2.200"/>',
     phone: '<path d="M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
     cal: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/>',
+    img: '<rect x="3" y="5" width="18" height="14" rx="2.500"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/>',
+    chev: '<path d="m9 6 6 6-6 6"/>',
   };
   const icon = (k, s = 24) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k] || ""}</svg>`;
 
@@ -304,7 +307,7 @@
     guest: { tabs: [["home", "Home", "home"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]], side: [], parent: {} },
     worker: {
       tabs: [["home", "Home", "home"], ["jobs", "Jobs", "disc"], ["work", "Work", "work"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      side: [["home", "Home", "home"], ["jobs", "Job Marketplace", "disc"], ["work", "Work Management", "work"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], ["wallet", "Wallet", "wallet"], ["growth", "Career Growth", "grow"], ["materials", "Materials", "mat"], ["equipment", "Equipment", "equip"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
       parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile", wallet: "home", growth: "home", projects: "work", ws: "work", invites: "work" },
     },
     company: {
@@ -314,7 +317,7 @@
     },
     "project-manager": {
       tabs: [["home", "Home", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
-      side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], "--", ["ws/overview", "Project Overview", "site"], ["ws/team", "Team", "team"], ["ws/tasks", "Tasks", "task"], ["ws/reports", "Reports", "rep"], ["ws/finance", "Finance", "pay"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
+      side: [["home", "Overview", "home"], ["discover", "Discover", "disc"], ["projects", "Projects", "proj"], ["invites", "Invitations", "mail"], "--", ["ws/overview", "Project Overview", "site"], ["ws/team", "Team", "team"], ["ws/tasks", "Tasks", "task"], ["ws/reports", "Reports", "rep"], ["ws/finance", "Finance", "pay"], ["materials", "Materials", "mat"], ["equipment", "Equipment", "equip"], ["orgs", "Organization", "team"], "--", ["chats", "Chats", "chat"], ["profile", "Profile", "user"]],
       parent: { billing: "profile", orgs: "profile", org: "profile", join: "profile", ws: "projects", invites: "projects" },
     },
     business: {
@@ -334,6 +337,7 @@
     NAV[k].parent.notifications = "home";
     NAV[k].parent.orders = NAV[k].parent.order = k === "business" ? "catalog" : k === "individual-employer" ? "hires" : "home";
     if (k === "individual-employer") NAV[k].parent.equipment = NAV[k].parent.materials = "hires";
+    else NAV[k].parent.equipment = NAV[k].parent.materials = NAV[k].parent.equipment || "home";
     NAV[k].parent.engagement = k === "worker" ? "work" : k === "individual-employer" ? "hires" : "home";
     NAV[k].parent.applicants = k === "individual-employer" ? "hires" : "home";
     NAV[k].parent.chat = NAV[k].parent.chat || (k === "business" ? "inquiries" : "chats");
@@ -341,9 +345,9 @@
   // Routes each role may open (anything else falls back to Home).
   const COMMON_ROUTES = ["home", "chats", "profile", "checklist", "filters", "picker", "orgs", "org", "join", "billing", "verification", "edit-profile", "step", "info", "chat", "notifications"];
   const ROLE_ROUTES = {
-    worker: ["jobs", "work", "engagement", "wallet", "growth", "projects", "ws", "invites", "portfolio", "certs"],
+    worker: ["jobs", "work", "engagement", "wallet", "growth", "projects", "ws", "invites", "portfolio", "certs", "equipment", "materials"],
     company: ["discover", "orders", "order", "applicants", "engagement", "projects", "ws", "new-project", "approvals", "payments", "equipment", "materials", "wallet", "team-link", "hires", "post-job"],
-    "project-manager": ["discover", "projects", "ws", "engagement", "invites", "wallet", "portfolio", "certs", "team-link"],
+    "project-manager": ["discover", "projects", "ws", "engagement", "invites", "wallet", "portfolio", "certs", "team-link", "equipment", "materials"],
     business: ["discover", "catalog", "inquiries", "orders", "order", "wallet", "portfolio"],
     "individual-employer": ["discover", "hires", "post-job", "wallet", "applicants", "engagement", "equipment", "materials", "orders", "order", "build", "house"],
   };

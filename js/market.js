@@ -89,7 +89,7 @@
     const { data } = await c.sb.from(tbl).select("*").eq("business_id", c.uid).order("created_at", { ascending: false }).limit(60);
     const items = data || [];
     return head("Catalog", `<button class="btn-light sm" data-mk="add-item" data-seg="${seg}">${seg === "products" ? "Add product" : "Add equipment"}</button>`) + segs([["products", "Products", "catalog"], ["equipment", "Equipment", "catalog/equipment"]], seg)
-      + (items.length ? items.map((i) => `<div class="row">${i.image_urls?.[0] ? `<span class="av sq" style="background-image:url('${esc(i.image_urls[0])}')"></span>` : `<span class="ic">${icon(seg === "products" ? "box" : "equip", 17)}</span>`}<span class="tx"><b>${esc(i.name)}</b><small>${esc(i.category || "Uncategorised")}${(i.price ?? i.daily_rate) != null ? ` · ${money(i.price ?? i.daily_rate)}${seg === "equipment" ? "/day" : ""}` : ""}</small></span><span class="pill ${i.available === false ? "" : "ok"}">${i.available === false ? "Hidden" : "Listed"}</span><button class="btn-dark sm" data-mk="toggle-item" data-seg="${seg}" data-id="${esc(i.id)}" data-on="${i.available === false ? "1" : "0"}">${i.available === false ? "Show" : "Hide"}</button><button class="btn-dark sm" data-mk="del-item" data-seg="${seg}" data-id="${esc(i.id)}">Delete</button></div>`).join("")
+      + (items.length ? items.map((i) => `<div class="row">${i.image_urls?.[0] ? `<span class="av sq" style="background-image:url('${esc(i.image_urls[0])}')"></span>` : `<span class="ic">${icon(seg === "products" ? "box" : "equip", 17)}</span>`}<span class="tx"><b>${esc(i.name)}</b><small>${esc(i.category || "Uncategorised")}${(i.price ?? i.daily_rate) != null ? ` · ${money(i.price ?? i.daily_rate)}${seg === "equipment" ? "/day" : ""}` : ""} · ${(i.image_urls || []).length} photo${(i.image_urls || []).length === 1 ? "" : "s"}</small></span><button class="btn-dark sm" data-cat="photos" data-seg="${seg}" data-id="${esc(i.id)}">Photos</button><span class="pill ${i.available === false ? "" : "ok"}">${i.available === false ? "Hidden" : "Listed"}</span><button class="btn-dark sm" data-mk="toggle-item" data-seg="${seg}" data-id="${esc(i.id)}" data-on="${i.available === false ? "1" : "0"}">${i.available === false ? "Show" : "Hide"}</button><button class="btn-dark sm" data-mk="del-item" data-seg="${seg}" data-id="${esc(i.id)}">Delete</button></div>`).join("")
         : empty(seg === "products" ? "box" : "equip", `No ${seg} listed`, "Add what you supply so companies and clients can find and request it.", `<button class="btn-light sm" data-mk="add-item" data-seg="${seg}">${seg === "products" ? "Add product" : "Add equipment"}</button>`));
   }
 
@@ -103,12 +103,7 @@
       + (list.length ? list.map((p) => `<button class="row" data-open-project="${esc(p.project_id)}"><span class="ic">${icon("pay", 17)}</span><span class="tx"><b>${esc(p.payee)} · ${money(p.amount)}</b><small>${esc(p.project)} · ${esc(p.purpose || pretty(p.type))} · ${esc(ago(p.created_at))}</small></span><span class="pill ${p.status === "paid" ? "ok" : p.status === "rejected" ? "bad" : "warn"}">${esc(pretty(p.status))}</span></button>`).join("")
         : empty("pay", "No payments yet", "Payments recorded or requested inside your projects appear here.", `<button class="btn-light sm" data-go="projects">Open projects</button>`));
   }
-  const supplierView = (kind) => async (c) => {
-    const { head, empty } = U(), list = (await F().rpc(c, "supplier_catalog", { p_kind: kind }).catch(() => [])) || [], isEq = kind === "equipment";
-    return head(isEq ? "Equipment" : "Materials") + `<p class="sub2">${isEq ? "Machines and tools you can rent or buy from suppliers." : "Materials from suppliers across Ghana."}</p>`
-      + (list.length ? list.map((i) => `<div class="dcard"><h4><span>${esc(i.name)}</span><span class="amb">${isEq ? (i.daily_rate ? money(i.daily_rate) + "/day" : i.sale_price ? money(i.sale_price) : "") : (i.price != null ? money(i.price) : "")}</span></h4><p class="cap2">${esc(i.business)} · ${esc(i.region || "Ghana")}${i.category ? " · " + esc(i.category) : ""}</p>${i.description ? `<p class="cap2">${esc(i.description)}</p>` : ""}<div class="od-btns">${window.ORDERS ? window.ORDERS.buttons(i, isEq) : ""}<button class="btn-dark sm" data-fx="message" data-id="${esc(i.business_id)}" data-name="${esc(i.business)}">Message supplier</button></div></div>`).join("")
-        : empty(isEq ? "equip" : "mat", `No ${isEq ? "equipment" : "materials"} listed yet`, "Suppliers list their products here. Check back soon, or find suppliers in Discover.", `<button class="btn-light sm" data-tab="discover">Find suppliers</button>`));
-  };
+  // Equipment and materials for buyers are the photo marketplace in js/catalog.js.
 
   /* ---------- actions ---------- */
   const MK = {
@@ -126,9 +121,9 @@
     "add-item": (c, el) => {
       const eq = el.dataset.seg === "equipment", f = F();
       f.openSheet(eq ? "Add equipment" : "Add product", `<form data-mk-form="add-item" data-seg="${eq ? "equipment" : "products"}">${f.fld("Name", f.inp("name", { req: true, max: 100 }))}${f.fld("Category", f.inp("category", { max: 60, ph: eq ? "e.g. Concrete mixers" : "e.g. Cement" }))}
-        ${eq ? `<div class="two-col">${f.fld("Daily rate (GH₵)", f.inp("daily_rate", { type: "number", min: 0, step: "0.01" }))}${f.fld("Sale price (GH₵)", f.inp("sale_price", { type: "number", min: 0, step: "0.01" }))}</div>${f.fld("Condition", f.sel("condition", [["good", "Good"], ["new", "New"], ["fair", "Fair"]], "good"))}`
+        ${eq ? `<div class="two-col">${f.fld("Daily rate (GH₵)", f.inp("daily_rate", { type: "number", min: 0, step: "0.01" }))}${f.fld("Sale price (GH₵)", f.inp("sale_price", { type: "number", min: 0, step: "0.01" }))}</div>${f.fld("Condition", f.sel("condition", [["good", "Good"], ["new", "New"], ["fair", "Fair"]], "good"))}${f.fld("Description", f.area("description", { max: 600, ph: "Model, capacity, what is included, delivery" }))}`
         : `<div class="two-col">${f.fld("Price (GH₵)", f.inp("price", { type: "number", min: 0, step: "0.01" }))}${f.fld("In stock", f.inp("quantity", { type: "number", min: 0 }))}</div>${f.fld("Description", f.area("description", { max: 400 }))}`}
-        <div class="doc"><span class="tx"><b>Photo</b><small>Optional</small></span><label class="btn-dark sm filebtn">Upload<input type="file" name="image" accept="image/*" hidden /></label></div>
+        <div class="doc"><span class="tx"><b>Photos</b><small id="mkPick">Up to 6. Buyers see the first one first.</small></span><label class="btn-dark sm filebtn">Choose<input type="file" name="image" accept="image/*" multiple hidden data-mk-pick /></label></div>
         <button class="btn-light" type="submit" style="width:100%">Save</button></form>`);
     },
     "toggle-item": async (c, el) => { const t = el.dataset.seg === "equipment" ? "business_equipment" : "business_products"; const { error } = await c.sb.from(t).update({ available: el.dataset.on === "1" }).eq("id", el.dataset.id); if (error) throw error; window.APP.route(); },
@@ -158,10 +153,10 @@
         const row = { title: d.title.trim(), description: d.description || null, job_category_id: d.job_category_id || null, region: d.region || null, city_town: d.city_town || null, starts_on: d.starts_on || null, ends_on: d.ends_on || null, daily_rate_ghs: d.daily_rate_ghs ? +d.daily_rate_ghs : null, workers_needed: +d.workers_needed || 1, status: "open", [c.role === "company" ? "company_id" : "employer_id"]: c.uid };
         const { error } = await c.sb.from("jobs").insert(row); if (error) throw error; c.toast("Job published"); c.go("hires");
       } else if (k === "add-item") {
-        const eq = form.dataset.seg === "equipment", file = form.querySelector('[name="image"]').files[0];
-        const img = file ? f.publicUrl(c, "listing-images", await f.upload(c, "listing-images", file, "item")) : null;
-        const row = eq ? { business_id: c.uid, name: d.name, category: d.category || null, daily_rate: d.daily_rate ? +d.daily_rate : null, sale_price: d.sale_price ? +d.sale_price : null, condition: d.condition, available: true, status: "available", image_urls: img ? [img] : [] }
-          : { business_id: c.uid, name: d.name, category: d.category || null, price: d.price ? +d.price : null, quantity: d.quantity ? +d.quantity : null, description: d.description || null, listing_type: "sale", available: true, status: "in_stock", image_urls: img ? [img] : [] };
+        const eq = form.dataset.seg === "equipment", files = [...form.querySelector('[name="image"]').files].slice(0, window.CATALOG?.MAX || 6);
+        const imgs = files.length && window.CATALOG ? await window.CATALOG.uploadPhotos(c, files) : [];
+        const row = eq ? { business_id: c.uid, name: d.name, category: d.category || null, daily_rate: d.daily_rate ? +d.daily_rate : null, sale_price: d.sale_price ? +d.sale_price : null, condition: d.condition, description: d.description || null, available: true, status: "available", image_urls: imgs }
+          : { business_id: c.uid, name: d.name, category: d.category || null, price: d.price ? +d.price : null, quantity: d.quantity ? +d.quantity : null, description: d.description || null, listing_type: "sale", available: true, status: "in_stock", image_urls: imgs };
         const { error } = await c.sb.from(eq ? "business_equipment" : "business_products").insert(row); if (error) throw error; f.closeSheet(); c.toast("Saved"); window.APP.route();
       }
     } catch (err) { f.fail(c, err); }
@@ -175,6 +170,4 @@
   window.DASH.register("post-job", postJobView);
   window.DASH.register("catalog", catalogView);
   window.DASH.register("payments", paymentsView);
-  window.DASH.register("equipment", supplierView("equipment"));
-  window.DASH.register("materials", supplierView("products"));
 })();
