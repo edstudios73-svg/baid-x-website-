@@ -5,3 +5,4 @@ board/**/*.png
 !board/**/contact-sheet.png
 board/person-*.png
 assets/plate/*
+board/cut/*.png

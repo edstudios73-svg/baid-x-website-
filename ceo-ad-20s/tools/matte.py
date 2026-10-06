@@ -4,6 +4,7 @@ stdout: raw 8-bit gray frames: solid silhouette (holes filled, wall specks remov
 Steps: close small gaps -> flood the wall from the top/side edges -> keep only what touches the bottom edge (desk) -> fill holes."""
 import sys, array
 W, H = int(sys.argv[1]), int(sys.argv[2]); R = int(sys.argv[3]) if len(sys.argv) > 3 else 2
+HEAD = open(sys.argv[4], 'w') if len(sys.argv) > 4 else None   # per-frame head-top row (full-res px), for face protection
 n = W * H; inp = sys.stdin.buffer; out = sys.stdout.buffer
 def dilate(m, r):
     o = bytearray(m)
@@ -36,4 +37,12 @@ while True:
     keep = bytearray(1 - v for v in wall)            # person + desk + holes filled
     body = flood(keep, [(H - 1) * W + x for x in range(W)])  # only what is connected to the desk
     out.write(bytes(255 if v else 0 for v in body))
+    if HEAD:
+        x0, x1 = int(W * 0.25), int(W * 0.75); top = H
+        for y in range(H):
+            if any(body[y * W + x] for x in range(x0, x1)): top = y; break
+        xs = [x for y in range(top, min(H, top + H // 24)) for x in range(x0, x1) if body[y * W + x]]
+        cx = sum(xs) / len(xs) if xs else W / 2
+        HEAD.write(f"{top * 1920 / H:.1f} {cx * 1080 / W:.1f}\n")
 out.flush()
+if HEAD: HEAD.close()
