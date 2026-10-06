@@ -49,19 +49,31 @@
   }
   $("#back").addEventListener("click", back);
 
-  /* ---------- entry: professional or client, then sign in or create ---------- */
-  const GATE_NAME = { pro: "Professional", client: "Client" };
+  /* ---------- entry: one panel per account type, each with Sign in and Create account ---------- */
+  const GATES = {
+    worker: ["Electricians, masons, plumbers and more", ["Get verified and found", "Jobs and payouts"]],
+    company: ["Construction and service companies", ["Run projects", "Approve every payment"]],
+    "project-manager": ["Run site delivery for companies", ["Crew and tasks", "Reports and requests"]],
+    business: ["Materials and equipment for sale or rent", ["Catalog and orders", "Reach real projects"]],
+    "individual-employer": ["Homeowners hiring for their home", ["Hire verified people", "Pay through escrow"]],
+  };
+  $("#gates").innerHTML = Object.keys(ROLES).filter((k) => GATES[k]).map((k, i) => `<article class="gate" data-gate="${k}" style="animation-delay:${i * 60}ms">
+      <div class="g-top"><span class="g-ic">${ROLES[k].icon}</span><div><b>${esc(ROLES[k].label)}</b><small>${esc(GATES[k][0])}</small></div></div>
+      <ul>${GATES[k][1].map((c) => `<li>${esc(c)}</li>`).join("")}</ul>
+      <div class="g-acts"><button class="btn-light" data-gate-act="signin">Sign in</button><button class="btn-ghost" data-gate-act="signup">Create account</button></div>
+    </article>`).join("");
   $$(".gate").forEach((g) => g.addEventListener("click", (e) => {
     const b = e.target.closest("[data-gate-act]"); if (!b) return;
-    const key = g.dataset.gate; S.gate = key; GROUP = GROUPS[key]; ROLE_KEYS = GROUP.roles; S.role = ROLE_KEYS[0];
+    const key = g.dataset.gate; GROUP = null; ROLE_KEYS = Object.keys(ROLES); S.role = key; S.intent = false;
     if (b.dataset.gateAct === "signin") {
-      S.mode = "signin"; S.intent = false;
-      $("#signinSub").textContent = `${GATE_NAME[key]} sign-in. Use the phone or email on your account.`;
+      S.gate = key; S.mode = "signin";
+      $("#signinSub").textContent = `${ROLES[key].label} sign-in. Use the phone or email on your account.`;
       $("#siErr").textContent = "";
       show("signin");
       return;
     }
-    openCreate(GROUP.roles[0]);
+    // the panel already says which account this is, so creating goes straight to the phone step
+    S.gate = null; S.mode = "signup"; S.skipChooser = true; resetPhoneView(); show("phone");
   }));
 
   // Creating an account always lists all five account types; the side the visitor came from is pre-selected.
@@ -372,11 +384,10 @@
       $("#siErr").textContent = `That account is a ${ROLES[me.role].label} account. Go back and choose ${ROLES[me.role].label}.`;
       return;
     }
-    // signed in from the professional or client panel: the account has to belong to that side
-    if (S.gate && me?.role && !GROUPS[S.gate].roles.includes(me.role)) {
+    // signed in from an account-type panel: the account has to be that type
+    if (S.gate && me?.role && me.role !== S.gate) {
       await sb.auth.signOut();
-      const other = S.gate === "pro" ? "Client" : "Professional";
-      $("#siErr").textContent = `That is a ${ROLES[me.role].label} account. Go back and use ${other} sign in.`;
+      $("#siErr").textContent = `That is a ${ROLES[me.role].label} account. Go back and use ${ROLES[me.role].label} sign in.`;
       return;
     }
     if (me?.role) location.href = HOME; else startOnboard();
