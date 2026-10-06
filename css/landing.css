@@ -123,7 +123,6 @@ body.is-guest { padding-bottom: 0 !important; }
   .lp .wrap { padding: 0 16px; }
   .lp-hero { padding: 36px 0 40px !important; }
   .lp-hero .cta .btn { flex: 1 1 100%; }
-  .lp-phone-wrap { transform: scale(.9); transform-origin: top center; min-height: 600px; margin-bottom: -70px; }
   .lp h2 { margin-bottom: 20px; }
   .lp-steps { gap: 10px; } .lp-steps li { padding: 16px 18px; border-radius: 18px; }
   .lp-steps h3 { margin: 6px 0 4px; font-size: 16px; } .lp-steps p { font-size: 13.5px; }
@@ -172,3 +171,23 @@ body.is-guest { padding-bottom: 0 !important; }
   .lp-art .ring { width: 280px; height: 280px; left: -60px; top: 52%; border-width: 24px; }
   .lp-art .o3 { width: 380px; height: 380px; left: 10%; top: -6%; }
 }
+
+/* Hero stats: four aligned tiles (two by two on phones) instead of a loose wrapping row */
+.lp-hero .proof { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 34px; }
+.lp-hero .proof span { min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); color: #9a9a9a; font-size: 12.5px; line-height: 1.35; }
+.lp-hero .proof b { font-size: 20px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+
+/* Phones and tablets: the hero and the phone mockup are two separate screens, nothing overlaps */
+@media (max-width: 900px) {
+  .lp-hero { padding: 0 !important; }
+  .lp-hero .wrap { display: block; }
+  .lp-hero .wrap > div:first-child { min-height: calc(100svh - 68px); display: flex; flex-direction: column; justify-content: center; padding: 28px 0 32px; }
+  .lp-hero .proof { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 28px; }
+  .lp-phone-wrap { min-height: calc(100svh - 68px); max-width: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px 0; transform: none; margin: 0 auto; }
+  .lp-phone { flex: none; order: 1; }
+  .lp-chip { position: static; }
+  .lp-chip.c1 { order: 0; }
+  .lp-chips-b { order: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+}
+/* the lower chips' wrapper only matters on small screens; on wide screens they float around the phone as before */
+@media (min-width: 901px) { .lp-chips-b { display: contents; } }
