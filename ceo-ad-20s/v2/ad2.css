@@ -132,3 +132,5 @@ body.bg .L-fg, body.fg .L-bg, body.bg .L-person, body.fg .L-person { display: no
   font: 800 44px/1 var(--font); letter-spacing: .04em; white-space: nowrap; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(255,122,26,.6); }
 #touch { left: 760px; top: 1500px; width: 90px; height: 90px; translate: -50% -50%; border-radius: 50%; background: rgba(255,255,255,.22); box-shadow: inset 0 0 0 3px rgba(255,255,255,.7); }
 #sweep { left: 0; top: 0; width: 700px; height: 1920px; background: linear-gradient(100deg, transparent 0%, rgba(255,255,255,.07) 45%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.07) 55%, transparent 100%); }
+body.kbg #stage { background: #000 !important; }
+body.wbg #stage { background: #fff !important; }

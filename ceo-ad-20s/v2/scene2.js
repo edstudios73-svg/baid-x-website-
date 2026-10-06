@@ -4,7 +4,7 @@ const feed = document.getElementById('feed');
 feed.innerHTML = Array.from({ length: 16 }, (_, i) => `<div class="res"><div class="av"></div><div><div class="t" style="width:${240 + (i * 37) % 120}px"></div><div class="s" style="width:${330 + (i * 53) % 140}px"></div></div><div class="rb"></div></div>`).join('');
 
 const m = Motion.scene({ width: 1080, height: 1920, fps: 30, duration: 20 });
-const LAYER = document.body.className;
+const LAYER = document.body.classList[0];
 const CAM = LAYER === 'all';   // in the final the camera move is applied in ffmpeg to studio + CEO + desk together (tools/view.py)
 const OPEN = 0, PUSH = 2.0, SEARCH = 3.0, DIVE = 5.0, SLOW = 8.6, STILL = 9.5, SEAM = 10.3, HIT = 11.0, UI = 14.0, CEO = 17.0, END = 18.0;
 

@@ -15,7 +15,7 @@ ffmpeg -v error -stats -y \
   -i out/plate/a-color.mp4 -i out/plate/a-mask.mp4 \
   -i out/plate/b-color.mp4 -i out/plate/b-mask.mp4 \
   -loop 1 -framerate 30 -t 20 -i out/desk/t1_00.png \
-  -i out/gfx.mov -i assets/audio/music.wav \
+  -i out/gfx/aK.mp4 -i out/gfx/bK.mp4 -i out/gfx/cK.mp4 -i out/gfx/dK.mp4 -i out/gfx/aW.mp4 -i out/gfx/cW.mp4 -i out/sfx.wav -i assets/audio/music.wav \
   -filter_complex "
 [1:v]format=rgb24[ac];[2:v]format=gray[am];[ac][am]alphamerge,$PREP,setpts=PTS-STARTPTS[pa];
 [3:v]format=rgb24[bc];[4:v]format=gray[bm];[bc][bm]alphamerge,$PREP,setpts=PTS-STARTPTS+16.9/TB[pb];
@@ -24,7 +24,11 @@ ffmpeg -v error -stats -y \
 [w1][pb]overlay=151:334:eof_action=pass:format=auto:enable='between(t,16.9,18.2)'[w2];
 [5:v]format=rgba[dk];[w2][dk]overlay=0:0:format=auto[w3];
 [w3]format=rgb24,zoompan=z='$S':x='1080*(1-1/zoom)':y='1920-(1920+($TY))/zoom':d=1:s=2160x3840:fps=30[world];
-[6:v]format=rgba[gx];[world][gx]overlay=0:0:format=auto,format=yuv420p[v];
-[6:a][7:a]amix=inputs=2:normalize=0:weights='0.55 1',loudnorm=I=-14.5:TP=-2:LRA=11,aresample=48000[a]" \
+[7:v]split[bK1][bK2];[9:v]split[dK1][dK2];
+[6:v][bK1][8:v][dK1]concat=n=4:v=1:a=0,format=gbrp,split=2[K1][K2];
+[10:v][bK2][11:v][dK2]concat=n=4:v=1:a=0,format=gbrp[W];
+[W][K1]blend=all_expr='A-B'[D];
+[world]format=gbrp[wg];[wg][D]blend=all_mode=multiply[T];[T][K2]blend=all_mode=addition,format=yuv420p[v];
+[12:a][13:a]amix=inputs=2:normalize=0:weights='0.55 1',loudnorm=I=-14.5:TP=-2:LRA=11,aresample=48000[a]" \
   -map "[v]" -map "[a]" -t 20 -c:v libx264 -preset slow -crf 17 -pix_fmt yuv420p -profile:v high -level 5.2 -c:a aac -b:a 256k -movflags +faststart "$OUT"
 echo done "$OUT"
