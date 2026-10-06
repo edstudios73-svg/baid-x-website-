@@ -115,10 +115,8 @@ body.g-on :is(.mk-n, .mk-v) { backdrop-filter: blur(8px); -webkit-backdrop-filte
 #screen-directory .dir-bg { z-index: 0; }
 #screen-directory .dir-bg svg { height: calc(100% + 160px); transform: translateY(calc(-1 * var(--y, 0px))); }
 #screen-directory > .wrap { position: relative; z-index: 1; }
-.dir-head { position: relative; margin: 14px 0 16px; padding: 18px; border-radius: 28px;
-  background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04) 60%, rgba(255,255,255,.08)), rgba(12,12,12,.55);
-  border: 1px solid rgba(255,255,255,.24); box-shadow: 0 28px 60px -18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.16);
-  backdrop-filter: blur(24px) saturate(1.3); -webkit-backdrop-filter: blur(24px) saturate(1.3); }
+/* open, not boxed: the console sits straight on the page drawing */
+.dir-head { position: relative; margin: 18px 2px 18px; }
 .dh-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .dh-live { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: #a3a3a3; }
 .dh-live i { position: relative; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
