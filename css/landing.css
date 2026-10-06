@@ -219,3 +219,40 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
    everything after them flows normally ---------- */
 .lp-hero { min-height: calc(100vh - 68px); min-height: calc(100svh - 68px); display: flex; flex-direction: column; justify-content: center; }
 .lp-hero > .wrap { width: 100%; }
+
+/* ---------- visitor tools: check a badge, price guide (same as the app's tabs) ---------- */
+.lp-tool .sub { margin-bottom: 22px; }
+.lp-tool h2 .dim { color: #8a8a8a; }
+.lp-field { display: flex; align-items: center; gap: 12px; height: 54px; padding: 0 16px; max-width: 620px; border-radius: 18px; background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.2); color: #9a9a9a; }
+.lp-field input, .lp-field input:focus { flex: 1; min-width: 0; height: auto; padding: 0; margin: 0; background: none !important; border: 0 !important; box-shadow: none !important; outline: 0; color: #fff; font: inherit; font-size: 16px; }
+.lp-field input::-webkit-search-cancel-button { filter: invert(1) grayscale(1); opacity: .6; }
+.lp-tool { scroll-margin-top: 76px; }
+.lp-field:focus-within { border-color: rgba(255,255,255,.5); }
+.lp-check-out { display: grid; gap: 10px; margin-top: 18px; max-width: 620px; }
+.lp-note-row, .lp-check-row, .lp-rate { border-radius: 20px; background: var(--gl); border: 1px solid var(--gl-line); box-shadow: var(--gl-edge); backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); }
+.lp-note-row { padding: 14px 16px; display: grid; gap: 3px; }
+.lp-note-row b { font-size: 14.5px; } .lp-note-row span { font-size: 13px; line-height: 1.45; color: #a3a3a3; }
+.lp-note-row.warn { border-color: rgba(248,113,113,.35); }
+.lp-check-row { display: flex; align-items: center; gap: 12px; padding: 14px; }
+.lp-check-row .av { flex: none; width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; font-style: normal; font-weight: 800; background: #1f1f1f center/cover; border: 1px solid rgba(255,255,255,.25); }
+.lp-check-row div { min-width: 0; display: grid; gap: 2px; justify-items: start; }
+.lp-check-row b { font-size: 15.5px; } .lp-check-row small { font-size: 12.5px; color: #9a9a9a; }
+.lp-check-row em { margin-top: 6px; font-style: normal; font-size: 11.5px; font-weight: 700; padding: 5px 10px; border-radius: 99px; }
+.lp-check-row em.ok { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); }
+.lp-check-row em.no { color: #f87171; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); }
+.lp-regions { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-bottom: 16px; }
+.lp-regions::-webkit-scrollbar { display: none; }
+.lp-regions button { flex: none; height: 38px; padding: 0 16px; border-radius: 99px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); color: #d6d6d6; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.lp-regions button.on { background: #fff; color: #000; border-color: #fff; }
+.lp-rates { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.lp-rate { padding: 14px 16px 16px; }
+.lp-rate .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.lp-rate .top b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-rate strong { flex: none; font-size: 20px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.lp-rate strong small { font-size: 12px; font-weight: 400; color: #9a9a9a; }
+.lp-rate .bar { position: relative; height: 14px; margin-top: 12px; }
+.lp-rate .bar::before { content: ""; position: absolute; left: 0; right: 0; top: 5px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.08); }
+.lp-rate .range { position: absolute; top: 5px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.5); }
+.lp-rate .mid { position: absolute; top: 0; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #fff; border: 2px solid #000; box-shadow: 0 0 10px rgba(255,255,255,.5); }
+.lp-rate .ends { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11.5px; color: #8a8a8a; font-variant-numeric: tabular-nums; }
+.lp-fine { margin: 14px 0 0; font-size: 12px; line-height: 1.45; color: #7a7a7a; }

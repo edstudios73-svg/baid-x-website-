@@ -118,12 +118,23 @@ test("member cards: glass with the cover photo, three fact tiles and the join da
   new Function(app);
 });
 
-test("members' console: live total, five counted parts with a sliding highlight, verified share and search count", () => {
+test("members' console: no member numbers, five parts with a sliding highlight, verified share", () => {
   const app = read("js/app.js"), html = read("index.html"), css = read("css/glass-dash.css");
-  for (const id of ["dhTotal", "chips", "dhPct", "dhBar", "q", "dhFound"]) assert.match(html, new RegExp(`id="${id}"`));
-  assert.match(app, /SEG_ORDER = \["all", "professionals", "companies", "managers", "businesses"\]/);
+  for (const id of ["chips", "dhPct", "dhBar", "q"]) assert.match(html, new RegExp(`id="${id}"`));
+  for (const id of ["dhTotal", "dhFound"]) assert.doesNotMatch(html, new RegExp(`id="${id}"`), "no member counts");
+  assert.doesNotMatch(app, /members?\$\{|\$\{list\.length\} found/, "no member counts");
   assert.match(app, /setProperty\("--at", at\)/);
   assert.match(app, /state\.loading = false; renderChips\(\); renderFeed\(\);/, "counts fill in once the directory loads");
   assert.match(css, /\.seg \.seg-hl \{[^}]*translateX\(calc\(var\(--at\) \* 100%\)\)/);
   new Function(app);
+});
+
+test("visitor tools on the landing: check a badge and the price guide, from the public directory, no member counts", () => {
+  const html = read("index.html"), land = read("js/landing.js"), app = read("js/app.js");
+  for (const id of ["lp-check", "lpCheckQ", "lpCheckOut", "lp-rates", "lpRegions", "lpRates"]) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(html, /href="#lp-check" data-lp-jump/); assert.match(html, /href="#lp-rates" data-lp-jump/);
+  assert.match(app, /new CustomEvent\("baidx:directory"/); assert.match(app, /rate: Number\(r\.daily_rate_ghs\) \|\| null/);
+  assert.match(land, /function tradeRates\(list, reg\)/); assert.match(land, /q\.length < 2/);
+  assert.match(land, /Not verified yet/);
+  new Function(land);
 });

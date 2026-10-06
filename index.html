@@ -106,7 +106,7 @@
       <header class="lp-bar" id="lpBar">
         <div class="wrap">
           <img src="assets/logo.png" alt="BAID X" />
-          <nav aria-label="Landing"><a href="#lp-how" data-lp-jump>How it works</a><a href="#lp-for" data-lp-jump>Who it's for</a><a href="/pricing/">Pricing</a><a href="#lp-faq" data-lp-jump>FAQ</a></nav>
+          <nav aria-label="Landing"><a href="#lp-how" data-lp-jump>How it works</a><a href="#lp-check" data-lp-jump>Check a badge</a><a href="#lp-rates" data-lp-jump>Rates</a><a href="#lp-for" data-lp-jump>Who it's for</a><a href="/pricing/">Pricing</a><a href="#lp-faq" data-lp-jump>FAQ</a></nav>
           <div class="acts"><button class="btn ghost" data-action="signin">Sign in</button><button class="btn primary" data-action="join">Get started</button></div>
         </div>
       </header>
@@ -151,6 +151,27 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="lp-check" class="lp-tool" aria-labelledby="lpCheckH">
+        <div class="wrap">
+          <span class="eyebrow">Check a badge</span>
+          <h2 id="lpCheckH">Check before <span class="dim">you pay anyone.</span></h2>
+          <p class="sub">Someone says they are on BAID X? Type their name to see if a person at BAID X has checked them.</p>
+          <label class="lp-field"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 19a6.5 6.5 0 0 1 9.5-5.7"/><circle cx="17" cy="16" r="3"/><path d="m21 20-1.8-1.8"/></svg><input id="lpCheckQ" type="search" placeholder="Their full name" autocomplete="off" aria-label="Their full name" /></label>
+          <div class="lp-check-out" id="lpCheckOut" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="lp-rates" class="lp-tool" aria-labelledby="lpRatesH">
+        <div class="wrap">
+          <span class="eyebrow">Price guide</span>
+          <h2 id="lpRatesH">What work costs <span class="dim">in Ghana.</span></h2>
+          <p class="sub">Daily rates professionals set on BAID X. Use them to budget a job and to spot a quote that is far off.</p>
+          <div class="lp-regions" id="lpRegions"></div>
+          <div class="lp-rates" id="lpRates"><p class="lp-fine">Loading rates&hellip;</p></div>
+          <p class="lp-fine">Middle rate shown large; the bar runs from the lowest to the highest rate set. Final prices depend on the job.</p>
         </div>
       </section>
 
@@ -227,14 +248,13 @@
         </div>
       </header>
       <div class="dir-head">
-        <div class="dh-top"><span class="dh-live"><i></i>Live on BAID X</span><b id="dhTotal"></b></div>
+        <div class="dh-top"><span class="dh-live"><i></i>Live on BAID X</span></div>
         <h2>People and companies <span>you can trust.</span></h2>
         <div class="seg" id="chips" role="tablist" aria-label="Show"></div>
         <div class="dh-meter"><div class="dh-mrow"><span>Verified by a person at BAID X</span><b id="dhPct">&ndash;</b></div><div class="dh-bar"><i id="dhBar"></i></div></div>
         <label class="search dh-search">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/></svg>
           <input id="q" type="search" placeholder="Search name, trade or town" autocomplete="off" />
-          <span class="dh-found" id="dhFound" hidden></span>
         </label>
       </div>
       <section class="grid" id="feed" aria-live="polite"></section>

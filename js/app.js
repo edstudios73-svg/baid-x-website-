@@ -26,7 +26,7 @@
         return {
           kind: "worker", badge: r.verification_status === "verified" ? (r.badge_tier || "verified") : null, id: r.id, name: r.full_name, image: r.profile_photo_url, cover: r.cover_url || (r.portfolio_photo_urls || [])[0] || null,
           desc: r.short_bio || (trade ? `${trade} based in ${r.city_town || "Ghana"}.` : "Skilled professional on BAID X."),
-          tag: trade || pretty(r.rank_tier) || "Professional", place: place(r), catId: r.primary_job_category_id, region: r.region,
+          tag: trade || pretty(r.rank_tier) || "Professional", place: place(r), catId: r.primary_job_category_id, region: r.region, rate: Number(r.daily_rate_ghs) || null,
           stats: [[r.daily_rate_ghs ? `GH₵${num(r.daily_rate_ghs)}` : "On request", "Daily rate"], [r.years_of_experience ? `${pretty(r.years_of_experience)}${/^\d/.test(String(r.years_of_experience)) ? " yrs" : ""}` : "New", "Experience"]],
         };
       },
@@ -154,19 +154,20 @@
     $$("#sidebar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === name || b.dataset.tab === `${name}/${arg}` || (name === "org" && b.dataset.tab === "orgs"))); };
 
   /* ---------- Directory ---------- */
-  // The members' console (same as the app's Home): five parts, each with its group's real
-  // count, under a white highlight that slides to the chosen one; the member total and
-  // the share verified by BAID X fill in once the directory has loaded.
-  const SEG_LABEL = { all: "All", professionals: "Pros", companies: "Companies", managers: "PMs", businesses: "Suppliers" };
-  const SEG_ORDER = ["all", "professionals", "companies", "managers", "businesses"];
+  // The members' console (same as the app's Home): five parts under a white highlight
+  // that slides to the chosen one, and the share verified by BAID X once the directory
+  // has loaded. It never shows how many people are on BAID X.
+  const SEG = [["all", "All", '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>'],
+    ["professionals", "Pros", '<path d="M5 20v-1.5A4.5 4.5 0 0 1 9.5 14h5a4.5 4.5 0 0 1 4.5 4.5V20"/><circle cx="12" cy="8" r="3.5"/><path d="M8 6h8"/>'],
+    ["companies", "Companies", '<path d="M4 20V6l7-3v17M11 20h9V10l-9-3M7 9h1M7 13h1M7 17h1M15 13h1M15 17h1"/>'],
+    ["managers", "PMs", '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 11h6M9 15h4"/>'],
+    ["businesses", "Suppliers", '<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.7"/><circle cx="17" cy="18" r="1.7"/>']];
   function renderChips() {
     const items = state.items || [], loaded = !state.loading && !state.failed && items.length > 0;
-    const n = (k) => (k === "all" ? items.length : items.filter((it) => it.group === k).length);
-    const at = Math.max(0, SEG_ORDER.indexOf(state.filter));
+    const at = Math.max(0, SEG.findIndex(([k]) => k === state.filter));
     $("#chips").style.setProperty("--at", at);
-    $("#chips").innerHTML = '<i class="seg-hl"></i>' + SEG_ORDER.map((k) => `<button class="${state.filter === k ? "on" : ""}" role="tab" aria-selected="${state.filter === k}" data-chip="${k}"><b>${loaded ? n(k) : "&ndash;"}</b><span>${esc(SEG_LABEL[k])}</span></button>`).join("");
-    const total = $("#dhTotal"), pct = $("#dhPct"), bar = $("#dhBar");
-    if (total) total.textContent = loaded ? `${items.length} member${items.length === 1 ? "" : "s"}` : "";
+    $("#chips").innerHTML = '<i class="seg-hl"></i>' + SEG.map(([k, l, svg]) => `<button class="${state.filter === k ? "on" : ""}" role="tab" aria-selected="${state.filter === k}" data-chip="${k}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${svg}</svg><span>${esc(l)}</span></button>`).join("");
+    const pct = $("#dhPct"), bar = $("#dhBar");
     const share = loaded ? Math.round((items.filter((it) => it.badge).length / items.length) * 100) : null;
     if (pct) pct.textContent = share == null ? "\u2013" : `${share}%`;
     if (bar) bar.style.width = `${share || 0}%`;
@@ -211,7 +212,6 @@
     if (state.loading) { feed.innerHTML = '<div class="skel"></div>'.repeat(3); return; }
     if (state.failed) { feed.innerHTML = '<div class="state" style="grid-column:1/-1"><b>Couldn\'t load the directory</b>Check your connection and try again.</div>'; return; }
     const list = visible();
-    const found = $("#dhFound"); if (found) { found.hidden = !state.q.trim(); found.textContent = `${list.length} found`; }
     feed.innerHTML = list.length ? list.map(cardHTML).join("") : '<div class="state" style="grid-column:1/-1"><b>No results</b>Try another search, category or location.</div>';
   }
   async function loadDirectory() {
@@ -225,6 +225,7 @@
       state.items = results.flat().sort((a, b) => a.joined - b.joined); // the earliest members first
     } catch (e) { console.error("directory load failed", e); state.failed = true; }
     state.loading = false; renderChips(); renderFeed();
+    window.dispatchEvent(new CustomEvent("baidx:directory", { detail: state.failed ? null : state.items })); // the landing's badge check and price guide
   }
 
   /* ---------- Member shell: account screen, chats ---------- */
