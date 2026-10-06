@@ -1,0 +1,69 @@
+/* BAID X · CEO ad (20 s, 9:16). Black-and-white brand: white is the only accent; greys carry hierarchy. */
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: block; }
+@font-face { font-family: "Inter"; src: url("assets/fonts/inter-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: block; }
+:root { --font: "Inter", sans-serif; --ink: #f5f5f6; --muted: #a1a1a6; --dim: #6b6b70; --line: rgba(255,255,255,.14); }
+#stage { background: #070708; color: var(--ink); font-family: var(--font); overflow: hidden; }
+body.fg #stage { background: transparent; }
+body.bg .L-fg, body.fg .L-bg, body.bg .L-person, body.fg .L-person { display: none !important; }
+.full { position: absolute; inset: 0; }
+
+/* ── studio (background layer) ── */
+#wall { background:
+  radial-gradient(ellipse 60% 34% at 50% 34%, rgba(255,255,255,.10), transparent 70%),
+  repeating-linear-gradient(90deg, #0b0b0d 0 46px, #121215 46px 48px),
+  #0b0b0d; }
+#wallShade { background: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 60%, rgba(0,0,0,.6) 100%); }
+.led { position: absolute; top: 140px; width: 6px; height: 1120px; border-radius: 3px; background: #fff; box-shadow: 0 0 18px 4px rgba(255,255,255,.35), 0 0 80px 20px rgba(255,255,255,.08); }
+#tv { position: absolute; left: 540px; top: 560px; width: 780px; height: 440px; translate: -50% -50%; border-radius: 18px; background: #050505;
+      box-shadow: 0 0 0 10px #151517, 0 0 0 11px #2a2a2e, 0 40px 120px rgba(0,0,0,.7), 0 0 140px rgba(255,255,255,.06); overflow: hidden; }
+#tv .scr { position: absolute; inset: 0; }
+.sk { position: absolute; border-radius: 8px; background: rgba(255,255,255,.10); }
+#shelf { position: absolute; left: 700px; top: 250px; width: 380px; height: 10px; background: #1b1b1e; box-shadow: 0 1px 0 #2c2c30; }
+.box { position: absolute; bottom: 10px; border-radius: 6px; background: #151517; box-shadow: inset 0 0 0 1px #26262a; }
+.dot { position: absolute; width: 6px; height: 6px; border-radius: 3px; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.8); }
+#mon2 { position: absolute; left: -70px; top: 1010px; width: 330px; height: 210px; border-radius: 12px; background: #050505; box-shadow: 0 0 0 8px #151517, 0 0 0 9px #2a2a2e; overflow: hidden; }
+#mon2st { position: absolute; left: 70px; top: 1228px; width: 30px; height: 70px; background: #151517; }
+
+/* person (board stills only; the final composites the keyed video in ffmpeg) */
+.person { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; filter: brightness(1.05) contrast(1.04); }
+#deskShade { background: linear-gradient(180deg, transparent 66%, rgba(0,0,0,.42) 82%, rgba(0,0,0,.65) 100%); }
+
+/* ── foreground ── */
+.hl { position: absolute; left: 540px; translate: -50% -50%; font: 800 104px/1 var(--font); letter-spacing: -0.05em; white-space: nowrap; text-align: center; color: #fff; }
+.sub { position: absolute; left: 540px; translate: -50% -50%; font: 600 36px/1.2 var(--font); color: var(--muted); white-space: nowrap; }
+.app { position: absolute; width: 440px; height: 128px; translate: -50% -50%; border-radius: 26px; display: flex; align-items: center; gap: 22px; padding: 0 24px;
+       background: rgba(18,18,20,.78); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.14), 0 30px 60px -20px rgba(0,0,0,.7); backdrop-filter: blur(14px); }
+.app .ic { flex: none; width: 76px; height: 76px; border-radius: 20px; background: #2a2a2e; display: grid; place-items: center; color: #8b8b90; font-size: 40px; }
+.app .tx { flex: 1; }
+.app .t { font: 700 30px/1 var(--font); color: #fff; white-space: nowrap; }
+.app .m { margin-top: 12px; height: 10px; width: 150px; border-radius: 5px; background: rgba(255,255,255,.14); }
+.app .tag { flex: none; height: 44px; padding: 0 16px; border-radius: 22px; display: grid; place-items: center; font: 700 20px/1 var(--font); color: #d6d6da;
+            box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.22); white-space: nowrap; }
+#bx { position: absolute; left: 250px; top: 880px; width: 420px; height: 170px; translate: -50% -50%; border-radius: 30px; background: #fff; color: #0b0b0b;
+      display: flex; align-items: center; gap: 24px; padding: 0 28px; box-shadow: 0 0 0 1px rgba(255,255,255,.6), 0 40px 120px rgba(255,255,255,.22), 0 30px 60px -10px rgba(0,0,0,.6); }
+#bx .ic { flex: none; width: 92px; height: 92px; border-radius: 26px; background: #0b0b0b; display: grid; place-items: center; }
+#bx .ic img { width: 70px; }
+#bx .t img { height: 40px; display: block; filter: invert(1); }
+#bx .m { margin-top: 12px; font: 600 22px/1.2 var(--font); color: #55555a; white-space: nowrap; }
+#bx .v { margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 17px; background: #0b0b0b; color: #fff; font: 700 18px/1 var(--font); }
+#ripple { position: absolute; left: 150px; top: 880px; width: 120px; height: 120px; translate: -50% -50%; border-radius: 50%; box-shadow: inset 0 0 0 3px #fff; }
+#streak { position: absolute; left: 250px; top: 0; width: 4px; height: 900px; translate: -50% 0; background: linear-gradient(180deg, transparent, #fff 80%, transparent); filter: blur(1px); }
+
+/* reveal world */
+#rv { background: #000; }
+#phone { position: absolute; left: 540px; top: 860px; width: 560px; height: 1180px; translate: -50% -50%; border-radius: 86px; padding: 16px; background: #0b0b0b;
+         box-shadow: inset 0 0 0 3px #303030, 0 0 0 1px rgba(255,255,255,.12), 0 80px 160px -50px rgba(0,0,0,.95), 0 0 160px rgba(255,255,255,.07); }
+#phone .scr { position: relative; width: 528px; height: 1148px; border-radius: 72px; overflow: hidden; background: #000; }
+#phone .scr img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cap { position: absolute; left: 540px; top: 1620px; translate: -50% -50%; font: 800 76px/1 var(--font); letter-spacing: -0.045em; white-space: nowrap; color: #fff; }
+.cap2 { position: absolute; left: 540px; top: 1700px; translate: -50% -50%; font: 600 32px/1 var(--font); color: var(--muted); white-space: nowrap; }
+#logo { position: absolute; left: 540px; top: 780px; width: 640px; translate: -50% -50%; }
+#logo img { width: 100%; display: block; }
+#cta { position: absolute; left: 540px; top: 1010px; height: 128px; padding: 0 60px; translate: -50% -50%; border-radius: 64px; background: #fff; color: #0b0b0b;
+       display: grid; place-items: center; font: 800 52px/1 var(--font); letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; box-shadow: 0 30px 90px -20px rgba(255,255,255,.35); }
+#inst { position: absolute; left: 540px; top: 1130px; translate: -50% -50%; font: 600 32px/1 var(--font); color: var(--muted); white-space: nowrap; }
+#gwn { position: absolute; left: 540px; top: 880px; translate: -50% -50%; font: 700 30px/1 var(--font); letter-spacing: .3em; color: #d9d9d9; white-space: nowrap; }
+#by { position: absolute; left: 540px; top: 1480px; translate: -50% -50%; font: 500 26px/1 var(--font); color: var(--dim); white-space: nowrap; }
+#feeds { -webkit-mask-image: linear-gradient(180deg, transparent 0, transparent 400px, #000 560px, #000 1240px, transparent 1320px); mask-image: linear-gradient(180deg, transparent 0, transparent 400px, #000 560px, #000 1240px, transparent 1320px); }

@@ -1,0 +1,7 @@
+out/*
+!out/baidx-ceo-ad-20s-4k.mp4
+!out/baidx-ceo-ad-cover.jpg
+board/**/*.png
+!board/**/contact-sheet.png
+board/person-*.png
+assets/plate/*
