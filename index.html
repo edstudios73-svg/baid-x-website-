@@ -79,6 +79,30 @@
   <!-- Landing: what signed-out visitors see -->
   <main class="screen" id="screen-landing">
     <div class="lp">
+      <div class="lp-bg" aria-hidden="true">
+        <svg class="bp-land" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice">
+          <g class="bp">
+            <g id="bpElev">
+            <path d="M120 760 H600 M150 760 V560 H570 V760 M130 566 L360 430 L590 566 M190 610 h70 v60 h-70z M455 610 h70 v60 h-70z M330 760 V640 h60 v120 M225 610 v60 M490 610 v60 M190 640 h70 M455 640 h70" />
+            <path class="dim" d="M150 800 H570 M150 792 v16 M570 792 v16 M360 792 v16 M100 560 V760 M92 560 h16 M92 760 h16" />
+            <text x="255" y="822">5400</text><text x="465" y="822">5400</text><text x="40" y="664">3000</text>
+            <text x="150" y="860" class="t">FRONT ELEVATION  1:100</text>
+            </g>
+            <g id="bpPlan">
+            <path d="M700 140 H1120 V470 H700z M700 300 H880 M880 140 V470 M980 300 V470 M880 300 H1120 M760 300 a40 40 0 0 1 40 -40 M880 380 a40 40 0 0 0 40 40 M1040 300 a40 40 0 0 1 -40 40" />
+            <path class="dim" d="M700 110 H1120 M700 102 v16 M1120 102 v16 M880 102 v16 M1150 140 V470 M1142 140 h16 M1142 470 h16" />
+            <text x="760" y="96">3600</text><text x="970" y="96">4800</text><text x="1158" y="310">6600</text>
+            <text x="745" y="225">Living</text><text x="935" y="225">Bedroom 1</text><text x="745" y="390">Kitchen</text><text x="905" y="450">Bath</text><text x="1010" y="390">Bedroom 2</text>
+            <text x="700" y="510" class="t">GROUND FLOOR PLAN  1:100</text>
+            </g>
+            <path d="M840 700 H1140 V820 H840z M840 740 H1140 M990 740 V820" />
+            <text x="856" y="726" class="t">BAID X  &#183;  JOB #BX-10482</text><text x="856" y="772">East Legon, Accra</text><text x="856" y="800">Sheet A-01</text><text x="1006" y="772">Checked</text><text x="1006" y="800">Rev 03</text>
+          </g>
+        </svg>
+        <svg class="bp-port" viewBox="0 0 640 1386" preserveAspectRatio="xMidYMid slice">
+          <g class="bp"><use href="#bpPlan" transform="translate(-660 40)" /><use href="#bpElev" transform="translate(10 560)" /></g>
+        </svg>
+      </div>
       <header class="lp-bar" id="lpBar">
         <div class="wrap">
           <img src="assets/logo.png" alt="BAID X" />
@@ -94,26 +118,38 @@
             <h1>Hire verified people. <span class="accent">Pay only when the work is done.</span></h1>
             <p class="sub">BAID X connects workers, companies, project managers, suppliers and clients across Ghana. Badges come from checks a person at BAID X has done, and the money for a job stays in escrow until the client approves the work.</p>
             <div class="cta"><button class="btn primary" data-action="join">Create your free account</button><button class="btn ghost" data-action="signin">I already have an account</button></div>
-            <div class="proof"><span><b>5</b>account types</span><span><b>50</b>trades</span><span><b>16</b>regions of Ghana</span><span><b>Free</b>to join</span></div>
+            <div class="proof"><span><b>5</b>account types</span><span><b>50</b>trades</span><span><b>16</b>regions</span><span><b>Free</b>to join</span></div>
           </div>
-          <div class="lp-phone-wrap" aria-hidden="true">
-            <div class="lp-phone">
-              <div class="notch"></div>
-              <div class="ph-top"><img src="assets/logo.png" alt="" /><span class="ph-status">Held</span></div>
-              <div class="ph-card"><div class="ph-who"><div class="ph-av">KA</div><div><b>Kwame A.</b><small>Electrician &middot; East Legon</small></div></div></div>
-              <div class="ph-card ph-amt"><small>In escrow</small><b>GH&#8373;900.00</b></div>
-              <div class="ph-card">
-                <div class="ph-steps">
-                  <div class="ph-step done"><i></i>Hired and funded</div>
-                  <div class="ph-step done"><i></i>Work submitted</div>
-                  <div class="ph-step now"><i></i>Approved by client</div>
-                  <div class="ph-step"><i></i>Paid to mobile money</div>
+        </div>
+      </section>
+
+      <section class="lp-stack" id="lpStack" aria-label="How a badge is earned">
+        <div class="stage">
+          <div class="wrap">
+            <div class="copy">
+              <span class="eyebrow">How a badge is earned</span>
+              <h2>Four checks. <span class="dim">One card you can trust.</span></h2>
+              <ol class="checks" id="lpChecks">
+                <li><i></i><div><b>Profile reviewed</b><small>A person at BAID X looks at every profile.</small></div></li>
+                <li><i></i><div><b>Ghana Card checked</b><small>Identity matched to an official ID.</small></div></li>
+                <li><i></i><div><b>Trade proven</b><small>Certificates and past work verified.</small></div></li>
+                <li><i></i><div><b>Money held in escrow</b><small>GH&#8373;900 waits until the client approves.</small></div></li>
+              </ol>
+            </div>
+            <div class="scene" aria-hidden="true">
+              <div class="rig">
+                <div class="layer base" style="--i:0"><span>BAID X</span></div>
+                <div class="layer" style="--i:4"><span class="seal" data-lp-seal></span><div><b>GH&#8373;900 held</b><small>Released when the work is approved</small></div><em>04</em></div>
+                <div class="layer" style="--i:3"><span class="seal" data-lp-seal></span><div><b>Trade proven</b><small>Certificates checked</small></div><em>03</em></div>
+                <div class="layer" style="--i:2"><span class="seal" data-lp-seal></span><div><b>Identity verified</b><small>Ghana Card checked</small></div><em>02</em></div>
+                <div class="layer" style="--i:1"><span class="seal" data-lp-seal></span><div><b>Profile reviewed</b><small>By a person at BAID X</small></div><em>01</em></div>
+                <div class="layer top" style="--i:5">
+                  <div class="who"><div class="av">KA</div><div><b>Kwame A.</b><small>Electrician &middot; East Legon</small></div><span class="held">Held</span></div>
+                  <div class="amt"><small>In escrow</small><b>GH&#8373;900.00</b></div>
+                  <div class="ok"><span class="seals"><i data-lp-seal></i><i data-lp-seal></i><i data-lp-seal></i></span>Verified by BAID X</div>
                 </div>
-                <div class="ph-btn">Approve and release</div>
               </div>
             </div>
-            <div class="lp-chip c1"><span class="d"></span>Ghana Card checked</div>
-            <div class="lp-chips-b"><div class="lp-chip c3"><span class="d"></span>Identity verified</div><div class="lp-chip c2"><span class="d accent"></span>GH&#8373;900 held safely</div></div>
           </div>
         </div>
       </section>
