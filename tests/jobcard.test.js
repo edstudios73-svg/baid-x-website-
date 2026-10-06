@@ -94,3 +94,15 @@ test("marketplace: every role browses photo listings; suppliers add up to 6 phot
   assert.doesNotMatch(css, /backdrop-filter/);
   new Function(cat); new Function(mk);
 });
+
+test("colours: the logo's black and white only; no gold, cream, amber or yellow in the UI", () => {
+  const glob = (d, ext) => fs.readdirSync(d).filter((f) => f.endsWith(ext)).map((f) => `${d}/${f}`);
+  const files = [...glob("css", ".css"), ...glob("js", ".js"), "index.html", "auth.html"].filter((f) => !/admin/.test(f));
+  const warm = (r, g, b) => r > 150 && g > 90 && r - b > 60 && g - b > 40;
+  const flag = /#fcd116/i; // the yellow in Ghana's flag beside the phone field
+  for (const f of files) {
+    const s = read(f).replace(new RegExp(flag.source, "gi"), "");
+    for (const m of s.matchAll(/#([0-9a-f]{6})\b/gi)) { const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)); assert.ok(!warm(r, g, b), `${f}: ${m[0]}`); }
+    for (const m of s.matchAll(/rgba?\((\d+),\s*(\d+),\s*(\d+)/g)) assert.ok(!warm(+m[1], +m[2], +m[3]), `${f}: ${m[0]}`);
+  }
+});

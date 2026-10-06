@@ -71,7 +71,7 @@ body.g-on .wallet { background: linear-gradient(150deg, rgba(255,255,255,.2), rg
 body.g-on .wallet > b { font-size: 34px; }
 
 /* ---- banners, segments, search ---- */
-body.g-on .banner { background: linear-gradient(135deg, rgba(232,196,106,.2), rgba(14,14,14,.4)); border: 1.5px solid rgba(232,196,106,.45); border-radius: 20px; backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge); }
+body.g-on .banner { background: linear-gradient(135deg, rgba(255,255,255,.2), rgba(14,14,14,.4)); border: 1.5px solid rgba(255,255,255,.45); border-radius: 20px; backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge); }
 body.g-on .segs { background: rgba(14,14,14,.45); border: 1.5px solid var(--gl-line); border-radius: 18px; padding: 4px; backdrop-filter: var(--gl-blur); -webkit-backdrop-filter: var(--gl-blur); box-shadow: var(--gl-edge); }
 body.g-on .segs button { background: transparent; border: 0; }
 body.g-on .segs button.on { background: #fff; color: #000; box-shadow: 0 6px 18px rgba(0,0,0,.35); }

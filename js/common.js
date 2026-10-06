@@ -14,7 +14,7 @@
   const isPlaceholderEmail = (v) => /\.invalid$/i.test(String(v || "").trim());
 
   let toastTimer;
-  // Messages are always solid and readable: red for problems, green for success, gold for waiting, white for the rest.
+  // Messages are always solid and readable: red for problems, green for success, white for waiting and the rest.
   const TOAST_ICON = { err: '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>', ok: '<path d="m5 12.5 4.5 4.5L19 7.5"/>', warn: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>' };
   const toastKind = (m) => (/couldn.?t|can.?t|cannot|failed|wrong|not (allowed|available|enough|switched|found)|nothing was charged|expired|invalid|error|isn.?t|unable|too many|already|denied|enter |choose |add (a|an|your)|please sign|sign in|rejected/i.test(m) ? "err" : /still waiting|waiting|wait a|confirming|checking/i.test(m) ? "warn" : /confirmed|saved|added|sent|released|submitted|done|paid|active|cancel|refund|funded|accepted|published|updated|copied|opened|switched|hired|placed|delivered|settled|removed|ready/i.test(m) ? "ok" : "info");
   function toast(msg, kind) {
@@ -352,8 +352,8 @@
     "individual-employer": ["discover", "hires", "post-job", "wallet", "applicants", "engagement", "equipment", "materials", "orders", "order", "build", "house"],
   };
 
-  // Verification badge colours: blue = reviewed by BAID X (free); green / purple / gold = paid verification tiers.
-  const BADGES = { verified: ["#38bdf8", "Verified", "Reviewed by BAID X"], identity: ["#34d399", "Identity verified", "ID document checked"], professional: ["#a78bfa", "Professional verified", "Trade and ID checked"], advanced: ["#e8c46a", "Advanced verified", "Full background check"] };
+  // Verification badge colours: blue = reviewed by BAID X (free); green / purple / white = paid verification tiers.
+  const BADGES = { verified: ["#38bdf8", "Verified", "Reviewed by BAID X"], identity: ["#34d399", "Identity verified", "ID document checked"], professional: ["#a78bfa", "Professional verified", "Trade and ID checked"], advanced: ["#ffffff", "Advanced verified", "Full background check"] };
   const badge = (tier, size = 17) => { const k = BADGES[tier] ? tier : "verified", [col, label] = BADGES[k]; return `<span class="vbadge t-${k}" style="color:${col}" title="${label}">${icon("seal", size)}</span>`; };
   const money = (n) => { const v = Number(n) || 0; return `${v < 0 ? "-" : ""}GH₵${Math.abs(v).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; };
   const ago = (iso) => {

@@ -314,7 +314,7 @@
     $("#passNext").disabled = !ok; $("#passErr").textContent = "";
     // strength: Weak / Fair while a rule is missing; Good when all pass; Strong at 12+ characters
     const passed = Object.values(rules).filter((f) => f(p)).length, lvl = !p ? 0 : !ok ? (passed >= 3 ? 2 : 1) : p.length >= 12 ? 4 : 3;
-    const [word, col] = [["", "#9a9a9a"], ["Weak", "#f87171"], ["Fair", "#fbbf24"], ["Good", "#7dd3fc"], ["Strong", "#34d399"]][lvl];
+    const [word, col] = [["", "#9a9a9a"], ["Weak", "#f87171"], ["Fair", "#ffffff"], ["Good", "#7dd3fc"], ["Strong", "#34d399"]][lvl];
     $$("#meter i").forEach((b, k) => { b.classList.toggle("on", k < lvl); b.style.setProperty("--mc", col); });
     $("#meterL").style.setProperty("--mc", col); $("#meterL").textContent = word;
   }

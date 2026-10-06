@@ -31,7 +31,7 @@ body.is-member .intro { display: none; }
 .faq details[open] { border-color: rgba(255,255,255,.22); }
 .faq summary { list-style: none; cursor: pointer; padding: 16px 0; font-weight: 700; font-size: 15.5px; display: flex; justify-content: space-between; gap: 14px; }
 .faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; font-weight: 400; font-size: 20px; line-height: 1; color: #e8d9a8; }
+.faq summary::after { content: "+"; font-weight: 400; font-size: 20px; line-height: 1; color: #ffffff; }
 .faq details[open] summary::after { content: "\2212"; }
 .faq details p { margin: 0 0 16px; color: #b5b5b5; line-height: 1.6; font-size: 14.5px; }
 .tbl { overflow-x: auto; border-radius: 16px; border: 1px solid rgba(255,255,255,.1); }

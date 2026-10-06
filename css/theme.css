@@ -1,4 +1,4 @@
-/* BAID X · design layer 2. Loaded after app.css: richer surfaces, a gold-to-ember brand accent, glass nav, polished cards. */
+/* BAID X · design layer 2. Loaded after app.css: richer surfaces, a white "ember" accent (the logo's colours), glass nav, polished cards. */
 :root {
   --bg: #050505; --card: #0e0e0e; --tile: #151515; --line: rgba(255,255,255,.075); --text: #f6f6f7; --muted: #8c8c8c;
   --g1: #ffffff; --g2: #ffffff; --g3: #bdbdbd; --ember: linear-gradient(180deg, #ffffff 0%, #e4e4e4 100%);
@@ -86,7 +86,7 @@ body { background: radial-gradient(800px 380px at 80% -140px, rgba(255,255,255,.
 
 /* banner (setup) */
 .banner { background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.08)); border: 1px solid rgba(255,255,255,.3); border-radius: 18px; padding: 13px; }
-.banner p { color: #f6e9cf; } .banner b { color: var(--g1); } .banner .b-ic { background: var(--ember); color: var(--on-ember); }
+.banner p { color: #e6e6e6; } .banner b { color: var(--g1); } .banner .b-ic { background: var(--ember); color: var(--on-ember); }
 
 /* ---- directory / marketplace cards ---- */
 .grid { gap: 14px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
