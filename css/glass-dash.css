@@ -109,3 +109,37 @@ body.g-on :is(.state, .d-empty) { border-radius: 22px; }
 
 /* marketplace photo badges read over any photo */
 body.g-on :is(.mk-n, .mk-v) { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+
+/* ---- members' page: the landing's drawing behind it, a section heading, and the
+   member cards with a cover photo (same layout as the app's Home) ---- */
+#screen-directory .dir-bg { z-index: 0; }
+#screen-directory .dir-bg svg { height: calc(100% + 160px); transform: translateY(calc(-1 * var(--y, 0px))); }
+#screen-directory > .wrap { position: relative; z-index: 1; }
+.dir-head { margin: 18px 0 14px; }
+.dir-head span { font-size: 13px; font-weight: 600; color: #a3a3a3; }
+.dir-head h2 { margin: 4px 0 6px; font-size: 24px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; text-wrap: balance; }
+.dir-head p { margin: 0; font-size: 13.5px; line-height: 1.45; color: #9a9a9a; max-width: 60ch; }
+
+.card.c3.m4, body.g-on .card.c3.m4 { padding: 0; overflow: hidden; border-radius: 26px;
+  background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 55%, rgba(255,255,255,.07));
+  border: 1px solid rgba(255,255,255,.22); box-shadow: 0 24px 50px -14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);
+  backdrop-filter: blur(9px) saturate(1.3); -webkit-backdrop-filter: blur(9px) saturate(1.3); }
+.m4 .m-head { position: relative; height: 158px; }
+.m4 .m-cover { position: absolute; inset: 0 0 34px; background: #1a1a1a center/cover no-repeat;
+  -webkit-mask-image: linear-gradient(#000 50%, transparent); mask-image: linear-gradient(#000 50%, transparent); }
+.m4 .m-cover.none { background: linear-gradient(135deg, rgba(255,255,255,.35), rgba(255,255,255,.05)); display: flex; align-items: center; justify-content: flex-end; padding-right: 22px; }
+.m4 .m-cover.none span { font-size: 76px; font-weight: 800; letter-spacing: -.06em; color: rgba(255,255,255,.08); }
+.m4 .t-kind { position: absolute; top: 12px; right: 12px; margin: 0; padding: 5px 10px; border-radius: 99px; font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fff;
+  background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.m4 .t-av { position: absolute; left: 16px; bottom: 0; width: 66px; height: 66px; border-radius: 19px; font-size: 22px; box-shadow: 0 0 0 3px #0b0b0b, 0 8px 20px rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.28); }
+.m4 .m-joined { position: absolute; right: 16px; bottom: 6px; font-size: 11.5px; color: #9a9a9a; }
+.m4 .m-body { padding: 12px 16px 16px; }
+.m4 h3 { display: flex; align-items: center; gap: 6px; font-size: 18px; letter-spacing: -.02em; }
+.m4 h3 > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m4 .t-tag { font-size: 13px; font-weight: 600; }
+.m4 .desc { margin-top: 10px; font-size: 13.5px; color: #c4c4c4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.m4 .m-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.m4 .m-facts div { min-width: 0; padding: 9px 10px; border-radius: 14px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+.m4 .m-facts b { display: block; font-size: 14px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m4 .m-facts span { display: block; font-size: 11px; color: #9a9a9a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m4 .t-trust { border-radius: 14px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); padding: 9px 12px; }

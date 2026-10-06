@@ -163,18 +163,26 @@
   const KIND_LABEL = { worker: "Professional", company: "Company", pm: "Project manager", business: "Supplier" };
   const SEAL = (tier) => (tier ? window.BX.badge(tier, 17) : "");
   // Member card: identity row (avatar beside the name), a facts line and a trust line.
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const joinedLabel = (t) => { if (!Number.isFinite(t)) return ""; const d = new Date(t); return `Joined ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
+  // A member card: liquid glass with the member's cover photo across the top (their
+  // initials, large and faint, when there is none), their photo on its edge, name and
+  // badge, three fact tiles, the trust line and the actions. Same layout as the app.
   function cardHTML(it) {
     const role = R(), canInvite = (role === "company" && ["worker", "pm"].includes(it.kind)) || (role === "project-manager" && it.kind === "worker");
     const av = `<div class="t-av" ${it.image ? `style="background-image:url('${esc(it.image)}')"` : ""}>${it.image ? "" : esc(initials(it.name))}</div>`;
+    const cover = it.cover ? `<div class="m-cover" style="background-image:url('${esc(it.cover)}')"></div>` : `<div class="m-cover none"><span>${esc(initials(it.name))}</span></div>`;
     const msg = role ? `<button class="b2" data-fx="message" data-id="${esc(it.id)}" data-name="${esc(it.name)}">Message</button>` : "";
-    const facts = [`<span class="t-place">${PIN.replace('width="20" height="20"', 'width="14" height="14"')}${esc(it.place)}</span>`, ...it.stats.map(([v, l]) => `<span><b>${esc(String(v).replace(/^(\d+) (\d+)$/, "$1–$2"))}</b> ${esc(String(l).toLowerCase())}</span>`)].join('<i class="t-dot"></i>');
+    const tiles = [[String(it.place || "").split(",")[0] || "Ghana", "Based in"], ...it.stats.map(([v, l]) => [String(v).replace(/^(\d+) (\d+)$/, "$1–$2"), l])]
+      .map(([v, l]) => `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
     const b = it.badge && window.BX.BADGES[it.badge];
     const trust = b ? `<div class="t-trust ok">${SEAL(it.badge)}<span>${esc(b[1])} by BAID X</span></div>` : `<div class="t-trust"><span>Verification in progress</span></div>`;
-    return `<article class="card c3" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">
-      <div class="t-top">${av}<div class="t-id"><h3>${esc(it.name)}</h3><div class="t-tag">${esc(it.tag)}</div></div><span class="t-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span></div>
+    return `<article class="card c3 m4" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">
+      <div class="m-head">${cover}<span class="t-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span>${av}<span class="m-joined">${esc(joinedLabel(it.joined))}</span></div>
+      <div class="m-body"><h3><span>${esc(it.name)}</span>${SEAL(it.badge)}</h3><div class="t-tag">${esc(it.tag)}</div>
       <p class="desc">${esc(it.desc)}</p>
-      <div class="t-facts">${facts}</div>${trust}
-      <div class="c-foot"><button class="b1">${canInvite ? "Invite to project" : "View profile"}</button>${msg}</div></article>`;
+      <div class="m-facts">${tiles}</div>${trust}
+      <div class="c-foot"><button class="b1">${canInvite ? "Invite to project" : "View profile"}</button>${msg}</div></div></article>`;
   }
   const norm = (s) => String(s || "").toLowerCase().replace(/\s*region$/, "").trim();
   function visible() {
@@ -341,5 +349,19 @@
     if (state.me && !state.me.role) { location.replace("auth.html"); return; }
     paintMember(); renderNav(); route(); loadDirectory(); loadUnread();
     window.dispatchEvent(new Event("baidx:member"));
+  })();
+  // The members' page sits on the same architect's drawing as the landing, drifting up
+  // slowly as the page scrolls (parallax) so the glass cards always have depth behind them.
+  (() => {
+    const src = document.querySelector("#screen-landing .lp-bg"), dir = document.getElementById("screen-directory");
+    if (!src || !dir) return;
+    const bg = src.cloneNode(true); bg.classList.add("dir-bg"); dir.prepend(bg);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let queued = false;
+    addEventListener("scroll", () => {
+      if (queued || !dir.classList.contains("active")) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; bg.style.setProperty("--y", `${Math.min(scrollY * 0.12, 160).toFixed(1)}px`); });
+    }, { passive: true });
   })();
 })();

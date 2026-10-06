@@ -106,3 +106,14 @@ test("colours: the logo's black and white only; no gold, cream, amber or yellow 
     for (const m of s.matchAll(/rgba?\((\d+),\s*(\d+),\s*(\d+)/g)) assert.ok(!warm(+m[1], +m[2], +m[3]), `${f}: ${m[0]}`);
   }
 });
+
+test("member cards: glass with the cover photo, three fact tiles and the join date; the landing's drawing behind them", () => {
+  const app = read("js/app.js"), css = read("css/glass-dash.css"), html = read("index.html");
+  assert.match(app, /class="card c3 m4"/);
+  assert.match(app, /m-cover" style="background-image:url\('\$\{esc\(it\.cover\)\}'\)"/, "the cover photo is shown");
+  assert.match(app, /"Based in"/); assert.match(app, /Joined \$\{MONTHS/);
+  assert.match(app, /bg\.classList\.add\("dir-bg"\)/);
+  assert.match(css, /\.m4 \.m-cover \{[^}]*mask-image/);
+  assert.ok(html.indexOf('class="dir-head"') > html.indexOf('</header>', html.indexOf('id="screen-directory"')), "the heading scrolls away, outside the sticky bar");
+  new Function(app);
+});
