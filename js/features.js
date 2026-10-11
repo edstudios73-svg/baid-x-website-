@@ -333,6 +333,7 @@
     "open-terms": () => { window.open("terms.html", "_blank", "noopener"); },
     "open-privacy": () => { window.open("privacy.html", "_blank", "noopener"); },
     "open-about": () => { window.open("about.html", "_blank", "noopener"); },
+    "open-contact": () => { window.open("contact.html", "_blank", "noopener"); },
     "public-profile": (c) => publicProfile(c),
     "add-email": (c) => openSheet("Sign-in email", `${emailStatus(c)}<form data-fx-form="add-email">${fld("Email address", inp("email", { type: "email", req: true, ph: "you@example.com" }), "We send a link to confirm it.")}<button class="btn-light" type="submit" style="width:100%">Send confirmation link</button></form>`),
     "change-phone": (c) => openSheet("Change phone", `<form data-fx-form="change-phone">${fld("New mobile number", inp("phone", { type: "tel", ph: "+233201234567", req: true }), "Include the country code. We text a code to confirm.")}<button class="btn-light" type="submit" style="width:100%">Send code</button></form>`),

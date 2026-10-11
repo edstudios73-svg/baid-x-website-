@@ -256,7 +256,7 @@
     };
     $("#accMenu").innerHTML = [billRow, orgRow, ...menus[me.role]].map(([t, d, to]) => row(t, d, to)).join("");
     $("#accAccount").innerHTML = [row("Add email", "Verify the email address for this account.", null, "add-email"), row("Change phone", "Update the mobile number linked to this account.", null, "change-phone"), row("Switch account", "Use another account on this device.", null, "switch-account"), row("Change password", "Set a new password for sign-in.", null, "change-password")].join("");
-    $("#accInfo").innerHTML = [row("User guide", "How to use BAID X, step by step, for every role.", null, "open-docs"), row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", null, "open-terms"), row("Privacy policy", "Read how we handle your information.", null, "open-privacy"), row("About BAID X", "Product and company information.", null, "open-about")].join("");
+    $("#accInfo").innerHTML = [row("User guide", "How to use BAID X, step by step, for every role.", null, "open-docs"), row("Help center", "Guides and support articles.", "info/help"), row("Terms of service", "Read our service terms.", null, "open-terms"), row("Privacy policy", "Read how we handle your information.", null, "open-privacy"), row("Contact us", "info@baidencreatives.org · +233 20 607 1106", null, "open-contact"), row("About BAID X", "An organization under Baiden Creatives.", null, "open-about")].join("");
   }
 
   const HOURGLASS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M6 21h12M7 3c0 5 5 5 5 9s-5 4-5 9M17 3c0 5-5 5-5 9s5 4 5 9"/></svg>';

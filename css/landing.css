@@ -27,6 +27,16 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
 .lp-bar .acts { margin-left: auto; display: flex; gap: 10px; }
 .lp-bar .btn { height: 40px; padding: 0 18px; font-size: 14px; }
 @media (max-width: 860px) { .lp-bar nav { display: none; } .lp-bar .acts .ghost { display: none; } }
+/* phone-width menu: the bar's links and sign-in move into a glass panel under the bar */
+.lp-menu-btn { display: none; width: 42px; height: 42px; border-radius: 13px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; place-items: center; cursor: pointer; }
+.lp-menu { border-top: 1px solid rgba(255,255,255,.1); padding: 10px 20px 18px; background: rgba(10,10,10,.82); backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6); }
+.lp-bar .lp-menu nav { display: flex; flex-direction: column; gap: 0; margin: 0; }
+.lp-menu nav a { color: #e6e6e6; font-size: 16px; font-weight: 600; text-decoration: none; padding: 13px 4px; border-bottom: 1px solid rgba(255,255,255,.07); }
+.lp-bar .lp-menu .acts { display: flex; gap: 10px; margin: 14px 0 0; }
+.lp-bar .lp-menu .acts .ghost { display: inline-flex; }
+.lp-bar .lp-menu .acts .btn { flex: 1; height: 46px; justify-content: center; }
+@media (max-width: 860px) { .lp-menu-btn { display: grid; } .lp-bar .wrap { gap: 12px; } }
+@media (min-width: 861px) { .lp-menu { display: none !important; } }
 
 /* hero */
 .lp-hero { padding: 64px 0 72px !important; }

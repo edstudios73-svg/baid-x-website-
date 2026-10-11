@@ -134,8 +134,13 @@ test("visitor tools on the landing: check a badge and the price guide, from the 
   for (const id of ["lp-check", "lpCheckQ", "lpCheckOut", "lp-rates", "lpRegions", "lpRates"]) assert.match(html, new RegExp(`id="${id}"`));
   assert.match(html, /href="#lp-check" data-lp-jump/); assert.match(html, /href="#lp-rates" data-lp-jump/);
   assert.match(app, /new CustomEvent\("baidx:directory"/); assert.match(app, /rate: Number\(r\.daily_rate_ghs\) \|\| null/);
-  assert.match(land, /function tradeRates\(list, reg\)/); assert.match(land, /q\.length < 2/);
-  assert.match(land, /Not verified yet/);
+  assert.match(land, /function tradeRates\(list, reg\)/); assert.match(land, /q\.length < 3/);
+  assert.match(land, /m\.badge && String\(m\.name/, "the badge check lists verified members only");
+  assert.doesNotMatch(land, /Not verified yet/);
+  assert.match(land, /const MIN_SAMPLES = 3/); assert.match(land, /r >= m0 \/ 3 && r <= m0 \* 3/);
+  assert.match(land, /setTimeout\(\(\) => \{ if \(!loaded\) renderRates\(\); \}, 8000\)/);
+  assert.match(html, /id="lpMenuBtn"[^>]*aria-expanded="false" aria-controls="lpMenu"/); assert.match(html, /id="lpMenu" hidden/);
+  assert.match(html, /EXAMPLE  &#183;  JOB #BX-10482/); assert.match(html, /Example &middot; Electrician/);
   new Function(land);
 });
 
@@ -169,4 +174,18 @@ test("app on the web: an animated splash in the page while the app loads, never 
   assert.match(html, /minMs = calm \? 600 : 4000/, "4 seconds"); assert.match(html, /animation: bFill 4s linear forwards/, "the bar fills across the 4 seconds");
   const v = JSON.parse(read("vercel.json"));
   assert.ok(v.headers.some((h) => h.source.startsWith("/app/(assets|canvaskit") && /stale-while-revalidate/.test(h.headers[0].value)), "the app's files are kept by the browser so later visits open fast");
+});
+
+test("www.baid-x.com: old host redirects except /api/, contact page, Baiden Creatives named, fees stated", () => {
+  const vj = JSON.parse(read("vercel.json"));
+  const host = vj.redirects.find((r) => r.has?.[0]?.value === "baid-x-website.vercel.app");
+  assert.equal(host.destination, "https://www.baid-x.com/:path"); assert.match(host.source, /\(\?!api\/\)/);
+  for (const f of ["index.html", "about.html", "terms.html", "privacy.html", "contact.html", "pricing/index.html", "sitemap.xml", "robots.txt", "llms.txt"]) assert.doesNotMatch(read(f), /baid-x-website\.vercel\.app/, f);
+  const c = read("contact.html");
+  assert.match(c, /info@baidencreatives\.org/); assert.match(c, /\+233 20 607 1106/); assert.match(c, /East Legon/); assert.match(c, /organization under <b>Baiden Creatives/);
+  assert.match(read("sitemap.xml"), /<loc>https:\/\/www\.baid-x\.com\/contact\.html<\/loc>/);
+  assert.doesNotMatch(read("robots.txt"), /admin\.html/);
+  assert.match(read("terms.html"), /10% of the amount released/); assert.doesNotMatch(read("terms.html"), /\[X\]|REGISTRATION NO|test release/);
+  assert.match(read("pricing/index.html"), /Other fees/); assert.match(read("404.html"), /noindex/);
+  assert.match(read("supabase/functions/baid-bot/index.ts"), /an organization under Baiden Creatives/);
 });

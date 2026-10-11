@@ -8,6 +8,19 @@
   const year = root.querySelector("#lpYear");
   if (year) year.textContent = new Date().getFullYear();
 
+  // phone-width menu: opens under the bar; a link, Escape or a tap outside closes it
+  const menuBtn = root.querySelector("#lpMenuBtn"), menu = root.querySelector("#lpMenu");
+  const setMenu = (on) => {
+    if (!menu || !menuBtn) return;
+    menu.hidden = !on;
+    menuBtn.setAttribute("aria-expanded", String(on));
+    menuBtn.setAttribute("aria-label", on ? "Close menu" : "Open menu");
+  };
+  menuBtn?.addEventListener("click", () => setMenu(menu.hidden));
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && menu && !menu.hidden) { setMenu(false); menuBtn.focus(); } });
+  document.addEventListener("click", (e) => { if (menu && !menu.hidden && !e.target.closest("#lpMenu, #lpMenuBtn")) setMenu(false); });
+  menu?.addEventListener("click", (e) => { if (e.target.closest("a, button")) setMenu(false); });
+
   // links in the bar scroll within the page instead of changing the app's hash route
   root.addEventListener("click", (e) => {
     const a = e.target.closest("[data-lp-jump]");
@@ -69,19 +82,24 @@
   function renderCheck() {
     if (!checkOut) return;
     const q = (checkQ?.value || "").trim().toLowerCase();
-    if (q.length < 2) { checkOut.innerHTML = TIPS.map(([t, b]) => note(t, b)).join(""); return; }
+    if (q.length < 3) { checkOut.innerHTML = TIPS.map(([t, b]) => note(t, b)).join(""); return; }
     if (!people) { checkOut.innerHTML = note("Couldn't check right now", "Check your connection and try again.", true); return; }
-    const hits = people.filter((m) => String(m.name || "").toLowerCase().includes(q))
-      .sort((a, b) => (String(a.name).toLowerCase().startsWith(q) ? 0 : 1) - (String(b.name).toLowerCase().startsWith(q) ? 0 : 1)).slice(0, 20);
+    // only verified members are shown: the check answers "has BAID X verified this person?", not "who is on BAID X"
+    const hits = people.filter((m) => m.badge && String(m.name || "").toLowerCase().includes(q))
+      .sort((a, b) => (String(a.name).toLowerCase().startsWith(q) ? 0 : 1) - (String(b.name).toLowerCase().startsWith(q) ? 0 : 1)).slice(0, 8);
     checkOut.innerHTML = hits.length ? hits.map((m) => {
       const av = m.image ? `<i class="av" style="background-image:url('${esc(m.image)}')"></i>` : `<i class="av">${esc(String(m.name || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase())}</i>`;
-      const st = m.badge ? `<em class="ok">${esc(BADGE[m.badge] || "Verified")} by BAID X</em>` : '<em class="no">Not verified yet</em>';
+      const st = `<em class="ok">${esc(BADGE[m.badge] || "Verified")} by BAID X</em>`;
       return `<div class="lp-check-row">${av}<div><b>${esc(m.name)}</b><small>${esc(KIND[m.kind] || "Member")} &middot; ${esc(m.place)}</small>${st}</div></div>`;
-    }).join("") : note("No one by that name is on BAID X", "Check the spelling. If they still don't appear, they are not on BAID X: be careful before paying them, and ask them to join and get verified.", true);
+    }).join("") : note("No verified member by that name", "Check the spelling and use the full name on their profile. If they still don't appear, BAID X has not verified them: be careful before paying, and hire through escrow.", true);
   }
   checkQ?.addEventListener("input", renderCheck);
 
   const ratesEl = root.querySelector("#lpRates"), regionsEl = root.querySelector("#lpRegions");
+  // A trade shows only with at least MIN_SAMPLES rates, after rates far from the middle
+  // (under a third or over three times it) are dropped, so one odd rate can't set the guide.
+  const MIN_SAMPLES = 3;
+  const mid = (v) => { const h = v.length >> 1; return v.length % 2 ? v[h] : (v[h - 1] + v[h]) / 2; };
   function tradeRates(list, reg) {
     const by = {};
     for (const m of list) {
@@ -89,24 +107,31 @@
       if (reg && String(m.region || "").toLowerCase() !== reg.toLowerCase()) continue;
       (by[m.tag] ||= []).push(m.rate);
     }
-    return Object.entries(by).map(([trade, v]) => { v.sort((a, b) => a - b); const h = v.length >> 1;
-      return { trade, median: v.length % 2 ? v[h] : (v[h - 1] + v[h]) / 2, low: v[0], high: v[v.length - 1] }; })
+    return Object.entries(by).map(([trade, all]) => {
+      all.sort((a, b) => a - b);
+      const m0 = mid(all), v = all.filter((r) => r >= m0 / 3 && r <= m0 * 3);
+      return v.length < MIN_SAMPLES ? null : { trade, median: mid(v), low: v[0], high: v[v.length - 1] };
+    }).filter(Boolean)
       .sort((a, b) => a.trade.toLowerCase().localeCompare(b.trade.toLowerCase()));
   }
   function renderRates() {
     if (!ratesEl) return;
     if (!people) { ratesEl.innerHTML = note("Couldn't load rates", "Check your connection and try again.", true); return; }
-    const regions = [...new Set(people.filter((m) => m.kind === "worker" && m.rate > 0 && String(m.region || "").trim()).map((m) => m.region.trim()))].sort();
+    const regions = [...new Set(people.filter((m) => m.kind === "worker" && m.rate > 0 && String(m.region || "").trim()).map((m) => m.region.trim()))]
+      .filter((r) => tradeRates(people, r).length).sort();
     if (regionsEl) regionsEl.innerHTML = regions.length ? [null, ...regions].map((r) => `<button class="${region === r ? "on" : ""}" data-lp-region="${esc(r || "")}">${esc(r || "All Ghana")}</button>`).join("") : "";
     const rates = tradeRates(people, region), top = Math.max(0, ...rates.map((r) => r.high));
     const x = (v) => (top ? (v / top) * 100 : 0);
     ratesEl.innerHTML = rates.length ? rates.map((r) => `<div class="lp-rate"><div class="top"><b>${esc(r.trade)}</b><strong>${cedi(r.median)}<small> / day</small></strong></div>
       <div class="bar"><i class="range" style="left:${x(r.low)}%;width:max(4px, ${x(r.high) - x(r.low)}%)"></i><i class="mid" style="left:${x(r.median)}%"></i></div>
       <div class="ends"><span>${cedi(r.low)}</span><span>${cedi(r.high)}</span></div></div>`).join("")
-      : note("No rates here yet", "Rates appear as professionals add their daily rate. Try All Ghana.");
+      : note("Not enough rates here yet", "A trade appears once several professionals have set a daily rate, so one rate never sets the guide. Try All Ghana.");
   }
   regionsEl?.addEventListener("click", (e) => { const b = e.target.closest("[data-lp-region]"); if (!b) return; region = b.dataset.lpRegion || null; renderRates(); });
 
   renderCheck();
-  addEventListener("baidx:directory", (e) => { people = e.detail; renderCheck(); renderRates(); });
+  let loaded = false;
+  addEventListener("baidx:directory", (e) => { loaded = true; people = e.detail; renderCheck(); renderRates(); });
+  // a slow network should not leave the price guide loading for ever
+  setTimeout(() => { if (!loaded) renderRates(); }, 8000);
 })();
