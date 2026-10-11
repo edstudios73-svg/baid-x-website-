@@ -189,3 +189,23 @@ test("www.baid-x.com: old host redirects except /api/, contact page, Baiden Crea
   assert.match(read("pricing/index.html"), /Other fees/); assert.match(read("404.html"), /noindex/);
   assert.match(read("supabase/functions/baid-bot/index.ts"), /an organization under Baiden Creatives/);
 });
+
+test("sign-up and account fixes: blank phone is null, duplicates checked, password change re-checks current, iPhone fields 16px", () => {
+  const auth = read("js/auth.js"), fx = read("js/features.js"), css = read("css/mobile.css"), sql = read("supabase/phase19_blank_fields_null.sql");
+  assert.match(auth, /S\.phone \|\| null/);
+  assert.match(auth, /select\("id"\)\.eq\("id", user\.id\)\.maybeSingle\(\)/, "a duplicate counts as success only for the user's own profile");
+  assert.match(auth, /already on another BAID X account/);
+  assert.match(auth, /params\.get\("mode"\) === "reset"\) \{ S\.mode = "reset"/); assert.match(auth, /!GROUP && S\.mode !== "reset"/);
+  assert.match(fx, /inp\("cur", \{ type: "password"/); assert.match(fx, /signInWithPassword\(\{ email, password: d\.cur \}\)/);
+  assert.match(fx, /Add a capital letter or a symbol\./); assert.match(fx, /"forgot-password":/);
+  assert.match(css, /font-size: 16px !important/);
+  for (const t of ["worker_profiles", "company_profiles", "project_manager_profiles", "business_profiles", "individual_employer_profiles"]) {
+    assert.match(sql, new RegExp(`alter table public\\.${t} alter column \\w+ drop not null`), t);
+    assert.match(sql, new RegExp(`before insert or update on public\\.${t}`), t);
+  }
+  // phone parsing matches the server: 9 digits after 233, starting 2, 3 or 5
+  const body = auth.slice(auth.indexOf("function toE164"), auth.indexOf("function friendly"));
+  const toE164 = new Function("S", `${body}; return toE164;`)({ country: { d: "233" } });
+  for (const x of ["0206071106", "20 607 1106", "+233 20 607 1106", "00233206071106", "+233 020 607 1106"]) assert.equal(toE164(x), "+233206071106", x);
+  for (const x of ["0206071", "0806071106", "02060711066"]) assert.equal(toE164(x), null, x);
+});

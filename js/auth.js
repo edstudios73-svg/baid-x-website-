@@ -126,10 +126,13 @@
     closeSheet();
   });
 
+  // Accepts 020 607 1106, 20 607 1106, +233 20 607 1106, 233… and 00233…; Ghana numbers must be
+  // 9 digits after 233 starting 2, 3 or 5, the same rule the server applies (api/_lib/sasusync/phone.js)
   function toE164(raw) {
-    let d = String(raw).replace(/\D/g, "");
+    let d = String(raw).replace(/\D/g, "").replace(/^00/, "");
     if (d.startsWith(S.country.d) && d.length > S.country.d.length + 7) d = d.slice(S.country.d.length);
     d = d.replace(/^0+/, "");
+    if (S.country.d === "233") return /^[235]\d{8}$/.test(d) ? `+233${d}` : null;
     return d.length >= 7 && d.length <= 12 ? `+${S.country.d}${d}` : null;
   }
   function friendly(err) {
@@ -333,7 +336,7 @@
     const btn = $("#passNext");
     const { data: { session } } = await sb.auth.getSession(); const user = session?.user; // local read: no network round trip
     if (!user) { toast("Your session expired. Please sign in again."); show("type"); return; }
-    const phone = user.phone ? `+${String(user.phone).replace(/^\+/, "")}` : S.phone || "";
+    const phone = user.phone ? `+${String(user.phone).replace(/^\+/, "")}` : S.phone || null; // no phone (Google or email) is stored as "not given"
     const email = null; // no email is assigned at sign-up: members add their own in Edit profile
     const name = S.name, cat = S.cat?.id;
     const rows = {
@@ -346,7 +349,12 @@
     setBusy(btn, true, label);
     // save the password and create the profile at the same time (a retry is safe: an existing profile row is accepted)
     const [pw, ins] = await Promise.all([password ? savePassword(password) : Promise.resolve({}), sb.from(ROLES[S.role].table).insert({ id: user.id, ...rows[S.role] })]);
-    const error = pw.error || (ins.error && ins.error.code !== "23505" ? ins.error : null);
+    let error = pw.error || (ins.error && ins.error.code !== "23505" ? ins.error : null);
+    // a duplicate is fine only when it is this user's own profile (a retry); otherwise another account holds the number
+    if (!error && ins.error) {
+      const { data: mine } = await sb.from(ROLES[S.role].table).select("id").eq("id", user.id).maybeSingle();
+      if (!mine) error = { message: "This phone number is already on another BAID X account. Sign in with that number instead." };
+    }
     if (error) { setBusy(btn, false, label); const m = friendly(error); if (S.view === "pass") $("#passErr").textContent = m; else toast(m); return; }
     location.href = HOME;
   }
@@ -463,6 +471,8 @@
   if (GROUP) { $("#typeTitle").textContent = GROUP.title; $("#typeSub").textContent = GROUP.sub; }
   renderTypes();
   sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { S.mode = "reset"; prepPass(); show("pass"); } });
+  // "Forgot your current password?" in Profile signs out and lands here: reset with an SMS code
+  if (params.get("mode") === "reset") { S.mode = "reset"; resetPhoneView(); show("phone"); }
   (async () => {
     const me = await loadMe();
     if (window.BX_RECOVERY) return; // the PASSWORD_RECOVERY event below opens the "set a new password" step
@@ -472,7 +482,7 @@
     if (params.get("acc") && ACCS().some((x) => x.id === params.get("acc"))) { S.mode = "signin"; prefillSignin(ACCS().find((x) => x.id === params.get("acc"))); return; }
     if (params.get("mode") === "signin") { if (ACCS().length && !adding) openChooser(); else if (GROUP) signinIntent(); else show("entry", { push: false }); }
     else if (params.get("mode") === "signup" && !adding && (params.get("role") || GROUP)) openCreate(params.get("role") || GROUP?.roles[0], false);
-    else if (!GROUP) show("entry", { push: false });
+    else if (!GROUP && S.mode !== "reset") show("entry", { push: false });
   })();
 
 })();

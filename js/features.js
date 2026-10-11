@@ -17,7 +17,7 @@
   const closeSheet = () => { const r = document.getElementById("sheetRoot"); if (r) r.innerHTML = ""; document.body.classList.remove("sx-open"); };
   const refreshMe = async () => { await window.APP.refresh(); };
   const fld = (label, inner, hint) => `<label class="fl"><span>${esc(label)}</span>${inner}${hint ? `<small>${esc(hint)}</small>` : ""}</label>`;
-  const inp = (name, o = {}) => `<input class="in" name="${name}" ${o.type ? `type="${o.type}"` : ""} ${o.ph ? `placeholder="${esc(o.ph)}"` : ""} ${o.val != null && o.val !== "" ? `value="${esc(o.val)}"` : ""} ${o.req ? "required" : ""} ${o.max ? `maxlength="${o.max}"` : ""} ${o.min != null ? `min="${o.min}"` : ""} ${o.step ? `step="${o.step}"` : ""} autocomplete="off" />`;
+  const inp = (name, o = {}) => `<input class="in" name="${name}" ${o.type ? `type="${o.type}"` : ""} ${o.ph ? `placeholder="${esc(o.ph)}"` : ""} ${o.val != null && o.val !== "" ? `value="${esc(o.val)}"` : ""} ${o.req ? "required" : ""} ${o.max ? `maxlength="${o.max}"` : ""} ${o.min != null ? `min="${o.min}"` : ""} ${o.step ? `step="${o.step}"` : ""} autocomplete="${o.ac || "off"}" />`;
   const area = (name, o = {}) => `<textarea class="in ta" name="${name}" rows="${o.rows || 3}" ${o.ph ? `placeholder="${esc(o.ph)}"` : ""} maxlength="${o.max || 1000}">${esc(o.val || "")}</textarea>`;
   const sel = (name, opts, val) => `<select class="in" name="${name}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${String(v) === String(val ?? "") ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
   const chk = (name, label, on) => `<label class="oc"><input type="checkbox" name="${name}" ${on ? "checked" : ""} /><span><b>${esc(label)}</b></span></label>`;
@@ -337,7 +337,8 @@
     "public-profile": (c) => publicProfile(c),
     "add-email": (c) => openSheet("Sign-in email", `${emailStatus(c)}<form data-fx-form="add-email">${fld("Email address", inp("email", { type: "email", req: true, ph: "you@example.com" }), "We send a link to confirm it.")}<button class="btn-light" type="submit" style="width:100%">Send confirmation link</button></form>`),
     "change-phone": (c) => openSheet("Change phone", `<form data-fx-form="change-phone">${fld("New mobile number", inp("phone", { type: "tel", ph: "+233201234567", req: true }), "Include the country code. We text a code to confirm.")}<button class="btn-light" type="submit" style="width:100%">Send code</button></form>`),
-    "change-password": (c) => openSheet("Change password", `<form data-fx-form="change-password">${fld("New password", inp("pw", { type: "password", req: true, min: 8 }), "At least 8 characters.")}${fld("Confirm new password", inp("pw2", { type: "password", req: true }))}<button class="btn-light" type="submit" style="width:100%">Update password</button></form>`),
+    "change-password": (c) => openSheet("Change password", `<form data-fx-form="change-password">${fld("Current password", inp("cur", { type: "password", req: true, ac: "current-password" }))}${fld("New password", inp("pw", { type: "password", req: true, min: 8, ac: "new-password" }), "8+ characters with a letter, a number, and a capital letter or symbol.")}${fld("Confirm new password", inp("pw2", { type: "password", req: true, ac: "new-password" }))}<button class="btn-light" type="submit" style="width:100%">Update password</button><button class="btn-dark" type="button" data-fx="forgot-password" style="width:100%;margin-top:10px">Forgot your current password?</button></form>`),
+    "forgot-password": async (c) => { await c.sb.auth.signOut(); location.href = "auth.html?mode=reset"; },
     "add-past": () => openSheet("Add a past project", `<form data-fx-form="add-past">${fld("Project name", inp("name", { req: true, max: 100 }))}${fld("Client", inp("client", { max: 100 }))}${fld("Year", inp("year", { type: "number", min: 1990, step: 1 }))}${fld("What you delivered", area("description", { max: 400 }))}<button class="btn-light" type="submit" style="width:100%">Add project</button></form>`),
     "del-past": async (c, el) => { const list = [...(c.profile.past_projects_json || [])]; list.splice(+el.dataset.i, 1); await save(c, { past_projects_json: list }); await refreshMe(); },
     "del-photo": async (c, el) => { const list = [...(c.profile.portfolio_photo_urls || [])]; list.splice(+el.dataset.i, 1); await save(c, { portfolio_photo_urls: list }); await refreshMe(); },
@@ -423,7 +424,20 @@
       else if (k === "add-email") { await addEmail(c, d.email); closeSheet(); c.toast("Check your inbox and open the link to confirm."); }
       else if (k === "step-email") { await addEmail(c, d.email); c.toast("Check your inbox and open the link to confirm."); window.APP.route(); }
       else if (k === "change-phone") { const { error } = await c.sb.auth.updateUser({ phone: d.phone.replace(/\s/g, "") }); if (error) throw new Error("Phone changes need SMS, which isn't switched on yet."); closeSheet(); c.toast("We texted you a code."); }
-      else if (k === "change-password") { if (d.pw !== d.pw2) throw new Error("The two passwords don't match."); const { error } = await c.sb.auth.updateUser({ password: d.pw }); if (error) throw error; closeSheet(); c.toast("Password updated"); }
+      else if (k === "change-password") {
+        const weak = d.pw.length < 8 ? "Use at least 8 characters." : !/[A-Za-z]/.test(d.pw) ? "Add a letter." : !/\d/.test(d.pw) ? "Add a number." : !/[A-Z]/.test(d.pw) && !/[^A-Za-z0-9]/.test(d.pw) ? "Add a capital letter or a symbol." : null;
+        if (weak) throw new Error(weak);
+        if (d.pw !== d.pw2) throw new Error("The two passwords don't match.");
+        if (d.pw === d.cur) throw new Error("Choose a password different from your current one.");
+        const email = (await c.sb.auth.getUser()).data.user?.email;
+        if (!email) throw new Error('This account has no password yet. Sign out and use "Forgot password" to set one.');
+        // signing in again proves the current password and gives a fresh session, so the change is never refused
+        // as needing reauthentication (phone accounts can't receive that confirmation email)
+        const re = await c.sb.auth.signInWithPassword({ email, password: d.cur });
+        if (re.error) throw new Error("Your current password isn't right.");
+        const { error } = await c.sb.auth.updateUser({ password: d.pw }); if (error) throw error;
+        closeSheet(); c.toast("Password updated");
+      }
     } catch (err) { fail(c, err); }
     busyBtn(btn, false);
   });

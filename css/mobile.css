@@ -18,8 +18,10 @@ header.nav { padding-top: var(--sat); }
 
 /* iOS zooms the page when a field is under 16px, which looks like a broken, overlapping layout */
 @media (max-width: 820px) {
-  input, select, textarea, .field, .field-row input, .otp input { font-size: 16px; }
-  .otp input { font-size: 21px; }
+  /* !important: class rules such as .in, .search input, .bb-in and the chat box set 15px and
+     out-rank a plain "input" selector, so without it most fields still zoomed on iPhone */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea, .field, .field-row input { font-size: 16px !important; }
+  .otp input { font-size: 21px !important; }
 }
 /* the six code boxes shrink to fit narrow phones instead of overflowing */
 .otp { gap: clamp(6px, 2.4vw, 10px); padding: 0 2px; }
