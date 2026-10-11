@@ -351,7 +351,8 @@ inject("index.html", home)
 def simple(path, url, name, desc, typ="WebPage", extra=None):
     g = {"@context": "https://schema.org", "@graph": [ORG, BRAND, {"@type": typ, "@id": url + "#page", "url": url, "name": name, "description": desc, "inLanguage": "en-GH", "isPartOf": {"@id": SITE_ID}, "about": {"@id": BRAND_ID}, "publisher": {"@id": ORG_ID}, "dateModified": TODAY}, crumbs([("BAID X", "/"), (name, url.replace(SITE, ""))])]}
     inject(path, GEO.format(u=url) + "\n" + ld(g))
-simple("about.html", SITE + "/about.html", "About BAID X", "BAID X is Ghana's work network, built and powered by Baiden Creatives.", "AboutPage")
+simple("about.html", SITE + "/about.html", "About BAID X", "BAID X is Ghana's work network, an organization under Baiden Creatives.", "AboutPage")
+simple("contact.html", SITE + "/contact.html", "Contact BAID X", "Contact BAID X, an organization under Baiden Creatives: info@baidencreatives.org, +233 20 607 1106, East Legon, Accra.", "ContactPage")
 simple("terms.html", SITE + "/terms.html", "Terms of service", "The rules for using BAID X.")
 simple("privacy.html", SITE + "/privacy.html", "Privacy policy", "How BAID X handles your information under Ghana's Data Protection Act, 2012.")
 simple("docs.html", SITE + "/docs.html", "BAID X user guide", "Step-by-step guide to every BAID X role, linking companies and project managers, and adding workers to projects.", "TechArticle")
