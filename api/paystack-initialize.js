@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
     const pay = q.json?.[0];
     if (!pay) return res.status(404).json({ error: "Checkout not found." });
 
-    const body = { email: payerEmail(u.json), amount: pay.expected_amount_minor, currency: pay.currency, reference, callback_url: `${req.headers.origin || "https://baid-x-website.vercel.app"}/#/${pay.purpose === "wallet_deposit" ? "wallet" : "billing"}`, metadata: { baidx_payment: pay.id, purpose: pay.purpose } };
+    const body = { email: payerEmail(u.json), amount: pay.expected_amount_minor, currency: pay.currency, reference, callback_url: `${req.headers.origin || "https://www.baid-x.com"}/#/${pay.purpose === "wallet_deposit" ? "wallet" : "billing"}`, metadata: { baidx_payment: pay.id, purpose: pay.purpose } };
     // recurring plans: the plan code must be a plan we created for this exact BAID X plan
     if (pay.purpose === "subscription" && pay.target?.plan_id) {
       const p = await supa(`/rest/v1/membership_plans?id=eq.${pay.target.plan_id}&select=paystack_plan_code,price_minor`);

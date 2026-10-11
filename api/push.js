@@ -7,7 +7,7 @@ const webpush = require("web-push");
 
 const URL_ = process.env.SUPABASE_URL || "https://igfmmprlrybxsdzehwid.supabase.co"; // project URL is public
 const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUBJECT = "https://baid-x-website.vercel.app";
+const SUBJECT = "https://www.baid-x.com";
 
 const db = async (path, { method = "GET", body, headers = {} } = {}) => {
   const r = await fetch(`${URL_}/rest/v1/${path}`, { method, headers: { apikey: KEY, authorization: `Bearer ${KEY}`, "content-type": "application/json", ...headers }, body: body ? JSON.stringify(body) : undefined });

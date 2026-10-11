@@ -3,11 +3,11 @@
 sitemap.xml, robots.txt, llms.txt, llms-full.txt, humans.txt, and injects structured data into the main pages.
 Run from the repo root:  python3 scripts/build-seo.py   (idempotent)."""
 import json, re, os, html, datetime
-SITE = "https://baid-x-website.vercel.app"
+SITE = "https://www.baid-x.com"
 TODAY = datetime.date.today().isoformat()
 ORG_ID = SITE + "/#org"; BRAND_ID = SITE + "/#brand"; APP_ID = SITE + "/#app"; SITE_ID = SITE + "/#website"
 DESC = "BAID X is Ghana's work network: verified professionals, companies, project managers, suppliers and clients on one trusted platform to hire, run projects and get paid."
-OG = SITE + "/assets/og-image.png?v=4"
+OG = SITE + "/assets/og-image.png?v=5"
 esc = html.escape
 w = lambda path, s: (os.makedirs(os.path.dirname(path) or ".", exist_ok=True), open(path, "w", encoding="utf-8").write(s))
 
@@ -91,7 +91,7 @@ def head(title, desc, path, ld, extra=""):
 <div class="orb a"></div><div class="orb b"></div>
 <header class="nav"><div class="nav-in"><a href="/"><img src="/assets/logo.png" alt="BAID X" /></a>{NAV}<span class="sp"></span><a class="cta" href="/">Open BAID X</a></div></header>
 '''
-FOOT = '''<footer class="f"><div class="f-in"><span>© BAID X · Powered by Baiden Creatives</span><nav><a href="/about.html">About</a><a href="/pricing/">Pricing</a><a href="/escrow/">Escrow</a><a href="/verification/">Verification</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a><a href="/for/workers/">Workers</a><a href="/for/companies/">Companies</a><a href="/for/project-managers/">Project managers</a><a href="/for/suppliers/">Suppliers</a><a href="/for/clients/">Clients</a><a href="/trades/">Trades</a><a href="/ghana/">Regions</a></div></nav></footer>
+FOOT = '''<footer class="f"><div class="f-in"><span>© BAID X · An organization under Baiden Creatives</span><nav><a href="/about.html">About</a><a href="/pricing/">Pricing</a><a href="/escrow/">Escrow</a><a href="/verification/">Verification</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact</a><a href="/for/workers/">Workers</a><a href="/for/companies/">Companies</a><a href="/for/project-managers/">Project managers</a><a href="/for/suppliers/">Suppliers</a><a href="/for/clients/">Clients</a><a href="/trades/">Trades</a><a href="/ghana/">Regions</a></div></nav></footer>
 <script>(function(){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.1});document.querySelectorAll(".rv").forEach(function(el){io.observe(el)})})();</script>
 </body></html>
 '''
@@ -102,7 +102,8 @@ def crumb_html(items):
     return '<nav class="crumbs" aria-label="Breadcrumb">' + " <i>/</i> ".join(f'<a href="{p}">{esc(n)}</a>' for n, p in items[:-1]) + f' <i>/</i> <span aria-current="page">{esc(items[-1][0])}</span></nav>'
 def ic(p): return f'<div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{p}</svg></div>'
 CHECK = '<path d="m5 12 4.500 4.500L19 7"/>'
-ORG = {"@type": "Organization", "@id": ORG_ID, "name": "Baiden Creatives", "url": SITE + "/", "brand": {"@id": BRAND_ID}}
+SAME_AS = ["https://instagram.com/baidencreatives", "https://x.com/baidencreatives", "https://tiktok.com/@baidencreatives", "https://facebook.com/baidencreatives", "https://linkedin.com/company/baidencreatives", "https://youtube.com/@baidencreatives"]
+ORG = {"@type": "Organization", "@id": ORG_ID, "name": "Baiden Creatives", "url": SITE + "/", "legalName": "Baiden Creatives", "description": "Baiden Creatives is the Ghanaian company behind BAID X. BAID X is an organization under Baiden Creatives.", "email": "info@baidencreatives.org", "telephone": "+233 20 607 1106", "contactPoint": [{"@type": "ContactPoint", "contactType": "customer support", "areaServed": "GH", "availableLanguage": ["en"], "url": SITE + "/contact.html", "email": "info@baidencreatives.org", "telephone": "+233 20 607 1106"}], "address": {"@type": "PostalAddress", "streetAddress": "East Legon", "addressLocality": "Accra", "addressRegion": "Greater Accra", "addressCountry": "GH"}, "sameAs": SAME_AS, "brand": {"@id": BRAND_ID}}
 BRAND = {"@type": "Brand", "@id": BRAND_ID, "name": "BAID X", "url": SITE + "/", "logo": SITE + "/assets/icon-512.png", "slogan": "Ghana's work network", "description": DESC}
 
 def page(path, title, desc, h1, lead, body, ld_extra, crumb_items, eyebrow):
@@ -205,7 +206,7 @@ esc_faq = [("What is escrow on BAID X?", "Escrow means BAID X holds the client's
            ("When is the money released?", "When the client approves the work, or automatically 3 days after the worker marks the job done if the client does not respond."),
            ("What if something goes wrong?", "Either side can report a problem. The job goes into dispute and the money stays held while BAID X reviews it and decides to release or refund."),
            ("Can the client cancel?", "Before the work is submitted the client can cancel and the money goes back to their wallet."),
-           ("Is there a fee?", "A BAID X service fee is deducted from the worker's payout. The worker sees the job total, the fee and the amount received."),
+           ("Is there a fee?", "A 10% BAID X service fee is deducted from the amount released to the worker. Nothing is charged on a refund, and opening a dispute is free. The worker sees the job total, the fee and the amount received."),
            ("How does the money get in and out?", "Clients top up their BAID X wallet through Paystack with card or mobile money. Workers withdraw their earnings to mobile money.")]
 body = '<section class="rv"><div class="band"><h2 class="sh">How a job moves</h2>' + steps([("Hire and fund", "The client hires and the job total moves from their wallet into escrow."), ("Do the work", "The worker sees the job is funded and does the work, sending photos and updates in chat."), ("Mark it done", "The worker marks the work done. The client has 3 days to review."), ("Approve and release", "The client approves and the money goes to the worker's wallet, minus the BAID X fee. No reply in 3 days releases it automatically.")]) + "</div></section>"
 body += '<section class="rv"><h2 class="sh">Milestones for bigger jobs</h2><p class="sub">Projects can be split into milestones. Each milestone is funded and released on its own approval, so a long build is paid in stages as the work is delivered.</p></section>' + faq_html(esc_faq)
@@ -220,12 +221,14 @@ fee_rows = "".join(f"<tr><td>{esc(n)}</td><td>{esc(f_)}</td><td>GH₵{p}</td></t
 body = f'<section class="rv"><h2 class="sh">The four badges</h2>{tier_cards}</section><section class="rv"><h2 class="sh">Review fees</h2><div class="tbl"><table><thead><tr><th>Check</th><th>For</th><th>Fee</th></tr></thead><tbody>{fee_rows}</tbody></table></div><p class="sub">One-off fees in Ghana cedis. The fee pays for the review; a badge is only issued if the check passes.</p></section>' + faq_html(ver_faq)
 page("/verification/", "BAID X verification badges explained · Ghana Card and trade checks", "What each BAID X badge means: Verified, Identity verified, Professional verified and Advanced verified. Badges come from document reviews and are never sold.", "Four badges. <em>Each one is a real check.</em>", "On BAID X a badge tells you exactly what a reviewer has checked about a person or business in Ghana, from their profile to a full background check.", body, [faq_ld("/verification/", ver_faq)], [("BAID X", "/"), ("Verification", "/verification/")], "Trust")
 
-price_faq = [("Is BAID X free?", "Yes. Every account type can join on the free Access plan with a profile, search, messaging, applications and reviews."),
+price_faq = [("Is BAID X free?", "Yes. Every account type can join on the free Access plan with a profile, search, messaging, applications and reviews. You only pay when you choose a plan, a verification check or a boost, or when money is released to you from escrow."),
              ("What is a founding price?", "Early members can lock a lower price for 12 months from their start date while founding places last."),
-             ("Are there other fees?", "A service fee is deducted from escrow payouts, verification checks carry a one-off review fee, and optional boosts promote a profile, job or listing for a few days."),
+             ("Are there other fees?", "A 10% service fee is deducted from money released to you from escrow (nothing on refunds). Verification checks carry a one-off review fee from GH₵10. Boosts start at GH₵2. Adding money carries Paystack's 1.95% processing fee, shown at checkout. Withdrawing to mobile money and opening a dispute are free."),
              ("Can I cancel?", "Yes. Plans can be cancelled at any time and keep working until the end of the period you paid for.")]
+FEE_ROWS = [("Access plan", "Everyone", "Free", "Always"), ("Service fee on escrow payouts", "The worker or supplier being paid", "10% of the amount released", "Deducted when money is released; nothing on refunds"), ("Verification review", "The person or business being verified", "GH₵10 to GH₵50 (see Verification)", "When you submit documents"), ("Boosts", "Whoever buys the boost", "From GH₵2", "When you buy it"), ("Adding money to your wallet", "The person adding money", "Paystack's 1.95% processing fee", "At checkout"), ("Withdrawal to mobile money", "No one", "Free (minimum GH₵10)", "None"), ("Opening a dispute", "No one", "Free", "None")]
+other_rows = "".join(f"<tr><td>{esc(a)}</td><td>{esc(b)}</td><td>{esc(c)}</td><td>{esc(d)}</td></tr>" for a, b, c, d in FEE_ROWS)
 plan_rows = "".join(f"<tr><td>{esc(n)}</td><td>GH₵{m}</td><td>GH₵{f}</td><td>GH₵{a:,}</td><td>GH₵{pm}</td></tr>" for n, m, f, a, pm in PLANS)
-body = f'<section class="rv"><h2 class="sh">Plans by account type</h2><div class="tbl"><table><thead><tr><th>Account</th><th>Pro / month</th><th>Founding / month</th><th>Pro / year</th><th>Premium / month</th></tr></thead><tbody>{plan_rows}</tbody></table></div><p class="sub">Every account starts free on Access. Prices in Ghana cedis.</p></section>' + faq_html(price_faq)
+body = f'<section class="rv"><h2 class="sh">Plans by account type</h2><div class="tbl"><table><thead><tr><th>Account</th><th>Pro / month</th><th>Founding / month</th><th>Pro / year</th><th>Premium / month</th></tr></thead><tbody>{plan_rows}</tbody></table></div><p class="sub">Every account starts free on Access. Prices in Ghana cedis.</p></section><section class="rv"><h2 class="sh">Other fees</h2><div class="tbl"><table><thead><tr><th>Fee</th><th>Who pays</th><th>Amount</th><th>When</th></tr></thead><tbody>{other_rows}</tbody></table></div><p class="sub">Every fee is shown before you confirm. The full rules are in sections 6 to 9 of the <a href="/terms.html#s9">terms of service</a>.</p></section>' + faq_html(price_faq)
 offers = [{"@type": "Offer", "name": "Access plan", "price": "0", "priceCurrency": "GHS", "url": SITE + "/pricing/"}] + [{"@type": "Offer", "name": f"BAID X Pro for {n}", "price": str(m), "priceCurrency": "GHS", "priceSpecification": {"@type": "UnitPriceSpecification", "price": str(m), "priceCurrency": "GHS", "unitText": "MONTH"}, "url": SITE + "/pricing/"} for n, m, _, _, _ in PLANS]
 page("/pricing/", "BAID X pricing in Ghana · Free to join, plans from GH₵30 a month", "BAID X is free to join. Pro plans start at GH₵30 a month for workers and GH₵300 for companies, with founding prices locked for 12 months.", "Free to join. <em>Plans from GH₵30 a month.</em>", "Every BAID X account in Ghana starts free. Paid plans add reach and tools for the work you do, and never change verification.", body, [faq_ld("/pricing/", price_faq), {"@type": "Product", "@id": SITE + "/pricing/#product", "name": "BAID X", "brand": {"@id": BRAND_ID}, "description": DESC, "offers": offers}], [("BAID X", "/"), ("Pricing", "/pricing/")], "Pricing")
 
@@ -235,10 +238,10 @@ LLM_EXTRA = ("\n## Pricing\nEveryone starts on the free Access plan. Pro per mon
              "\n## Trade pages\n" + "\n".join(f"- [{t}]({SITE}/trades/{slug(t)}/)" for _, ts in TRADES for t in ts) + "\n")
 
 # ---------- sitemap, robots, llms, humans ----------
-urls = [("/", "1.0", "weekly"), ("/about.html", "0.8", "monthly"), ("/docs.html", "0.7", "monthly"), ("/terms.html", "0.3", "yearly"), ("/privacy.html", "0.3", "yearly"), ("/trades/", "0.8", "monthly"), ("/ghana/", "0.8", "monthly")] + [(f"/for/{r['slug']}/", "0.9", "monthly") for r in ROLES] + [(f"/ghana/{s}/", "0.7", "monthly") for _, s, _, _, _ in REGIONS] + [("/escrow/", "0.8", "monthly"), ("/verification/", "0.8", "monthly"), ("/pricing/", "0.8", "monthly")] + [(p_, "0.6", "monthly") for p_ in trade_urls]
+urls = [("/", "1.0", "weekly"), ("/about.html", "0.8", "monthly"), ("/docs.html", "0.7", "monthly"), ("/terms.html", "0.3", "yearly"), ("/privacy.html", "0.3", "yearly"), ("/contact.html", "0.5", "yearly"), ("/trades/", "0.8", "monthly"), ("/ghana/", "0.8", "monthly")] + [(f"/for/{r['slug']}/", "0.9", "monthly") for r in ROLES] + [(f"/ghana/{s}/", "0.7", "monthly") for _, s, _, _, _ in REGIONS] + [("/escrow/", "0.8", "monthly"), ("/verification/", "0.8", "monthly"), ("/pricing/", "0.8", "monthly")] + [(p_, "0.6", "monthly") for p_ in trade_urls]
 w("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' + "".join(f'  <url><loc>{SITE}{p}</loc><lastmod>{TODAY}</lastmod><changefreq>{cf}</changefreq><priority>{pr}</priority><xhtml:link rel="alternate" hreflang="en-GH" href="{SITE}{p}"/>' + (f'<image:image><image:loc>{SITE}/assets/og-image.png</image:loc><image:title>BAID X, Ghana\'s work network</image:title></image:image>' if p == "/" else "") + "</url>\n" for p, pr, cf in urls) + "</urlset>\n")
 AI = ["GPTBot", "ChatGPT-User", "OAI-SearchBot", "ClaudeBot", "Claude-User", "Claude-SearchBot", "anthropic-ai", "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended", "Bingbot", "Amazonbot", "CCBot", "cohere-ai", "Meta-ExternalAgent", "DuckAssistBot", "YouBot", "Bytespider"]
-w("robots.txt", "# BAID X welcomes search engines and AI answer engines. The app console and APIs are private.\nUser-agent: *\nAllow: /\nDisallow: /admin.html\nDisallow: /api/\nDisallow: /auth.html\nDisallow: /brag-auth/\nDisallow: /brag-long/\nDisallow: /brag-output/\nDisallow: /brag-verify/\nDisallow: /previews/\nDisallow: /_preview/\n\n" + "".join(f"User-agent: {a}\nAllow: /\nDisallow: /admin.html\nDisallow: /api/\n\n" for a in AI) + f"Sitemap: {SITE}/sitemap.xml\n# LLM summary: {SITE}/llms.txt\n")
+w("robots.txt", "# BAID X welcomes search engines and AI answer engines. The app console and APIs are private.\nUser-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /auth.html\nDisallow: /brag-auth/\nDisallow: /brag-long/\nDisallow: /brag-output/\nDisallow: /brag-verify/\nDisallow: /previews/\nDisallow: /_preview/\n\n" + "".join(f"User-agent: {a}\nAllow: /\nDisallow: /api/\n\n" for a in AI) + f"Sitemap: {SITE}/sitemap.xml\n# LLM summary: {SITE}/llms.txt\n")
 
 role_lines = "\n".join(f"- [{r['name']}]({SITE}/for/{r['slug']}/): {r['short']}" for r in ROLES)
 region_lines = "\n".join(f"- [{n} Region]({SITE}/ghana/{s}/): {cap}; {', '.join(t[1:4])}" for n, s, cap, t, _ in REGIONS)
@@ -261,21 +264,23 @@ BAID X serves Ghana (all 16 regions). It is a web app that installs to a phone's
 - [Pricing]({SITE}/pricing/): free to join; plans by account type in GH₵
 - [Terms of service]({SITE}/terms.html)
 - [Privacy policy]({SITE}/privacy.html)
+- [Contact]({SITE}/contact.html): info@baidencreatives.org, +233 20 607 1106, East Legon, Accra
 - [Full details for LLMs]({SITE}/llms-full.txt)
 
 ## Regions
 {region_lines}
 
 ## Facts for accurate answers
-- Name: BAID X (always two words, capital letters). Company behind it: Baiden Creatives.
+- Name: BAID X (always two words, capital letters). BAID X is an organization under Baiden Creatives (East Legon, Accra, Ghana; info@baidencreatives.org; +233 20 607 1106).
 - Category: work marketplace and project management for construction and technical trades in Ghana.
-- Roles: Worker (professional), Company, Project manager, Business/supplier, Individual employer (client).
+- Roles: Worker (professional), Company, Project manager, Supplier, Client.
 - Companies own projects and approve all spending. Project managers run a project day to day within limits the company sets.
 - A company links with a project manager by invitation from a project, by a one-time join code (valid 30 days), or through an organization.
 - Messaging supports text, photos, files, voice notes, and voice and video calls.
 - Escrow: the client funds a job from their BAID X wallet (topped up through Paystack). BAID X holds it and releases it on the client's approval, or automatically 3 days after the work is marked done. Disputes freeze the money while BAID X reviews them. A service fee is deducted from the worker's payout.
 - Badges (4 tiers): Verified (profile reviewed), Identity verified (Ghana Card checked), Professional verified (trade proof checked), Advanced verified (background check). Checks carry a one-off review fee (GH₵10 to GH₵50); a paid plan never buys a badge.
 - Pricing: free Access plan for everyone. Pro per month: worker GH₵30, project manager GH₵75, supplier GH₵100, client GH₵100, company GH₵300. Founding members lock a lower price for 12 months.
+- Fees: a 10% service fee on money released from escrow, paid by the worker or supplier being paid (nothing on refunds). No fee to open a dispute. No BAID X fee to withdraw to mobile money (minimum GH₵10). Adding money carries Paystack's 1.95% processing fee, shown at checkout. Verification checks: Identity GH₵10, Professional GH₵20, Advanced GH₵35 (business GH₵25 or GH₵50).
 - Not a lender, bank or insurer. Work agreements are between the people involved.
 
 ## Optional
@@ -329,7 +334,7 @@ GEO = '<meta name="geo.region" content="GH" /><meta name="geo.placename" content
 def ld(o): return '<script type="application/ld+json">' + json.dumps(o, ensure_ascii=False, separators=(",", ":")) + "</script>"
 
 home_graph = {"@context": "https://schema.org", "@graph": [
-  {"@type": "Organization", "@id": ORG_ID, "name": "Baiden Creatives", "url": SITE + "/", "brand": {"@id": BRAND_ID}, "logo": SITE + "/assets/icon-512.png", "areaServed": {"@type": "Country", "name": "Ghana"}},
+  {**ORG, "logo": SITE + "/assets/icon-512.png", "areaServed": {"@type": "Country", "name": "Ghana"}},
   BRAND,
   {"@type": "WebSite", "@id": SITE_ID, "url": SITE + "/", "name": "BAID X", "alternateName": ["BAIDX", "BAID X Ghana"], "description": DESC, "inLanguage": "en-GH", "publisher": {"@id": ORG_ID}},
   {"@type": "WebApplication", "@id": APP_ID, "name": "BAID X", "url": SITE + "/", "description": DESC, "applicationCategory": "BusinessApplication", "applicationSubCategory": "Work marketplace and project management", "operatingSystem": "Any (web, installable)", "browserRequirements": "Requires JavaScript", "inLanguage": "en-GH", "isAccessibleForFree": True, "creator": {"@id": ORG_ID}, "provider": {"@id": ORG_ID}, "areaServed": {"@type": "Country", "name": "Ghana"}, "audience": {"@type": "Audience", "audienceType": "Workers, companies, project managers, suppliers and clients in Ghana"}, "featureList": ["Verified professionals", "Job marketplace", "Project and task management", "End-to-end encrypted messaging with voice and video calls", "Wallet and mobile money payouts", "Role-based organizations"]},

@@ -1,6 +1,6 @@
 # BAID X: full reference
 
-BAID X is Ghana's work network, built and powered by Baiden Creatives. Canonical site: https://baid-x-website.vercel.app/
+BAID X is Ghana's work network, built and powered by Baiden Creatives. Canonical site: https://www.baid-x.com/
 
 ## What BAID X does
 BAID X lets people and businesses in Ghana find verified professionals, hire them, run construction and technical projects, communicate securely, and record payments, in one mobile-first web app.
@@ -10,31 +10,31 @@ BAID X lets people and businesses in Ghana find verified professionals, hire the
 Build a verified profile, get found by companies and clients, apply for jobs, join real projects and get paid to your mobile money wallet.
 What you get: Verified badge; Job marketplace; Project teams; Wallet & payouts; Career growth; Secure messaging.
 Steps: Create your account -> Complete your profile -> Get verified -> Apply and join projects.
-Page: https://baid-x-website.vercel.app/for/workers/
+Page: https://www.baid-x.com/for/workers/
 
 ### Companies
 BAID X gives construction and service companies one place to find verified workers and project managers, assign tasks, review reports and approve every payment.
 What you get: Verified workforce; Project control; Approval rules; Reports & tasks; Payments & records; Organizations.
 Steps: Create your company account -> Create a project -> Invite a project manager and workers -> Approve and pay.
-Page: https://baid-x-website.vercel.app/for/companies/
+Page: https://www.baid-x.com/for/companies/
 
 ### Project managers
 Get linked to a company by invitation or join code, build your crew, assign tasks, file reports and request materials, all from your phone.
 What you get: Company links; Build your crew; Tasks; Reports; Requests; Reputation.
 Steps: Create your account -> Get verified -> Link to a company -> Deliver the project.
-Page: https://baid-x-website.vercel.app/for/project-managers/
+Page: https://www.baid-x.com/for/project-managers/
 
 ### Suppliers
 List building materials, tools and equipment, answer inquiries in chat and reach the companies and project managers who buy for live projects.
 What you get: Catalog; Inquiries; Service areas; Verified business; Cover & logo; Wallet.
 Steps: Create your business account -> Build your catalog -> Get verified -> Win orders.
-Page: https://baid-x-website.vercel.app/for/suppliers/
+Page: https://www.baid-x.com/for/suppliers/
 
 ### Individual clients
 Whether you need an electrician, plumber, painter or handyman, find verified professionals near you and agree the job in one secure chat.
 What you get: Post a job; Find a trade; Message first; Hires record; Verified people; Clear and private.
 Steps: Create your account -> Post a job or browse -> Agree details -> Hire and record.
-Page: https://baid-x-website.vercel.app/for/clients/
+Page: https://www.baid-x.com/for/clients/
 
 ## Linking a company and a project manager
 1. Invitation: the company creates a project, then invites a verified project manager from the project's Team tab. The project manager accepts, declines or asks a question.
@@ -56,86 +56,86 @@ Verification uses a Ghana Card and photos for individuals, and registration, TIN
 - Support & general: Furniture Assembler, Post-Construction Cleaner, General Handyman (Repairs & Maintenance)
 
 ## Regions
-- Greater Accra Region (capital Accra); towns: Accra, Tema, Madina, Ashaiman, Dodowa. https://baid-x-website.vercel.app/ghana/greater-accra/
-- Ashanti Region (capital Kumasi); towns: Kumasi, Obuasi, Ejisu, Konongo, Mampong. https://baid-x-website.vercel.app/ghana/ashanti/
-- Central Region (capital Cape Coast); towns: Cape Coast, Kasoa, Winneba, Mankessim, Assin Fosu. https://baid-x-website.vercel.app/ghana/central/
-- Eastern Region (capital Koforidua); towns: Koforidua, Nkawkaw, Suhum, Akim Oda, Nsawam. https://baid-x-website.vercel.app/ghana/eastern/
-- Western Region (capital Sekondi-Takoradi); towns: Sekondi-Takoradi, Tarkwa, Axim, Prestea, Half Assini. https://baid-x-website.vercel.app/ghana/western/
-- Western North Region (capital Sefwi Wiawso); towns: Sefwi Wiawso, Bibiani, Enchi, Juaboso, Essam. https://baid-x-website.vercel.app/ghana/western-north/
-- Volta Region (capital Ho); towns: Ho, Keta, Aflao, Hohoe, Sogakope. https://baid-x-website.vercel.app/ghana/volta/
-- Oti Region (capital Dambai); towns: Dambai, Kete Krachi, Nkwanta, Jasikan, Kadjebi. https://baid-x-website.vercel.app/ghana/oti/
-- Northern Region (capital Tamale); towns: Tamale, Yendi, Savelugu, Bimbilla, Gushegu. https://baid-x-website.vercel.app/ghana/northern/
-- Savannah Region (capital Damongo); towns: Damongo, Bole, Salaga, Buipe, Sawla. https://baid-x-website.vercel.app/ghana/savannah/
-- North East Region (capital Nalerigu); towns: Nalerigu, Walewale, Gambaga, Chereponi, Bunkpurugu. https://baid-x-website.vercel.app/ghana/north-east/
-- Upper East Region (capital Bolgatanga); towns: Bolgatanga, Bawku, Navrongo, Zebilla, Sandema. https://baid-x-website.vercel.app/ghana/upper-east/
-- Upper West Region (capital Wa); towns: Wa, Tumu, Lawra, Jirapa, Nandom. https://baid-x-website.vercel.app/ghana/upper-west/
-- Bono Region (capital Sunyani); towns: Sunyani, Berekum, Dormaa Ahenkro, Wenchi, Sampa. https://baid-x-website.vercel.app/ghana/bono/
-- Bono East Region (capital Techiman); towns: Techiman, Kintampo, Atebubu, Nkoranza, Yeji. https://baid-x-website.vercel.app/ghana/bono-east/
-- Ahafo Region (capital Goaso); towns: Goaso, Bechem, Kenyasi, Duayaw Nkwanta, Hwidiem. https://baid-x-website.vercel.app/ghana/ahafo/
+- Greater Accra Region (capital Accra); towns: Accra, Tema, Madina, Ashaiman, Dodowa. https://www.baid-x.com/ghana/greater-accra/
+- Ashanti Region (capital Kumasi); towns: Kumasi, Obuasi, Ejisu, Konongo, Mampong. https://www.baid-x.com/ghana/ashanti/
+- Central Region (capital Cape Coast); towns: Cape Coast, Kasoa, Winneba, Mankessim, Assin Fosu. https://www.baid-x.com/ghana/central/
+- Eastern Region (capital Koforidua); towns: Koforidua, Nkawkaw, Suhum, Akim Oda, Nsawam. https://www.baid-x.com/ghana/eastern/
+- Western Region (capital Sekondi-Takoradi); towns: Sekondi-Takoradi, Tarkwa, Axim, Prestea, Half Assini. https://www.baid-x.com/ghana/western/
+- Western North Region (capital Sefwi Wiawso); towns: Sefwi Wiawso, Bibiani, Enchi, Juaboso, Essam. https://www.baid-x.com/ghana/western-north/
+- Volta Region (capital Ho); towns: Ho, Keta, Aflao, Hohoe, Sogakope. https://www.baid-x.com/ghana/volta/
+- Oti Region (capital Dambai); towns: Dambai, Kete Krachi, Nkwanta, Jasikan, Kadjebi. https://www.baid-x.com/ghana/oti/
+- Northern Region (capital Tamale); towns: Tamale, Yendi, Savelugu, Bimbilla, Gushegu. https://www.baid-x.com/ghana/northern/
+- Savannah Region (capital Damongo); towns: Damongo, Bole, Salaga, Buipe, Sawla. https://www.baid-x.com/ghana/savannah/
+- North East Region (capital Nalerigu); towns: Nalerigu, Walewale, Gambaga, Chereponi, Bunkpurugu. https://www.baid-x.com/ghana/north-east/
+- Upper East Region (capital Bolgatanga); towns: Bolgatanga, Bawku, Navrongo, Zebilla, Sandema. https://www.baid-x.com/ghana/upper-east/
+- Upper West Region (capital Wa); towns: Wa, Tumu, Lawra, Jirapa, Nandom. https://www.baid-x.com/ghana/upper-west/
+- Bono Region (capital Sunyani); towns: Sunyani, Berekum, Dormaa Ahenkro, Wenchi, Sampa. https://www.baid-x.com/ghana/bono/
+- Bono East Region (capital Techiman); towns: Techiman, Kintampo, Atebubu, Nkoranza, Yeji. https://www.baid-x.com/ghana/bono-east/
+- Ahafo Region (capital Goaso); towns: Goaso, Bechem, Kenyasi, Duayaw Nkwanta, Hwidiem. https://www.baid-x.com/ghana/ahafo/
 
 ## Pricing and money
 Currency is Ghana cedis (GH₵). Paid plans unlock capacity and tools and never change verification. Payments are processed by Paystack. Workers withdraw to mobile money.
 
 ## Contact and legal
-Terms: https://baid-x-website.vercel.app/terms.html . Privacy: https://baid-x-website.vercel.app/privacy.html (Ghana Data Protection Act, 2012, Act 843).
+Terms: https://www.baid-x.com/terms.html . Privacy: https://www.baid-x.com/privacy.html (Ghana Data Protection Act, 2012, Act 843).
 
 ## Pricing
-Everyone starts on the free Access plan. Pro per month: Worker GH₵30 (founding GH₵20, yearly GH₵288); Project manager GH₵75 (founding GH₵50, yearly GH₵720); Supplier (business) GH₵100 (founding GH₵70, yearly GH₵960); Client (individual) GH₵100 (founding GH₵70, yearly GH₵960); Company GH₵300 (founding GH₵220, yearly GH₵2,880). Details: https://baid-x-website.vercel.app/pricing/
+Everyone starts on the free Access plan. Pro per month: Worker GH₵30 (founding GH₵20, yearly GH₵288); Project manager GH₵75 (founding GH₵50, yearly GH₵720); Supplier (business) GH₵100 (founding GH₵70, yearly GH₵960); Client (individual) GH₵100 (founding GH₵70, yearly GH₵960); Company GH₵300 (founding GH₵220, yearly GH₵2,880). Details: https://www.baid-x.com/pricing/
 
 ## Escrow
-Escrow means BAID X holds the client's payment for a job until the work is approved, so the worker knows the money exists and the client only pays for finished work. When the client approves the work, or automatically 3 days after the worker marks the job done if the client does not respond. Either side can report a problem. The job goes into dispute and the money stays held while BAID X reviews it and decides to release or refund. Before the work is submitted the client can cancel and the money goes back to their wallet. A BAID X service fee is deducted from the worker's payout. The worker sees the job total, the fee and the amount received. Clients top up their BAID X wallet through Paystack with card or mobile money. Workers withdraw their earnings to mobile money. Details: https://baid-x-website.vercel.app/escrow/
+Escrow means BAID X holds the client's payment for a job until the work is approved, so the worker knows the money exists and the client only pays for finished work. When the client approves the work, or automatically 3 days after the worker marks the job done if the client does not respond. Either side can report a problem. The job goes into dispute and the money stays held while BAID X reviews it and decides to release or refund. Before the work is submitted the client can cancel and the money goes back to their wallet. A 10% BAID X service fee is deducted from the amount released to the worker. Nothing is charged on a refund, and opening a dispute is free. The worker sees the job total, the fee and the amount received. Clients top up their BAID X wallet through Paystack with card or mobile money. Workers withdraw their earnings to mobile money. Details: https://www.baid-x.com/escrow/
 
 ## Verification badges
-Verified: The profile has been reviewed by a person at BAID X. Identity verified: A Ghana Card or other official ID has been checked against the person. Professional verified: Trade certificates and proof of past work have been checked, on top of identity. Advanced verified: A full background check on top of identity and trade, for sensitive work. Review fees: Identity verification GH₵10; Professional verification GH₵20; Business verification GH₵25; Advanced verification GH₵35; Enhanced verification GH₵35; Enhanced business verification GH₵50. Details: https://baid-x-website.vercel.app/verification/
+Verified: The profile has been reviewed by a person at BAID X. Identity verified: A Ghana Card or other official ID has been checked against the person. Professional verified: Trade certificates and proof of past work have been checked, on top of identity. Advanced verified: A full background check on top of identity and trade, for sensitive work. Review fees: Identity verification GH₵10; Professional verification GH₵20; Business verification GH₵25; Advanced verification GH₵35; Enhanced verification GH₵35; Enhanced business verification GH₵50. Details: https://www.baid-x.com/verification/
 
 ## Trade pages
-- [Mason / Block Layer](https://baid-x-website.vercel.app/trades/mason-block-layer/)
-- [Steel Bender / Iron Bender](https://baid-x-website.vercel.app/trades/steel-bender-iron-bender/)
-- [Concrete Worker / Pourer](https://baid-x-website.vercel.app/trades/concrete-worker-pourer/)
-- [Carpenter (Structural / Formwork)](https://baid-x-website.vercel.app/trades/carpenter-structural-formwork/)
-- [Scaffolder](https://baid-x-website.vercel.app/trades/scaffolder/)
-- [Excavator Operator](https://baid-x-website.vercel.app/trades/excavator-operator/)
-- [Bulldozer / Grader Operator](https://baid-x-website.vercel.app/trades/bulldozer-grader-operator/)
-- [Site Foreman / Supervisor](https://baid-x-website.vercel.app/trades/site-foreman-supervisor/)
-- [Borehole Driller](https://baid-x-website.vercel.app/trades/borehole-driller/)
-- [Land Surveyor Assistant](https://baid-x-website.vercel.app/trades/land-surveyor-assistant/)
-- [Electrician](https://baid-x-website.vercel.app/trades/electrician/)
-- [AC / HVAC Technician](https://baid-x-website.vercel.app/trades/ac-hvac-technician/)
-- [Generator Technician](https://baid-x-website.vercel.app/trades/generator-technician/)
-- [Solar Panel Installer](https://baid-x-website.vercel.app/trades/solar-panel-installer/)
-- [Elevator / Lift Technician](https://baid-x-website.vercel.app/trades/elevator-lift-technician/)
-- [CCTV / Security Systems Installer](https://baid-x-website.vercel.app/trades/cctv-security-systems-installer/)
-- [Network / Structured Cabling Technician](https://baid-x-website.vercel.app/trades/network-structured-cabling-technician/)
-- [Fire Safety Systems Installer](https://baid-x-website.vercel.app/trades/fire-safety-systems-installer/)
-- [Satellite Dish / TV Aerial Installer](https://baid-x-website.vercel.app/trades/satellite-dish-tv-aerial-installer/)
-- [Swimming Pool Technician](https://baid-x-website.vercel.app/trades/swimming-pool-technician/)
-- [Plumber](https://baid-x-website.vercel.app/trades/plumber/)
-- [Borehole Pump Mechanic](https://baid-x-website.vercel.app/trades/borehole-pump-mechanic/)
-- [Septic Tank / Soakaway Constructor](https://baid-x-website.vercel.app/trades/septic-tank-soakaway-constructor/)
-- [Waterproofing Specialist](https://baid-x-website.vercel.app/trades/waterproofing-specialist/)
-- [Gutter Installer](https://baid-x-website.vercel.app/trades/gutter-installer/)
-- [Painter](https://baid-x-website.vercel.app/trades/painter/)
-- [Tiler](https://baid-x-website.vercel.app/trades/tiler/)
-- [POP / Ceiling Installer](https://baid-x-website.vercel.app/trades/pop-ceiling-installer/)
-- [Screeder](https://baid-x-website.vercel.app/trades/screeder/)
-- [Terrazzo / Granite Fixer](https://baid-x-website.vercel.app/trades/terrazzo-granite-fixer/)
-- [Interior Decorator](https://baid-x-website.vercel.app/trades/interior-decorator/)
-- [Wallpaper Installer](https://baid-x-website.vercel.app/trades/wallpaper-installer/)
-- [Cabinetmaker / Kitchen Cabinet Installer](https://baid-x-website.vercel.app/trades/cabinetmaker-kitchen-cabinet-installer/)
-- [Wardrobe / Closet Installer](https://baid-x-website.vercel.app/trades/wardrobe-closet-installer/)
-- [Wood Polisher / Varnisher](https://baid-x-website.vercel.app/trades/wood-polisher-varnisher/)
-- [Upholsterer](https://baid-x-website.vercel.app/trades/upholsterer/)
-- [Curtain / Blinds Installer](https://baid-x-website.vercel.app/trades/curtain-blinds-installer/)
-- [Glass Tinting Technician](https://baid-x-website.vercel.app/trades/glass-tinting-technician/)
-- [Aluminium & Glazing Installer](https://baid-x-website.vercel.app/trades/aluminium-and-glazing-installer/)
-- [Locksmith](https://baid-x-website.vercel.app/trades/locksmith/)
-- [Roofer](https://baid-x-website.vercel.app/trades/roofer/)
-- [Welder / Metal Fabricator](https://baid-x-website.vercel.app/trades/welder-metal-fabricator/)
-- [Fence Wall Builder](https://baid-x-website.vercel.app/trades/fence-wall-builder/)
-- [Gate Fabricator / Installer](https://baid-x-website.vercel.app/trades/gate-fabricator-installer/)
-- [Interlock / Paving Block Layer](https://baid-x-website.vercel.app/trades/interlock-paving-block-layer/)
-- [Landscaper / Gardener](https://baid-x-website.vercel.app/trades/landscaper-gardener/)
-- [Fumigation / Pest Control Technician](https://baid-x-website.vercel.app/trades/fumigation-pest-control-technician/)
-- [Furniture Assembler](https://baid-x-website.vercel.app/trades/furniture-assembler/)
-- [Post-Construction Cleaner](https://baid-x-website.vercel.app/trades/post-construction-cleaner/)
-- [General Handyman (Repairs & Maintenance)](https://baid-x-website.vercel.app/trades/general-handyman-repairs-and-maintenance/)
+- [Mason / Block Layer](https://www.baid-x.com/trades/mason-block-layer/)
+- [Steel Bender / Iron Bender](https://www.baid-x.com/trades/steel-bender-iron-bender/)
+- [Concrete Worker / Pourer](https://www.baid-x.com/trades/concrete-worker-pourer/)
+- [Carpenter (Structural / Formwork)](https://www.baid-x.com/trades/carpenter-structural-formwork/)
+- [Scaffolder](https://www.baid-x.com/trades/scaffolder/)
+- [Excavator Operator](https://www.baid-x.com/trades/excavator-operator/)
+- [Bulldozer / Grader Operator](https://www.baid-x.com/trades/bulldozer-grader-operator/)
+- [Site Foreman / Supervisor](https://www.baid-x.com/trades/site-foreman-supervisor/)
+- [Borehole Driller](https://www.baid-x.com/trades/borehole-driller/)
+- [Land Surveyor Assistant](https://www.baid-x.com/trades/land-surveyor-assistant/)
+- [Electrician](https://www.baid-x.com/trades/electrician/)
+- [AC / HVAC Technician](https://www.baid-x.com/trades/ac-hvac-technician/)
+- [Generator Technician](https://www.baid-x.com/trades/generator-technician/)
+- [Solar Panel Installer](https://www.baid-x.com/trades/solar-panel-installer/)
+- [Elevator / Lift Technician](https://www.baid-x.com/trades/elevator-lift-technician/)
+- [CCTV / Security Systems Installer](https://www.baid-x.com/trades/cctv-security-systems-installer/)
+- [Network / Structured Cabling Technician](https://www.baid-x.com/trades/network-structured-cabling-technician/)
+- [Fire Safety Systems Installer](https://www.baid-x.com/trades/fire-safety-systems-installer/)
+- [Satellite Dish / TV Aerial Installer](https://www.baid-x.com/trades/satellite-dish-tv-aerial-installer/)
+- [Swimming Pool Technician](https://www.baid-x.com/trades/swimming-pool-technician/)
+- [Plumber](https://www.baid-x.com/trades/plumber/)
+- [Borehole Pump Mechanic](https://www.baid-x.com/trades/borehole-pump-mechanic/)
+- [Septic Tank / Soakaway Constructor](https://www.baid-x.com/trades/septic-tank-soakaway-constructor/)
+- [Waterproofing Specialist](https://www.baid-x.com/trades/waterproofing-specialist/)
+- [Gutter Installer](https://www.baid-x.com/trades/gutter-installer/)
+- [Painter](https://www.baid-x.com/trades/painter/)
+- [Tiler](https://www.baid-x.com/trades/tiler/)
+- [POP / Ceiling Installer](https://www.baid-x.com/trades/pop-ceiling-installer/)
+- [Screeder](https://www.baid-x.com/trades/screeder/)
+- [Terrazzo / Granite Fixer](https://www.baid-x.com/trades/terrazzo-granite-fixer/)
+- [Interior Decorator](https://www.baid-x.com/trades/interior-decorator/)
+- [Wallpaper Installer](https://www.baid-x.com/trades/wallpaper-installer/)
+- [Cabinetmaker / Kitchen Cabinet Installer](https://www.baid-x.com/trades/cabinetmaker-kitchen-cabinet-installer/)
+- [Wardrobe / Closet Installer](https://www.baid-x.com/trades/wardrobe-closet-installer/)
+- [Wood Polisher / Varnisher](https://www.baid-x.com/trades/wood-polisher-varnisher/)
+- [Upholsterer](https://www.baid-x.com/trades/upholsterer/)
+- [Curtain / Blinds Installer](https://www.baid-x.com/trades/curtain-blinds-installer/)
+- [Glass Tinting Technician](https://www.baid-x.com/trades/glass-tinting-technician/)
+- [Aluminium & Glazing Installer](https://www.baid-x.com/trades/aluminium-and-glazing-installer/)
+- [Locksmith](https://www.baid-x.com/trades/locksmith/)
+- [Roofer](https://www.baid-x.com/trades/roofer/)
+- [Welder / Metal Fabricator](https://www.baid-x.com/trades/welder-metal-fabricator/)
+- [Fence Wall Builder](https://www.baid-x.com/trades/fence-wall-builder/)
+- [Gate Fabricator / Installer](https://www.baid-x.com/trades/gate-fabricator-installer/)
+- [Interlock / Paving Block Layer](https://www.baid-x.com/trades/interlock-paving-block-layer/)
+- [Landscaper / Gardener](https://www.baid-x.com/trades/landscaper-gardener/)
+- [Fumigation / Pest Control Technician](https://www.baid-x.com/trades/fumigation-pest-control-technician/)
+- [Furniture Assembler](https://www.baid-x.com/trades/furniture-assembler/)
+- [Post-Construction Cleaner](https://www.baid-x.com/trades/post-construction-cleaner/)
+- [General Handyman (Repairs & Maintenance)](https://www.baid-x.com/trades/general-handyman-repairs-and-maintenance/)

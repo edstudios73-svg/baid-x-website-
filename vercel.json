@@ -2,6 +2,29 @@
   "regions": [
     "fra1"
   ],
+  "redirects": [
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "baid-x-website.vercel.app"
+        }
+      ],
+      "destination": "https://www.baid-x.com/:path",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html",
+      "permanent": true
+    },
+    {
+      "source": "/contact/",
+      "destination": "/contact.html",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
