@@ -1,9 +1,12 @@
-// POST /api/paystack-initialize  { reference }
+// POST /api/paystack-initialize  { reference, method?: "momo" | "bank" | "card" }
 // The amount is read from the database for a payment the signed-in user already created. The browser never sends an amount.
 const { configured, supa, rpc, paystack, mode } = require("./_lib/paystack");
 
 // Paystack needs a syntactically valid email. Phone sign-ups have an internal ".invalid" address, so they get a stable, valid
 // placeholder (receipts are shown in the app; nothing is ever mailed to it).
+// The member picks how to pay; Paystack then shows only that option. No method = every option enabled on the account.
+const CHANNELS = { momo: ["mobile_money"], bank: ["bank_transfer", "bank"], card: ["card"] };
+
 const payerEmail = (u) => (u.email && !/\.invalid$/i.test(u.email) ? u.email : `payer-${String(u.id).replace(/-/g, "").slice(0, 16)}@pay.baid-x-website.vercel.app`);
 
 module.exports = async (req, res) => {
@@ -38,9 +41,12 @@ module.exports = async (req, res) => {
     const pay = q.json?.[0];
     if (!pay) return res.status(404).json({ error: "Checkout not found." });
 
-    const body = { email: payerEmail(u.json), amount: pay.expected_amount_minor, currency: pay.currency, reference, callback_url: `${req.headers.origin || "https://www.baid-x.com"}/#/${pay.purpose === "wallet_deposit" ? "wallet" : "billing"}`, metadata: { baidx_payment: pay.id, purpose: pay.purpose } };
-    // recurring plans: the plan code must be a plan we created for this exact BAID X plan
-    if (pay.purpose === "subscription" && pay.target?.plan_id) {
+    const method = Object.hasOwn(CHANNELS, req.body?.method) ? req.body.method : null;
+    const body = { email: payerEmail(u.json), amount: pay.expected_amount_minor, currency: pay.currency, reference, callback_url: `${req.headers.origin || "https://www.baid-x.com"}/#/${pay.purpose === "wallet_deposit" ? "wallet" : "billing"}`, metadata: { baidx_payment: pay.id, purpose: pay.purpose, method } };
+    if (method) body.channels = CHANNELS[method];
+    // recurring plans: the plan code must be a plan we created for this exact BAID X plan. Only a card can be charged again
+    // automatically, so Mobile Money and bank pay for one period and the member renews from Plans & billing.
+    if (pay.purpose === "subscription" && pay.target?.plan_id && (!method || method === "card")) {
       const p = await supa(`/rest/v1/membership_plans?id=eq.${pay.target.plan_id}&select=id,role,tier,billing_interval,is_founding,currency,paystack_plan_code,price_minor`);
       const plan = p.json?.[0];
       let code = plan?.paystack_plan_code;

@@ -90,3 +90,20 @@ test("initialize: first checkout at a new price creates the Paystack plan for th
   assert.equal(made.amount, 20000); assert.equal(made.interval, "monthly");
   assert.equal(calls.find((x) => x.url.includes("/transaction/initialize")).body.plan, "PLN_new");
 });
+test("initialize: the chosen method limits Paystack's channels; only card attaches a recurring plan", async () => {
+  const routes = (seen) => [["/auth/v1/user", () => ({ json: { id: "u1", email: "a@b.com" } })], ["billing_payments?", () => ({ json: [{ id: "p1", expected_amount_minor: 20000, currency: "GHS", purpose: "subscription", target: { plan_id: "pl1" } }] })], ["membership_plans?", () => ({ json: [{ id: "pl1", role: "worker", tier: "pro", billing_interval: "monthly", is_founding: false, currency: "GHS", paystack_plan_code: "PLN_1", price_minor: 20000 }] })], ["/transaction/initialize", (u, o) => { seen.push(JSON.parse(o.body)); return { json: { data: { authorization_url: "https://checkout.paystack.com/x" } } }; }]];
+  const run = async (method) => { const seen = []; stub(routes(seen)); const res = mkRes(); await init({ method: "POST", headers: { authorization: "Bearer t" }, body: { reference: "BXP-AAAAAAAAAAAAAAAA", method } }, res); assert.equal(res.code, 200); return seen[0]; };
+  let b = await run("momo"); assert.deepEqual(b.channels, ["mobile_money"]); assert.equal(b.plan, undefined);
+  b = await run("bank"); assert.deepEqual(b.channels, ["bank_transfer", "bank"]); assert.equal(b.plan, undefined);
+  b = await run("card"); assert.deepEqual(b.channels, ["card"]); assert.equal(b.plan, "PLN_1");
+  b = await run("crypto"); assert.equal(b.channels, undefined); assert.equal(b.plan, "PLN_1"); // unknown method: Paystack shows every option
+});
+test("paystack-admin money: staff only, and never returns the key", async () => {
+  stub([["platform_whoami", () => ({ json: { can: [] } })]]);
+  const admin = require("../api/paystack-admin.js");
+  let res = mkRes(); await admin({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "money" } }, res); assert.equal(res.code, 403);
+  stub([["platform_whoami", () => ({ json: { can: ["finance:ADMINISTER"] } })], ["membership_plans?", () => ({ json: [] })], ["/balance", () => ({ json: { data: [{ currency: "GHS", balance: 300 }] } })], ["/transaction/totals", () => ({ json: { data: { total_transactions: 1, total_volume_by_currency: [{ currency: "GHS", amount: 300 }], pending_transfers_by_currency: [{ currency: "GHS", amount: 300 }] } } })], ["/transaction?", () => ({ json: { data: [{ id: 6, reference: "BXP-2A896F4A2BD742FD", amount: 300, currency: "GHS", status: "success", channel: "mobile_money", fees: 6, paid_at: "2026-10-12T22:42:50Z" }], meta: { pageCount: 1 } } })], ["/settlement", () => ({ json: { data: [] } })]]);
+  res = mkRes(); await admin({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "money" } }, res);
+  assert.equal(res.code, 200); assert.deepEqual(res.body.balance, [{ currency: "GHS", amount: 300 }]); assert.equal(res.body.transactions[0].channel, "mobile_money");
+  assert.ok(!JSON.stringify(res.body).includes("sk_test_unit"));
+});

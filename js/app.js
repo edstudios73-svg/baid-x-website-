@@ -165,6 +165,9 @@
   const BAG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.500"/><path d="M9 7V5.500A1.500 1.500 0 0 1 10.500 4h3A1.500 1.500 0 0 1 15 5.500V7"/></svg>';
   const KIND_LABEL = { worker: "Professional", company: "Company", pm: "Project manager", business: "Supplier" };
   const SEAL = (tier) => (tier ? window.BX.badge(tier, 17) : "");
+  // Paid members carry their plan's mark (Pro, Premium, Enterprise). It says they pay for BAID X, not that BAID X
+  // checked them: that is the verification seal beside it.
+  const PLAN_MARK = (tier) => (tier ? `<span class="m-plan" title="${esc(pretty(tier))} member">${esc(pretty(tier))}</span>` : "");
   // Member card: identity row (avatar beside the name), a facts line and a trust line.
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const joinedLabel = (t) => { if (!Number.isFinite(t)) return ""; const d = new Date(t); return `Joined ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
@@ -181,8 +184,8 @@
     const b = it.badge && window.BX.BADGES[it.badge];
     const trust = b ? `<div class="t-trust ok">${SEAL(it.badge)}<span>${esc(b[1])} by BAID X</span></div>` : `<div class="t-trust"><span>Verification in progress</span></div>`;
     return `<article class="card c3 m4" data-id="${esc(it.id)}" data-kind="${esc(it.kind)}">
-      <div class="m-head">${cover}<span class="t-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span>${av}<span class="m-joined">${esc(joinedLabel(it.joined))}</span></div>
-      <div class="m-body"><h3><span>${esc(it.name)}</span>${SEAL(it.badge)}</h3><div class="t-tag">${esc(it.tag)}</div>
+      <div class="m-head">${cover}${it.boosted ? '<span class="m-feat">Featured</span>' : ""}<span class="t-kind">${esc(KIND_LABEL[it.kind] || "Member")}</span>${av}<span class="m-joined">${esc(joinedLabel(it.joined))}</span></div>
+      <div class="m-body"><h3><span>${esc(it.name)}</span>${SEAL(it.badge)}${PLAN_MARK(it.plan)}</h3><div class="t-tag">${esc(it.tag)}</div>
       <p class="desc">${esc(it.desc)}</p>
       <div class="m-facts">${tiles}</div>${trust}
       <div class="c-foot"><button class="b1">${canInvite ? "Invite to project" : "View profile"}</button>${msg}</div></div></article>`;
@@ -203,15 +206,26 @@
     const list = visible();
     feed.innerHTML = list.length ? list.map(cardHTML).join("") : '<div class="state" style="grid-column:1/-1"><b>No results</b>Try another search, category or location.</div>';
   }
+  // Discover order (same as the app): boosted profiles, then paid plans (Enterprise, Premium, Pro), then verified
+  // members, then the earliest members first.
+  const PLAN_RANK = { enterprise: 3, premium: 2, pro: 1 };
+  function rankMembers(items, promo) {
+    const plan = new Map((promo.members || []).map((m) => [m.id, m.tier]));
+    const boosted = new Set((promo.boosts || []).filter((b) => !["job", "project", "business_listing"].includes(b.type)).map((b) => b.id));
+    return items.map((it) => ({ ...it, plan: plan.get(it.id) || null, boosted: boosted.has(it.id) }))
+      .sort((a, b) => (b.boosted - a.boosted) || ((PLAN_RANK[b.plan] || 0) - (PLAN_RANK[a.plan] || 0)) || (!!b.badge - !!a.badge) || (a.joined - b.joined));
+  }
+  window.BX.rankMembers = rankMembers;
   async function loadDirectory() {
     state.loading = true; state.failed = false; renderFeed();
     try {
+      const promo = sb.rpc("promoted").then(({ data }) => data || {}, () => ({}));
       const results = await Promise.all(Object.entries(SOURCES).map(async ([group, s]) => {
         const { data, error } = await sb.from(s.table).select(`${s.cols},created_at`).or("account_status.is.null,account_status.eq.active").order("created_at", { ascending: true }).limit(100);
         if (error) throw error;
         return (data || []).map((r) => ({ ...s.map(r), group, joined: Date.parse(r.created_at) || Infinity }));
       }));
-      state.items = results.flat().sort((a, b) => a.joined - b.joined); // the earliest members first
+      state.items = rankMembers(results.flat(), await promo);
     } catch (e) { console.error("directory load failed", e); state.failed = true; }
     state.loading = false; renderChips(); renderFeed();
     window.dispatchEvent(new CustomEvent("baidx:directory", { detail: state.failed ? null : state.items })); // the landing's badge check and price guide
@@ -236,6 +250,8 @@
     $("#accCover").style.backgroundImage = p.cover_url ? `url('${p.cover_url.replace(/'/g, "%27")}')` : "";
     $("#accName").textContent = name; $("#accPhone").textContent = phone ? (/^\d/.test(phone) ? `+${phone}` : phone) : "";
     $("#accSeal").hidden = !verified; $("#accSeal").innerHTML = verified ? window.BX.badge(p.badge_tier, 17) : "";
+    // your paid plan's mark, as others see it on your card
+    sb.rpc("effective_plan", { p_user: me.session.user.id, p_org: null }).then(({ data }) => { const el = $("#accPlan"); if (!el) return; const t = data?.paid ? data.tier : null; el.hidden = !t; el.innerHTML = PLAN_MARK(t); }, () => {});
     $("#accRole").textContent = role.account;
     $("#accStatus").className = verified ? "vt" : ""; $("#accStatus").innerHTML = verified ? `<span style="color:${(window.BX.BADGES[p.badge_tier] || window.BX.BADGES.verified)[0]}">${icon("seal", 14)}</span> ${esc((window.BX.BADGES[p.badge_tier] || window.BX.BADGES.verified)[1])}` : esc(statusLabel(p.verification_status));
     // verified members don't need the checklist any more: show the badge instead

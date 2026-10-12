@@ -108,10 +108,15 @@
 
   /* ---------- Worker: Jobs marketplace ---------- */
   async function jobsView(c) {
-    const [jobs, mine] = await Promise.all([
+    const [jobs, mine, promo] = await Promise.all([
       rows(c, "jobs", "id,title,description,job_category_id,city_town,region,daily_rate_ghs,workers_needed,created_at", (x) => x.eq("status", "open").order("created_at", { ascending: false }), 50),
       rows(c, "job_applications", "job_id,status", (x) => x.eq("worker_id", c.uid), 200),
+      c.sb.rpc("promoted").then(({ data }) => data || {}, () => ({})),
     ]);
+    // boosted jobs first (a paid boost), then the newest; same order as the app
+    const boosted = new Set((promo.boosts || []).filter((b) => b.type === "job").map((b) => b.id));
+    jobs.forEach((j) => { j.boosted = boosted.has(j.id); });
+    jobs.sort((a, b) => (b.boosted - a.boosted) || (Date.parse(b.created_at) - Date.parse(a.created_at)));
     c.state.jobsCache = { jobs, applied: Object.fromEntries(mine.map((a) => [a.job_id, a.status])) };
     return head("Job Marketplace") + `<label class="search slim"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/></svg><input id="jobQ" type="search" placeholder="Search jobs, trades or towns" autocomplete="off" /></label><div id="jobList">${jobList(c, "")}</div>`;
   }
@@ -119,7 +124,7 @@
     const { jobs, applied } = c.state.jobsCache, s = q.trim().toLowerCase();
     const list = jobs.filter((j) => !s || `${j.title} ${trade(j.job_category_id) || ""} ${j.city_town || ""} ${j.region || ""}`.toLowerCase().includes(s));
     if (!list.length) return empty("work", jobs.length ? "No matching jobs" : "No open jobs right now", jobs.length ? "Try a different search." : "New jobs from companies and homeowners will appear here. Check back soon.");
-    return list.map((j) => `<div class="job"><div class="job-top"><div class="jt">${trade(j.job_category_id) ? `<span class="tr">${esc(trade(j.job_category_id))}</span>` : ""}<b>${esc(j.title)}</b></div><span class="rate">${j.daily_rate_ghs ? `${money(j.daily_rate_ghs)}<small>per day</small>` : `<small>Rate on request</small>`}</span></div>
+    return list.map((j) => `<div class="job"><div class="job-top"><div class="jt">${j.boosted ? '<span class="job-boost">Featured</span>' : ""}${trade(j.job_category_id) ? `<span class="tr">${esc(trade(j.job_category_id))}</span>` : ""}<b>${esc(j.title)}</b></div><span class="rate">${j.daily_rate_ghs ? `${money(j.daily_rate_ghs)}<small>per day</small>` : `<small>Rate on request</small>`}</span></div>
       ${j.description ? `<p>${esc(j.description)}</p>` : ""}
       <div class="job-info"><span class="pl">${icon("site", 14)}<i>${esc([j.city_town, j.region].filter(Boolean).join(", ") || "Ghana")}</i></span><span>${icon("team", 14)} ${j.workers_needed || 1} needed</span><span>${icon("cal", 14)} ${esc(ago(j.created_at))}</span></div>
       ${applied[j.id] ? `<div class="job-act">${pill(pretty(applied[j.id]), statusKind(applied[j.id]))}</div>` : `<div class="job-act"><button class="btn-light sm" data-apply="${esc(j.id)}">Apply now</button></div>`}</div>`).join("");

@@ -133,15 +133,15 @@
       const [f, q, md] = await Promise.all([rpc("admin_finance"), rpc("admin_money_queue"), rpc("admin_money_disputes").catch(() => [])]);
       S.fin = f; S.mq = q; S.md = md;
       const t = tabOf("finance", "overview");
-      const items = [["overview", "Overview"], ["deposits", `Deposits (${q.deposits.length})`], ["escrow", `Escrow (${f.escrow_count})`], ["withdrawals", `Withdrawals (${q.withdrawals.length})`], ["disputes", `Disputes (${f.disputes_open + md.length})`], ["provider", "Provider"], ["paystack", "Paystack", 1], ["recon", "Reconciliation", 1]];
+      const items = [["overview", "Overview"], ["paystack", "Paystack money", 1], ["deposits", `Deposits (${q.deposits.length})`], ["escrow", `Escrow (${f.escrow_count})`], ["withdrawals", `Withdrawals (${q.withdrawals.length})`], ["disputes", `Disputes (${f.disputes_open + md.length})`], ["provider", "Provider"], ["recon", "Reconciliation", 1]];
       let body = "";
-      if (t === "overview") body = `<div class="g g4">${tile("Transaction volume", cedi(f.volume))}${tile("BAID X commission", cedi(f.commission), 1)}${tile("Platform wallet", cedi(f.platform_wallet), 1)}${tile("User balances", cedi(f.user_balances))}${tile("Active escrow", `${cedi(f.escrow_amount)} (${f.escrow_count})`)}${tile("Completed payments", f.completed_payments)}${tile("Pending deposits", f.deposits_waiting)}${tile("Fraud alerts", f.fraud)}</div>`;
+      if (t === "overview") body = `<div class="g g4">${tile("Transaction volume", cedi(f.volume))}${tile("BAID X commission", cedi(f.commission), 1)}${tile("Platform wallet", cedi(f.platform_wallet), 1)}${tile("User balances", cedi(f.user_balances))}${tile("Active escrow", `${cedi(f.escrow_amount)} (${f.escrow_count})`)}${tile("Completed payments", f.completed_payments)}${tile("Pending deposits", f.deposits_waiting)}${tile("Fraud alerts", f.fraud)}</div><h2 class="sec">Paystack account</h2><div class="g g4" id="psbal"><div class="c"><span class="l">Paystack balance</span><b class="n">…</b></div></div>`;
       if (t === "deposits") body = table(["Member", "Reference", "Amount", "Proof", "Status", "Actions"], q.deposits.map((d) => `<tr><td>${avatar(d.owner_name)}<b>${esc(d.owner_name)}</b><div class="mono">${esc(pretty(d.role))}</div></td><td class="mono">${esc(d.ref)}<div class="mut">${esc(d.note || "")}</div></td><td><b>${cedi(d.amount)}</b></td><td>${d.proof ? `<button class="btn gh" data-doc="payment-proofs" data-path="${esc(d.proof)}">View</button>` : "—"}</td><td>${stPill(d.status)}</td><td><button class="btn ap" data-dd="1" data-id="${esc(d.id)}">Confirm received</button><button class="btn rj" data-dd="0" data-id="${esc(d.id)}">Reject</button></td></tr>`), "No deposits waiting.");
       if (t === "withdrawals") body = table(["Member", "Reference", "Amount", "Pay to", "Status", "Actions"], q.withdrawals.map((w) => `<tr><td>${avatar(w.owner_name)}<b>${esc(w.owner_name)}</b><div class="mono">${esc(pretty(w.role))}</div></td><td class="mono">${esc(w.ref)}</td><td><b>${cedi(w.amount)}</b></td><td>${esc(w.name || "")}<div class="mono">${esc(w.network || "")} ${esc(w.account || "")}</div></td><td>${stPill(w.status)}</td><td><button class="btn ap" data-wd="completed" data-id="${esc(w.id)}">Mark as paid</button><button class="btn gh" data-wd="rejected" data-id="${esc(w.id)}">Return to wallet</button></td></tr>`), "No withdrawals waiting.");
-      if (t === "escrow") body = table(["Reference", "Payer", "Receiver", "Amount", "Status", "Actions"], f.escrow.map((e) => `<tr><td class="mono">${esc(e.ref || "")}<div class="mut">${esc(e.description || "")}</div></td><td>${esc(e.payer)}</td><td>${esc(e.receiver)}</td><td><b>${cedi(e.amount)}</b></td><td>${stPill(e.status)}</td><td>${["locked", "disputed"].includes(e.status) ? `<button class="btn ap" data-esc="release" data-id="${esc(e.id)}">Release 85 / 15</button><button class="btn gh" data-esc="refund" data-id="${esc(e.id)}">Refund payer</button>` : "—"}</td></tr>`), "No escrow holds yet.");
+      if (t === "escrow") body = table(["Reference", "Payer", "Receiver", "Amount", "Status", "Actions"], f.escrow.map((e) => `<tr><td class="mono">${esc(e.ref || "")}<div class="mut">${esc(e.description || "")}</div></td><td>${esc(e.payer)}</td><td>${esc(e.receiver)}</td><td><b>${cedi(e.amount)}</b></td><td>${stPill(e.status)}</td><td>${["locked", "disputed"].includes(e.status) ? `<button class="btn ap" data-esc="release" data-id="${esc(e.id)}">Release payment</button><button class="btn gh" data-esc="refund" data-id="${esc(e.id)}">Refund payer</button>` : "—"}</td></tr>`), "No escrow holds yet.");
       if (t === "disputes") body = `<h2 class="sec" style="margin-top:0">Money disputes (held in escrow)</h2>` + table(["Reference", "What", "Payer", "Receiver", "Amount", "Reason", "Actions"], md.map((d, i) => `<tr><td class="mono">${esc(d.ref)}<div class="mut">${esc(pretty(d.kind))} · ${esc(ago(d.at))}</div></td><td>${esc(d.title)}</td><td>${esc(d.payer)}</td><td>${esc(d.receiver)}</td><td><b>${cedi(d.amount)}</b></td><td>${esc(d.reason || "")}${d.details ? `<div class="mut">${esc(d.details)}</div>` : ""}</td><td><button class="btn ap" data-settle="${i}">Settle</button></td></tr>`), "No money disputes. Nothing is waiting on you.") + `<h2 class="sec">Other disputes</h2>` + table(["Reference", "Raised by", "Reason", "Status", "Actions"], f.disputes.map((d) => `<tr><td class="mono">${esc(d.ref || "")}<div class="mut">${esc(ago(d.created_at))}</div></td><td>${esc(d.by)}</td><td>${esc(d.reason || "")}${d.resolution ? `<div class="mut">${esc(d.resolution)}</div>` : ""}</td><td>${stPill(d.status)}</td><td>${["open", "under_review"].includes(d.status) ? `<button class="btn gh" data-dp="under_review" data-id="${esc(d.id)}">Review</button><button class="btn ap" data-dp="resolved" data-id="${esc(d.id)}">Resolve</button><button class="btn rj" data-dp="rejected" data-id="${esc(d.id)}">Reject</button>` : "—"}</td></tr>`), "No disputes.");
       if (t === "provider") body = f.providers.length ? f.providers.map((p) => `<div class="c" style="margin-bottom:14px"><div class="row2"><b>${esc(p.display_name)}</b>${stPill(p.is_active ? "active" : "disabled")}<span class="mono">${esc(p.code)}</span>${isSuper() ? `<button class="btn gh ml" data-prov="${esc(p.id)}">Edit</button>` : ""}</div><div class="kv"><span>Number</span><b>${esc(p.account_number || "—")}</b></div><div class="kv"><span>Account name</span><b>${esc(p.account_name || "—")}</b></div><div class="kv"><span>Instructions shown to members</span><span style="max-width:60%;text-align:right">${esc(p.instructions || "—")}</span></div></div>`).join("") : `<div class="c empty"><b>No provider set up</b></div>`;
-      if (t === "paystack") body = `<div class="c" id="psbox"><span class="l">Paystack connection</span><div class="mut" style="margin-top:10px">Checking…</div></div>`;
+      if (t === "paystack") body = `<div id="psmoney"><div class="c"><span class="l">Paystack money</span><div class="mut" style="margin-top:10px">Loading from Paystack…</div></div></div><h2 class="sec">Connection</h2><div class="c" id="psbox"><span class="l">Paystack connection</span><div class="mut" style="margin-top:10px">Checking…</div></div>`;
       if (t === "recon") { const r = await rpc("admin_reconciliation"); body = recon(r); }
       return tabs("finance", items, t) + body;
     },
@@ -278,7 +278,7 @@
   };
 
   const AFTER = {
-    finance() { if (tabOf("finance", "overview") === "paystack") paystackBox(); },
+    finance() { const t = tabOf("finance", "overview"); if (t === "paystack") { paystackBox(); paystackMoney(); } if (t === "overview") paystackBalance(); },
     messages() { if (S.msgConv) openConv(S.msgConv); },
   };
 
@@ -374,9 +374,9 @@
   }
 
   /* ---------------- api (Paystack admin) ---------------- */
-  async function api(action) {
+  async function api(action, extra = {}) {
     const { data: { session } } = await sb.auth.getSession();
-    const r = await fetch("/api/paystack-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action }) });
+    const r = await fetch("/api/paystack-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ ...extra, action }) });
     return { ok: r.ok, json: await r.json().catch(() => ({})) };
   }
   async function smsCall(body) {
@@ -413,6 +413,39 @@
     box.innerHTML = `<div class="row2"><span class="l">Paystack connection</span>${mode}${link}</div><div class="kv"><span>Plans linked</span><b>${c.plans_with_code ?? 0} of ${c.plans ?? 0}</b></div><div class="kv"><span>Webhook URL</span><b style="word-break:break-all;font-size:12px">${esc(c.webhook_url || "")}</b></div><p class="mut" style="margin:10px 0">Paste the webhook URL into Paystack → Settings → API Keys &amp; Webhooks. The secret key stays in Vercel and is never shown here.</p>${c.mode && c.mode !== "none" && c.plans_with_code < c.plans ? '<button class="btn-or" data-mkplans>Create Paystack plans</button>' : ""}`;
   }
 
+  /* Money in the Paystack account, read live from Paystack by the server (the key never reaches the browser),
+     matched to BAID X checkouts by reference so every payment shows who paid and what for. */
+  const money = (amt, cur) => (!cur || cur === "GHS" ? minor(amt) : `${esc(cur)} ${(Number(amt || 0) / 100).toLocaleString("en-GH", { minimumFractionDigits: 2 })}`);
+  const sumBy = (list) => (list && list.length ? list.map((x) => money(x.amount, x.currency)).join(" + ") : minor(0));
+  const CHANNEL = { mobile_money: "Mobile Money", card: "Card", bank: "Bank", bank_transfer: "Bank transfer", ussd: "USSD", qr: "QR" };
+  const PURPOSE = { subscription: "Plan", boost: "Boost", verification: "Verification", xid: "XID", promotion: "Promotion", wallet_deposit: "Wallet top-up" };
+  async function paystackBalance() {
+    const box = document.getElementById("psbal"); if (!box) return;
+    const r = await api("money").catch(() => ({ ok: false, json: {} })), m = r.json || {};
+    box.innerHTML = r.ok
+      ? `${tile("Paystack balance", sumBy(m.balance), 1)}${tile("Received through Paystack", sumBy(m.totals?.volume))}${tile("Waiting to reach your bank", sumBy(m.totals?.pending_payout))}${tile("Paystack transactions", m.totals?.count ?? 0)}`
+      : `<div class="c"><span class="l">Paystack balance</span><p class="mut" style="margin-top:8px">${esc(m.error || "Only a Super Admin can see this.")}</p></div>`;
+  }
+  async function paystackMoney() {
+    const box = document.getElementById("psmoney"); if (!box) return;
+    const page = S.psPage || 1;
+    const [r, mine] = await Promise.all([api("money", { page, status: S.psStatus || "" }).catch(() => ({ ok: false, json: {} })), rpc("admin_billing_payments", { p_limit: 300 }).catch(() => [])]);
+    const m = r.json || {}, byRef = Object.fromEntries((mine || []).map((x) => [x.ref, x]));
+    const who = (ref) => { const x = byRef[ref]; return x ? `<b>${esc(x.member)}</b><div class="mut">${esc(x.what || PURPOSE[x.purpose] || "")}${x.about ? ` · ${esc(x.about)}` : ""}</div>` : '<span class="mut">Not a BAID X checkout</span>'; };
+    const pst = (s) => stPill(s === "success" ? "successful" : s === "abandoned" ? "cancelled" : s);
+    const head = r.ok
+      ? `<div class="row2" style="margin-bottom:12px">${m.mode === "live" ? '<span class="pill ok">Live money</span>' : m.mode === "test" ? '<span class="pill w">Test mode: not real money</span>' : ""}</div><div class="g g4">${tile("Paystack balance", sumBy(m.balance), 1)}${tile("Received through Paystack", sumBy(m.totals?.volume))}${tile("Waiting to reach your bank", sumBy(m.totals?.pending_payout))}${tile("Paystack transactions", m.totals?.count ?? 0)}</div>
+        <p class="mut" style="margin:10px 0 0">Paystack pays your balance out to the bank or Mobile Money account set in Paystack → Settings → Payouts. The balance is what has not been paid out yet.</p>`
+      : `<div class="c"><span class="l">Paystack money</span><p class="mut" style="margin-top:8px">${esc(m.error || "Couldn't reach Paystack. Showing BAID X checkouts only.")}</p></div>`;
+    const filt = `<div class="row2" style="margin:18px 0 8px"><h2 class="sec" style="margin:0">All Paystack transactions</h2>${[["", "All"], ["success", "Paid"], ["failed", "Failed"], ["abandoned", "Not finished"]].map(([k, l]) => `<button class="btn ${((S.psStatus || "") === k) ? "ap" : "gh"}" data-psf="${k}">${l}</button>`).join("")}</div>`;
+    const txs = r.ok ? table(["When", "Paid by", "Method", "Amount", "Paystack fee", "Status", "Reference"], (m.transactions || []).map((t) => `<tr><td class="mut">${esc(when(t.paid_at || t.created_at))}</td><td>${who(t.ref)}</td><td>${esc(CHANNEL[t.channel] || pretty(t.channel || "—"))}</td><td><b>${money(t.amount, t.currency)}</b></td><td class="mut">${t.fees ? money(t.fees, t.currency) : "—"}</td><td>${pst(t.status)}</td><td class="mono">${esc(t.ref)}</td></tr>`), "No transactions on Paystack yet.")
+      + `<div class="row2" style="margin-top:10px">${page > 1 ? '<button class="btn gh" data-psp="-1">Newer</button>' : ""}<span class="mut">Page ${page} of ${m.pages || 1}</span>${page < (m.pages || 1) ? '<button class="btn gh" data-psp="1">Older</button>' : ""}</div>` : "";
+    const ours = `<h2 class="sec">BAID X checkouts (what each payment unlocked)</h2>` + table(["When", "Member", "Bought", "Amount", "Status", "Reference"], (mine || []).map((x) => `<tr><td class="mut">${esc(when(x.confirmed_at || x.created_at))}</td><td><b>${esc(x.member)}</b><div class="mono">${esc(pretty(x.role || ""))}</div></td><td>${esc(x.what || PURPOSE[x.purpose] || pretty(x.purpose))}${x.about ? `<div class="mut">${esc(x.about)}</div>` : ""}</td><td><b>${money(x.amount, x.currency)}</b></td><td>${stPill(x.status === "pending" ? "not_paid" : x.status)}</td><td class="mono">${esc(x.ref)}</td></tr>`), "No checkouts yet.")
+      + `<p class="mut" style="margin-top:8px">"Not paid" means the member opened checkout but Paystack has not confirmed a payment. Nothing is unlocked until it does.</p>`;
+    const pay = r.ok ? `<h2 class="sec">Payouts to your bank</h2>` + table(["Date", "Amount", "Status"], (m.settlements || []).map((x) => `<tr><td class="mut">${esc(when(x.date))}</td><td><b>${money(x.amount, x.currency)}</b></td><td>${stPill(x.status === "success" ? "paid" : x.status)}</td></tr>`), "No payouts yet. Paystack pays out on its settlement schedule.") : "";
+    box.innerHTML = head + filt + txs + ours + pay;
+  }
+
   /* ---------------- messages ---------------- */
   let poll = null;
   async function openConv(id) {
@@ -429,7 +462,7 @@
 
   function prevSettle(d) {
     const i = document.getElementById("stAmt"), o = document.getElementById("stPrev"); if (!i || !o) return;
-    const upd = () => { const a = Math.max(0, Math.min(Number(d.amount), parseFloat(i.value) || 0)), fee = Math.round(a * (Number(d.rate) || 0.15) * 100) / 100; o.textContent = `${esc(d.receiver)} receives ${cedi(a - fee)} (fee ${cedi(fee)}) · ${esc(d.payer)} is refunded ${cedi(Number(d.amount) - a)}`; };
+    const upd = () => { const a = Math.max(0, Math.min(Number(d.amount), parseFloat(i.value) || 0)), fee = Math.round(a * (Number(d.rate) || 0.10) * 100) / 100; o.textContent = `${esc(d.receiver)} receives ${cedi(a - fee)} (fee ${cedi(fee)}) · ${esc(d.payer)} is refunded ${cedi(Number(d.amount) - a)}`; };
     i.addEventListener("input", upd); upd();
   }
   /* ---------------- events ---------------- */
@@ -542,6 +575,8 @@
       } catch { if (out) out.textContent = "The test could not run."; }
       el.disabled = false; return;
     }
+    if ((el = q("[data-psp]"))) { S.psPage = Math.max(1, (S.psPage || 1) + Number(el.dataset.psp)); return paystackMoney(); }
+    if ((el = q("[data-psf]"))) { S.psStatus = el.dataset.psf; S.psPage = 1; return paystackMoney(); }
     if (q("[data-mkplans]")) { const b = q("[data-mkplans]"); b.disabled = true; b.textContent = "Creating…"; const r = await api("create_plans"); toast(r.ok ? `Created ${r.json.created} plans${r.json.failed ? `, ${r.json.failed} failed` : ""}` : r.json.error || "Failed"); return rerender(); }
     if ((el = q("[data-mfa]"))) { const on = el.dataset.mfa === "1"; if (!(await ask(on ? "Require two-step sign-in?" : "Turn two-step off?", on ? "Privileged roles will need an authenticator code. Make sure your own authenticator is set up first, or you can lock yourself out." : "Privileged roles will no longer need a code.", { label: on ? "Turn on" : "Turn off", danger: on }))) return; return act("MFA", () => rpc("admin_set_mfa", { p_on: on }), on ? "Two-step is now required" : "Two-step is off"); }
     if (q("[data-mfa-enrol]")) {

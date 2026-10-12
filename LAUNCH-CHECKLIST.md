@@ -31,6 +31,12 @@ East Legon, Accra (info@baidencreatives.org, +233 20 607 1106).
 - [ ] Optional tidy-up: in the Paystack dashboard (Products, Plans) archive the old BAID X plans at the
       previous prices. Nothing uses them; checkout creates new plans at the new prices automatically.
 
+- [ ] Paystack dashboard → Settings → Preferences: turn on the payment channels members can pick at checkout
+      (Mobile Money, Card, and Bank / Bank transfer if Paystack offers it on your account). A channel that is
+      off shows an error on Paystack's page when a member picks it.
+- [ ] Paystack dashboard → Settings → Payouts: check the bank or Mobile Money account Paystack pays your
+      balance into. Admin → Finance → Paystack money shows the balance and each payout.
+
 ## Search and sharing
 
 - [ ] Google Search Console: add the `https://www.baid-x.com` property and submit

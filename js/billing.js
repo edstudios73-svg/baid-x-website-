@@ -89,7 +89,7 @@
       const name = k === "verification" ? pretty(x.code === "standard" ? "business" : x.code) : x.label;
       return `<div class="svc2"><span class="sic" style="background:${col}1f;border-color:${col}55;color:${col}">${tier ? window.BX.badge(tier, 24) : icon(icn, 22)}</span><div class="tx"><b>${esc(name)}</b><small>${esc(what)}</small>${bd ? `<span class="tagc" style="color:${col};border-color:${col}55;background:${col}14">${esc(BADGE_WORD[tier])} badge</span>` : ""}</div><div class="pr"><b>${cedi(x.price_minor, x.currency)}</b>${later ? `<small class="cap2">From the ${k === "promotion" ? "catalog" : t === "project" ? "project" : "listing"} page</small>` : `<button class="btn-light sm" data-bact="svc" data-kind="${esc(k)}" data-code="${esc(x.code)}" data-target="${esc(t || "")}" data-label="${esc(x.label)}" data-price="${x.price_minor}">${k === "boost" ? "Boost" : k === "xid" ? "Get" : "Buy"}</button>`}</div></div>`;
     }).join("");
-    return html + `<div class="foot">${icon("lock", 14)} Secure payment with Paystack · Mobile Money or card</div>`;
+    return html + `<div class="foot">${icon("lock", 14)} Secure payment with Paystack · Mobile Money, bank or card</div>`;
   }
   async function buyService(c, el) {
     const kind = el.dataset.kind, code = el.dataset.code, target = el.dataset.target;
@@ -112,11 +112,21 @@
   function overlay(html) { let d = document.getElementById("payOv"); if (!d) { d = document.createElement("div"); d.id = "payOv"; d.className = "pay-ov"; document.body.appendChild(d); } d.innerHTML = `<div class="pay-in">${html}</div>`; return d; }
   const closeOverlay = () => document.getElementById("payOv")?.remove();
   const stepRow = (n, t, sub, st) => `<div class="ps ${st}"><i>${st === "done" ? icon("check", 14) : n}</i><div><b>${esc(t)}</b><small>${esc(sub)}</small></div></div>`;
-  async function goPaystack(c, reference) {
-    overlay(`<div class="pay-spin"></div><b>Opening Paystack</b><small>Taking you to the secure payment page…</small><div class="pay-pill">${LOCK()} Paystack · Mobile Money &amp; card</div>`);
+  // Mobile Money, bank or card: Paystack then opens on that option only. Plans paid by card renew automatically;
+  // Mobile Money and bank pay for one period at a time.
+  const METHODS = [["momo", "Mobile Money", "MTN MoMo, Telecel Cash or AirtelTigo Money", "phone"], ["bank", "Bank", "Pay from your bank account", "site"], ["card", "Card", "Visa or Mastercard", "pay"]];
+  function methodSheet(reference, plan) {
+    openSheet("How do you want to pay?", `${METHODS.map(([k, l, d, ic]) => `<button class="paym" data-bact="paywith" data-m="${k}" data-ref="${esc(reference)}"><span class="pmi">${icon(ic, 22)}</span><span class="pmt"><b>${esc(l)}</b><small>${esc(d)}</small></span>${icon("chev", 18)}</button>`).join("")}
+      ${plan ? `<p class="cap2">Card renews automatically each ${plan === "annual" ? "year" : "month"}. With Mobile Money or bank you pay for one ${plan === "annual" ? "year" : "month"} and renew from Plans &amp; billing; we remind you before it ends.</p>` : ""}
+      <p class="cap2">${LOCK(12)} Paid securely through Paystack. BAID X never sees your PIN or card number.</p>`);
+  }
+  async function goPaystack(c, reference, method, plan) {
+    if (!method) return methodSheet(reference, plan);
+    closeSheet();
+    overlay(`<div class="pay-spin"></div><b>Opening Paystack</b><small>Taking you to the secure payment page…</small><div class="pay-pill">${LOCK()} Paystack · ${esc((METHODS.find((m) => m[0] === method) || [0, ""])[1])}</div>`);
     try {
       const { data: { session } } = await c.sb.auth.getSession();
-      const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify({ reference }) });
+      const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session?.access_token || ""}` }, body: JSON.stringify({ reference, method }) });
       const j = await r.json().catch(() => ({}));
       if (r.status === 401) { closeOverlay(); c.toast("Your sign-in expired. Please sign in again to pay.", "err"); setTimeout(async () => { await window.BX.sessionAlive(); location.replace("auth.html?mode=signin"); }, 1500); return; }
       if (!r.ok || !j.authorization_url) { closeOverlay(); return c.toast(r.status === 404 || r.status === 503 ? "Payments are not switched on yet. Nothing was charged." : j.error || "Couldn't reach Paystack. Nothing was charged.", "err"); }
@@ -195,20 +205,15 @@
       ${row("Payment fees", "Any Paystack processing fee is shown by Paystack before you pay")}
       <div class="req"><small>Cancelling</small><p>You can stop renewal at any time. You keep paid access until the end of the period you paid for. Your profile, messages, jobs and projects are never deleted.</p></div>
       <div class="req"><small>If a payment fails</small><p>You get 7 days of grace with access kept. After that the account returns to Access. Nothing is deleted.</p></div>
-      <button class="btn-light" style="width:100%" data-bact="pay" data-id="${esc(plan.id)}">Pay ${cedi(plan.price_minor, plan.currency)} with Paystack</button>
+      <button class="btn-light" style="width:100%" data-bact="pay" data-id="${esc(plan.id)}">Pay ${cedi(plan.price_minor, plan.currency)}</button><p class="cap2">Next, choose Mobile Money, bank or card.</p>
       <p class="cap2">Access starts only after Paystack confirms your payment to BAID X. Returning to the site does not by itself activate anything.</p>`);
   }
 
   async function pay(c, id) {
     let ck;
     try { ck = await rpc(c, "billing_start_checkout", { p_plan: id, p_org: null }); } catch (e) { return c.toast(e.message || "Couldn't start checkout"); }
-    try {
-      const { data: { session } } = await c.sb.auth.getSession();
-      const r = await fetch("/api/paystack-initialize", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ reference: ck.reference }) });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j.authorization_url) return c.toast(r.status === 404 || r.status === 503 ? "Payments are not switched on yet. Nothing was charged." : j.error || "Couldn't reach Paystack. Nothing was charged.");
-      location.href = j.authorization_url;
-    } catch { c.toast("Couldn't reach Paystack. Nothing was charged."); }
+    const plan = state.ctx.plans.find((p) => p.id === id);
+    return goPaystack(c, ck.reference, null, plan?.billing_interval || "monthly");
   }
 
   document.addEventListener("click", async (e) => {
@@ -216,6 +221,7 @@
     if (e.target.closest("[data-close]")) return closeSheet();
     const el = e.target.closest("[data-bact]"); if (!el) return;
     const c = window.APP.dashCtx(), a = el.dataset.bact;
+    if (a === "paywith") return goPaystack(c, el.dataset.ref, el.dataset.m);
     if (a === "pay-done") { closeOverlay(); return window.APP.route(); }
     if (a === "cat") { state.cat = el.dataset.k; return window.APP.route(); }
     if (a === "tab") { state.tab = el.dataset.t; return window.APP.route(); }

@@ -11,7 +11,7 @@
     worker: "Clients pay when they hire you and your money lands here once the work is approved. You can withdraw it to Mobile Money any time.",
     business: "When a customer's order is delivered and confirmed, the payment lands here. You can withdraw it to Mobile Money any time.",
     "project-manager": "Your project fees land here when the client approves the work. You can withdraw them to Mobile Money any time.",
-    "individual-employer": "Add money with Paystack (Mobile Money or card), then pay for work and products from your balance. Money held for a job is only released when you approve it.",
+    "individual-employer": "Add money with Paystack (Mobile Money, bank or card), then pay for work and products from your balance. Money held for a job is only released when you approve it.",
     company: "Companies both pay and get paid: add money to fund hires and projects, and withdraw what you earn from work you deliver.",
   };
   const TONE = { completed: "ok", approved: "ok", pending: "warn", pending_verification: "warn", under_review: "warn", processing: "warn", rejected: "bad", failed: "bad", cancelled: "bad" };
@@ -46,7 +46,7 @@
   /* ---- add money (Paystack) ---- */
   let qT = 0;
   function depositSheet() {
-    F().openSheet("Add money", `<p class="wl-s">Pay securely with Paystack by Mobile Money or card. Your balance updates the moment the payment is confirmed.</p>
+    F().openSheet("Add money", `<p class="wl-s">Pay securely with Paystack by Mobile Money, bank or card. Your balance updates the moment the payment is confirmed.</p>
       <div class="wl-in"><s>GH₵</s><input name="amount" inputmode="decimal" autocomplete="off" placeholder="0" value="100" aria-label="Amount in cedis" /></div>
       <div class="wl-chips">${[50, 100, 200, 500, 1000].map((n) => `<button type="button" data-wl="chip" data-n="${n}">${n.toLocaleString()}</button>`).join("")}</div>
       <div id="wlQ" class="wl-q"></div>

@@ -49,3 +49,10 @@ button.wl-row { cursor: pointer; } button.wl-row:hover { border-color: rgba(255,
 .svc2 { display: flex; gap: 12px; align-items: center; background: #101010; border: 1px solid #232323; border-radius: 18px; padding: 14px; margin-bottom: 10px; } .sic { width: 46px; height: 46px; border-radius: 14px; border: 1px solid; display: grid; place-items: center; flex: none; }
 .svc2 .tx { flex: 1; min-width: 0; } .svc2 .tx b { display: block; font-size: 15px; } .svc2 .tx small { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; margin-top: 2px; } .svc2 .pr { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; } .svc2 .pr b { font-size: 16px; } .svc2 .pr small { max-width: 90px; text-align: right; }
 .foot { display: flex; gap: 6px; justify-content: center; align-items: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
+/* checkout: choose Mobile Money, bank or card */
+.paym { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 12px 14px; margin-bottom: 10px; border-radius: 18px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: #fff; text-align: left; cursor: pointer; font: inherit; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+.paym:hover, .paym:focus-visible { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.28); }
+.paym .pmi { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; background: rgba(255,255,255,.1); flex: none; }
+.paym .pmt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.paym .pmt b { font-size: 15px; } .paym .pmt small { color: rgba(255,255,255,.62); font-size: 12.5px; }
+.paym > svg:last-child { opacity: .55; flex: none; }
