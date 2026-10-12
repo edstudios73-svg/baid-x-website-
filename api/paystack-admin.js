@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
     if (action === "status") {
       // a harmless read-only call proves the secret key is accepted by Paystack (it never returns or logs the key)
       let reachable = null; if (configured()) { const ping = await paystack("/balance").catch(() => null); reachable = ping ? (ping.ok ? "ok" : ping.status === 401 ? "key_rejected" : "error") : "unreachable"; }
-      return res.status(200).json({ reachable, configured: configured(), mode: mode(), plans: list.length, plans_with_code: list.filter((p) => p.paystack_plan_code).length, webhook_url: `${req.headers.origin || "https://baid-x-website.vercel.app"}/api/paystack-webhook` });
+      return res.status(200).json({ reachable, configured: configured(), mode: mode(), plans: list.length, plans_with_code: list.filter((p) => p.paystack_plan_code).length, webhook_url: `${req.headers.origin || "https://www.baid-x.com"}/api/paystack-webhook` });
     }
     if (action === "create_plans") {
       if (!configured()) return res.status(503).json({ error: "Paystack keys are not set." });

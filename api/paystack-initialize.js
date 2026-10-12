@@ -1,6 +1,6 @@
 // POST /api/paystack-initialize  { reference }
 // The amount is read from the database for a payment the signed-in user already created. The browser never sends an amount.
-const { configured, supa, rpc, paystack } = require("./_lib/paystack");
+const { configured, supa, rpc, paystack, mode } = require("./_lib/paystack");
 
 // Paystack needs a syntactically valid email. Phone sign-ups have an internal ".invalid" address, so they get a stable, valid
 // placeholder (receipts are shown in the app; nothing is ever mailed to it).
@@ -41,9 +41,21 @@ module.exports = async (req, res) => {
     const body = { email: payerEmail(u.json), amount: pay.expected_amount_minor, currency: pay.currency, reference, callback_url: `${req.headers.origin || "https://www.baid-x.com"}/#/${pay.purpose === "wallet_deposit" ? "wallet" : "billing"}`, metadata: { baidx_payment: pay.id, purpose: pay.purpose } };
     // recurring plans: the plan code must be a plan we created for this exact BAID X plan
     if (pay.purpose === "subscription" && pay.target?.plan_id) {
-      const p = await supa(`/rest/v1/membership_plans?id=eq.${pay.target.plan_id}&select=paystack_plan_code,price_minor`);
-      const code = p.json?.[0]?.paystack_plan_code;
-      if (code && p.json[0].price_minor === pay.expected_amount_minor) body.plan = code;
+      const p = await supa(`/rest/v1/membership_plans?id=eq.${pay.target.plan_id}&select=id,role,tier,billing_interval,is_founding,currency,paystack_plan_code,price_minor`);
+      const plan = p.json?.[0];
+      let code = plan?.paystack_plan_code;
+      // first checkout at a new price: create the Paystack plan for this exact amount (same naming as
+      // paystack-admin "create_plans"); only a row still without a code is written, so two checkouts can't both win
+      if (plan && !code && plan.price_minor === pay.expected_amount_minor) {
+        const made = await paystack("/plan", { method: "POST", body: { name: `BAID X ${plan.role} ${plan.tier} ${plan.billing_interval}${plan.is_founding ? " founding" : ""} (${mode()})`, amount: plan.price_minor, interval: plan.billing_interval === "annual" ? "annually" : "monthly", currency: plan.currency } });
+        const fresh = made.json?.data?.plan_code;
+        if (made.ok && fresh) {
+          await supa(`/rest/v1/membership_plans?id=eq.${plan.id}&paystack_plan_code=is.null`, { method: "PATCH", body: { paystack_plan_code: fresh, updated_at: new Date().toISOString() } });
+          const again = await supa(`/rest/v1/membership_plans?id=eq.${plan.id}&select=paystack_plan_code`);
+          code = again.json?.[0]?.paystack_plan_code || fresh;
+        }
+      }
+      if (code && plan.price_minor === pay.expected_amount_minor) body.plan = code;
     }
     const r = await paystack("/transaction/initialize", { method: "POST", body });
     if (!r.ok || !r.json?.data?.authorization_url) return res.status(502).json({ error: "Couldn't start the payment. Nothing was charged." });

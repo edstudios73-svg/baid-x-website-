@@ -71,3 +71,22 @@ test("return-verify: asks Paystack, applies with the same dedupe key as the webh
   res = mkRes(); await init({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "verify", reference: REF } }, res);
   assert.equal(res.body.status, "pending"); assert.ok(!calls.some((x) => x.url.includes("billing_apply_charge")), "an unpaid checkout is never activated");
 });
+
+test("initialize: first checkout at a new price creates the Paystack plan for that exact amount and attaches it", async () => {
+  const plan = { id: "pl1", role: "worker", tier: "pro", billing_interval: "monthly", is_founding: false, currency: "GHS", paystack_plan_code: null, price_minor: 20000 };
+  let stored = null;
+  stub([
+    ["/auth/v1/user", () => ({ json: { id: "u1", email: "a@b.com" } })],
+    ["billing_payments?", () => ({ json: [{ id: "p1", expected_amount_minor: 20000, currency: "GHS", purpose: "subscription", target: { plan_id: "pl1" } }] })],
+    ["/plan", () => ({ json: { data: { plan_code: "PLN_new" } } })],
+    ["membership_plans?id=eq.pl1&paystack_plan_code=is.null", () => { stored = "PLN_new"; return { json: [] }; }],
+    ["membership_plans?id=eq.pl1&select=paystack_plan_code", () => ({ json: [{ paystack_plan_code: stored }] })],
+    ["membership_plans?id=eq.pl1", () => ({ json: [plan] })],
+    ["/transaction/initialize", () => ({ json: { data: { authorization_url: "https://checkout.paystack.com/x" } } })],
+  ]);
+  const res = mkRes(); await init({ method: "POST", headers: { authorization: "Bearer t", origin: "https://www.baid-x.com" }, body: { reference: "BXP-AAAAAAAAAAAAAAAA" } }, res);
+  assert.equal(res.code, 200);
+  const made = calls.find((x) => x.url.endsWith("/plan")).body;
+  assert.equal(made.amount, 20000); assert.equal(made.interval, "monthly");
+  assert.equal(calls.find((x) => x.url.includes("/transaction/initialize")).body.plan, "PLN_new");
+});

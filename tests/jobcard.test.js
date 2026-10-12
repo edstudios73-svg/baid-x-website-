@@ -217,3 +217,14 @@ test("BAID X links to its company site, www.baidencreatives.org, in data and foo
     assert.match(h, /An organization under <a href="https:\/\/www\.baidencreatives\.org\/" rel="noopener">Baiden Creatives<\/a>/, f);
   }
 });
+
+test("pricing v2: free-plan limits, no trial, 2 months free, new prices everywhere", () => {
+  const bill = read("js/billing.js"), pricing = read("pricing/index.html"), sql = read("supabase/phase20_pricing_v2.sql"), bot = read("supabase/functions/baid-bot/index.ts"), home = read("index.html");
+  assert.match(bill, /Annual · 2 months free/); assert.doesNotMatch(bill, /save 20%/);
+  assert.match(bill, /5 job applications a month/); assert.match(bill, /1 open job post at a time/);
+  assert.match(pricing, /Pro from GH₵200 a month/); assert.match(pricing, /GH₵1,500/); assert.match(pricing, /GH₵6,000/); assert.match(pricing, /No free trial/);
+  assert.match(sql, /'worker', 'pro', 200/); assert.match(sql, /'company', 'enterprise', 6000/); assert.match(sql, /- 'trial_days'/); assert.match(sql, /paystack_plan_code = null/);
+  assert.match(sql, /if n >= 5 then/); assert.match(sql, /if n >= 1 then/);
+  assert.match(bot, /Worker Pro GH₵200/); assert.doesNotMatch(bot, /GH₵30\b/);
+  assert.match(home, /There is no free trial/);
+});

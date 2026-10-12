@@ -26,6 +26,11 @@ East Legon, Accra (info@baidencreatives.org, +233 20 607 1106).
       because `/api/` is not redirected.
 - [ ] Optional: in Cloudflare, change the A record for baid-x.com to Vercel's newer IP 216.198.79.1.
 
+## Plans and Paystack
+
+- [ ] Optional tidy-up: in the Paystack dashboard (Products, Plans) archive the old BAID X plans at the
+      previous prices. Nothing uses them; checkout creates new plans at the new prices automatically.
+
 ## Search and sharing
 
 - [ ] Google Search Console: add the `https://www.baid-x.com` property and submit

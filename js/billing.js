@@ -15,6 +15,10 @@
   const PAY_STATUS = { successful: ["Paid", "ok"], pending: ["Pending", "warn"], processing: ["Checking", "warn"], failed: ["Failed", "bad"], refunded: ["Refunded", ""], partially_refunded: ["Part refunded", ""], cancelled: ["Cancelled", "bad"], disputed: ["Disputed", "warn"], reversed: ["Reversed", "bad"] };
   const pill = (map, k) => { const [l, c] = map[k] || [pretty(k), ""]; return `<span class="pill ${c}">${esc(l)}</span>`; };
   const state = { interval: "monthly", ctx: null };
+  // what the free Access plan includes; the limits are checked by the database (supabase/phase20_pricing_v2.sql)
+  const accessText = (role) => role === "worker" ? "Free for good: profile, search, messaging, reviews, escrow payments and 5 job applications a month."
+    : role === "company" || role === "individual-employer" ? "Free for good: profile, search, messaging, reviews, escrow payments and 1 open job post at a time."
+    : "Free for good: profile, search, messaging, reviews and escrow payments.";
 
   function openSheet(title, html) {
     const root = document.getElementById("sheetRoot");
@@ -44,12 +48,13 @@
     if (tab === "services") return head("Plans & billing") + tabsHtml + (await servicesView(c));
     if (tab === "history") return head("Plans & billing") + tabsHtml + HISTORY(pays);
     let html = head("Plans & billing") + tabsHtml + currentCard(sum);
-    html += `<div class="segs two bi">${["monthly", "annual"].map((i) => `<button class="${state.interval === i ? "on" : ""}" data-bact="interval" data-i="${i}">${i === "monthly" ? "Monthly" : "Annual · save 20%"}</button>`).join("")}</div>`;
+    html += `<div class="segs two bi">${["monthly", "annual"].map((i) => `<button class="${state.interval === i ? "on" : ""}" data-bact="interval" data-i="${i}">${i === "monthly" ? "Monthly" : "Annual · 2 months free"}</button>`).join("")}</div>`;
     if (open) html += `<div class="cap2 fnd">${icon("star", 14)} Founding member prices are open. ${slots.total_slots - slots.claimed_slots} places left. Your price stays the same for 12 months from your start date.</div>`;
-    html += `<div class="dcard plan ${cur === "access" ? "cur" : ""}"><h4><span>Access</span><span class="amb">Free</span></h4><p class="cap2">Everything you need to get started, free for good: profile, search, messaging, applications, reviews and reputation, and XID lookup.</p>${cur === "access" ? `<span class="pill ok">Your plan</span>` : ""}</div>`;
+    html += `<div class="dcard plan ${cur === "access" ? "cur" : ""}"><h4><span>Access</span><span class="amb">Free</span></h4><p class="cap2">${esc(accessText(c.role))}</p>${cur === "access" ? `<span class="pill ok">Your plan</span>` : ""}</div>`;
     html += tiers.map((t) => {
       const p = std(t, state.interval), f = open ? fnd(t, state.interval) : null, show = f || p;
-      const caps = Object.entries(p.capacity_limits || {}).map(([k, v]) => `<li>${esc(v)} ${esc(CAP[k] || pretty(k))}</li>`).join("");
+      const perks = (Array.isArray(p.metadata?.benefits) ? p.metadata.benefits : []).map((b) => `<li>${esc(b.t || "")}</li>`).join("");
+      const caps = perks + Object.entries(p.capacity_limits || {}).map(([k, v]) => `<li>${esc(v)} ${esc(CAP[k] || pretty(k))}</li>`).join("");
       const per = state.interval === "monthly" ? "month" : "year";
       const isCur = cur === t;
       return `<div class="dcard plan ${isCur ? "cur" : ""}"><h4><span>${TIER_NAME[t]}</span>${isCur ? `<span class="pill ok">Your plan</span>` : ""}</h4>
@@ -168,7 +173,7 @@
     if (!p) return;
     const meta = p.metadata || {}, list = Array.isArray(meta.benefits) ? meta.benefits : [];
     const caps = Object.entries(p.capacity_limits || {}).map(([k, v]) => ({ t: `Up to ${v} ${CAP[k] || pretty(k)}`, d: "" }));
-    const items = [{ t: "Everything in Access", d: "Profile, search, messaging, applications, reviews, reputation and XID lookup." }, ...list.map((b) => ({ t: b.t || b.title || "", d: b.d || b.desc || "" })), ...caps].filter((b) => b.t);
+    const items = [{ t: "Everything in Access", d: "Profile, search, messaging, reviews and escrow payments." }, ...list.map((b) => ({ t: b.t || b.title || "", d: b.d || b.desc || "" })), ...caps].filter((b) => b.t);
     openSheet(`${TIER_NAME[tier]} plan`, `<div class="bn">${icon("crown", 22)}<div><b>${cedi(p.price_minor, p.currency)} / ${state.interval === "monthly" ? "month" : "year"}</b><small>Cancel any time · 7-day refund window</small></div></div>
       <div class="bsec"><small>BEST FOR</small><p>${esc(meta.best_for || BEST[tier] || "")}</p></div>
       <div class="bsec"><small>WHAT YOU GET</small>${items.map((b) => `<div class="bi2"><span class="bic">${icon("star", 16)}</span><div><b>${esc(b.t)}</b>${b.d ? `<small>${esc(b.d)}</small>` : ""}</div></div>`).join("")}</div>
