@@ -48,6 +48,6 @@ East Legon, Accra (info@baidencreatives.org, +233 20 607 1106).
 
 - Service fee on escrow payouts: 10% (database `platform_settings.commission_rate` = 0.10; change it
   in Admin → Settings). Refunds, disputes and withdrawals are free. Paystack's 1.95% applies when
-  adding money. Verification fees: GH₵10, 20, 35 (business GH₵25, 50).
+  adding money. Verification fees: GH₵50, 120, 250 (business GH₵250, 500). Boosts GH₵15 to GH₵500.
 - If any fee changes, update `terms.html` section 9, `scripts/build-seo.py` (FEE_ROWS and FAQs),
   the homepage FAQ and BAID Bot's facts (`supabase/functions/baid-bot/index.ts`), then redeploy.

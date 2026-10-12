@@ -15,7 +15,7 @@ test("billing: removed copy is gone and Paystack opens via a status screen, then
   for (const t of ["paid separately from your plan", "does not guarantee approval", "never part of a plan", "does not verify your account"]) assert.ok(!b.includes(t), t);
   assert.match(b, /Opening Paystack/); assert.match(b, /Confirming your payment/); assert.match(b, /location\.href = j\.authorization_url/);
   assert.match(b, /status === 401/, "a dead session is explained, not silently ignored");
-  assert.match(b, /data-bact="cat"/);
+  assert.match(b, /"svctab"/);
 });
 
 test("switch account: cards, loading screen, and expired accounts go to sign-in prefilled", () => {

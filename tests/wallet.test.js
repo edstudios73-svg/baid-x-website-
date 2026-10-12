@@ -63,10 +63,18 @@ test("wallet UI: what an account may do comes from the database (wallet_caps); d
   assert.ok(wl.includes("/api/wallet-withdraw") && /password: val\("password"\)/.test(wl));
   assert.ok(/data-wl="withdraw"/.test(wl) && /caps\.can_withdraw \?/.test(wl) && /caps\.can_deposit \?/.test(wl));
 });
-test("billing UI: Services & fees tab sells verification, boosts and XID through billing_start_service + Paystack; fixed prices come from the catalog", () => {
-  assert.ok(bill.includes('["services", "Services & fees"]') && bill.includes('"billing_start_service"') && bill.includes("service_catalog"));
-  assert.ok(bill.includes("goPaystack") && bill.includes("verification") && bill.includes("xid"));
+test("billing UI: Services sells boosts and verification through billing_start_service + Paystack; prices come from the catalog", () => {
+  assert.ok(bill.includes('["services", "Services"]') && bill.includes('"billing_start_service"') && bill.includes("service_catalog"));
+  assert.ok(bill.includes("goPaystack") && bill.includes("verification") && bill.includes('"boost-go"'));
   assert.ok(!/price_minor\s*[:=]\s*\d/.test(bill), "no hard-coded prices");
+  // the selected tab is always white with black text, never hidden by the glass card style
+  const css = fs.readFileSync(require.resolve("../css/billing.css"), "utf8");
+  assert.match(css, /\.bl-seg button\.on \{ background: #fff !important; color: #000 !important;/);
+});
+test("billing UI: job boosts name one of your open jobs; profile boosts are your own profile", () => {
+  assert.ok(bill.includes('BOOST_FOR[c.role] === "job" ? { target_id: state.job } : {}'));
+  const sql = fs.readFileSync(require.resolve("../supabase/phase22_service_prices.sql"), "utf8");
+  assert.match(sql, /Choose one of your open jobs to boost/); assert.match(sql, /is_active = false/);
 });
 test("routes/menus: clients and companies can open the wallet; every role's route list is explicit", () => {
   const c = fs.readFileSync(require.resolve("../js/common.js"), "utf8"), a = fs.readFileSync(require.resolve("../js/app.js"), "utf8");

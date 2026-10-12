@@ -12,10 +12,10 @@ test("badges: every directory source loads and maps the tier; seal is coloured b
   assert.match(common, /verified: \["#38bdf8"/);
 });
 
-test("billing: services have real icons, badge colours, and plans open a benefits sheet", () => {
+test("billing: services have real icons, badge colours, and plan cards list their benefits", () => {
   const b = read("js/billing.js"), c = read("js/common.js");
   for (const k of ["bolt", "id", "mega", "seal"]) assert.match(c, new RegExp(`\\n    ${k}: '`), `icon ${k} exists`);
-  assert.match(b, /TIER_OF/); assert.match(b, /benefitsSheet/); assert.match(b, /data-bact="benefits"/);
+  assert.match(b, /VER_TIER/); assert.match(b, /class="bl-list"/); assert.match(b, /meta\.benefits/);
   assert.match(b, /metadata/, "benefits come from the plan row, not hard-coded promises");
 });
 

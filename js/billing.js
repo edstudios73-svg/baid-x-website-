@@ -1,24 +1,45 @@
 /* BAID X billing screens. The browser only shows state and starts a checkout; it never decides
    whether a payment succeeded. Prices come from the database, and paid access is switched on
-   by the server after Paystack's signed webhook is verified. */
+   by the server after Paystack's signed webhook is verified.
+   Layout (same as the app's PlansBillingScreen): Plans (your plan, monthly/yearly, plan cards,
+   compare table), Services (Boosts, Verification, Fees) and Payments. */
 (() => {
   "use strict";
-  const { esc, pretty, icon, ago } = window.BX;
+  const { esc, pretty, icon } = window.BX;
   const U = () => window.DASH.ui;
   const rpc = async (c, fn, args) => { const { data, error } = await c.sb.rpc(fn, args); if (error) throw error; return data; };
   const cedi = (minor, cur = "GHS") => `${cur === "GHS" ? "GH₵" : cur + " "}${(minor / 100).toLocaleString("en-GH", { minimumFractionDigits: minor % 100 ? 2 : 0, maximumFractionDigits: 2 })}`;
   const date = (d) => new Date(d).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" });
+  const svg = (p, s = 18) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const CHECK = (s = 16) => svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>', s);
+  const DASHI = (s = 16) => svg('<path d="M6 12h12"/>', s);
   const TIERS = ["pro", "premium", "enterprise"];
   const TIER_NAME = { access: "Access", pro: "Pro", premium: "Premium", enterprise: "Enterprise" };
   const CAP = { org_members: "people in your organization", active_projects: "active projects", job_postings_per_month: "job posts a month", org_admins: "organization admins", collaborators_per_project: "collaborators per project" };
   const STATUS = { active: ["Active", "ok"], trialing: ["Trial", "ok"], grace_period: ["Payment due", "warn"], past_due: ["Payment due", "warn"], cancel_at_period_end: ["Ends soon", "warn"], cancelled: ["Cancelled", "bad"], expired: ["Expired", "bad"], suspended: ["Paused", "bad"] };
-  const PAY_STATUS = { successful: ["Paid", "ok"], pending: ["Pending", "warn"], processing: ["Checking", "warn"], failed: ["Failed", "bad"], refunded: ["Refunded", ""], partially_refunded: ["Part refunded", ""], cancelled: ["Cancelled", "bad"], disputed: ["Disputed", "warn"], reversed: ["Reversed", "bad"] };
-  const pill = (map, k) => { const [l, c] = map[k] || [pretty(k), ""]; return `<span class="pill ${c}">${esc(l)}</span>`; };
-  const state = { interval: "monthly", ctx: null };
+  const PAY_STATUS = { successful: ["Paid", "ok"], pending: ["Not paid", ""], processing: ["Checking", "warn"], failed: ["Failed", "bad"], refunded: ["Refunded", ""], partially_refunded: ["Part refunded", ""], cancelled: ["Cancelled", "bad"], disputed: ["Disputed", "warn"], reversed: ["Reversed", "bad"] };
+  const pill = (map, k) => { const [l, c] = map[k] || [pretty(k), ""]; return `<span class="bl-pill ${c}">${esc(l)}</span>`; };
+  const state = { interval: "monthly", ctx: null, tab: "plans", svc: null, boost: null, job: null };
+  const LIVE = ["active", "trialing", "grace_period", "past_due", "cancel_at_period_end"];
   // what the free Access plan includes; the limits are checked by the database (supabase/phase20_pricing_v2.sql)
   const accessText = (role) => role === "worker" ? "Free for good: profile, search, messaging, reviews, escrow payments and 5 job applications a month."
     : role === "company" || role === "individual-employer" ? "Free for good: profile, search, messaging, reviews, escrow payments and 1 open job post at a time."
     : "Free for good: profile, search, messaging, reviews and escrow payments.";
+  // Compare table: only what each plan really changes (limits by database trigger, mark and order by promoted()).
+  function compareRows(role, tiers) {
+    const t = (vals) => ["access", ...tiers].map((k) => vals[k]);
+    const rows = [];
+    if (role === "worker") rows.push(["Job applications", t({ access: "5 a month", pro: "Unlimited", premium: "Unlimited", enterprise: "Unlimited" })]);
+    if (role === "company" || role === "individual-employer") rows.push(["Open job posts", t({ access: "1 at a time", pro: "Unlimited", premium: "Unlimited", enterprise: "Unlimited" })]);
+    rows.push(["Mark beside your name", t({ access: false, pro: "Pro", premium: "Premium", enterprise: "Enterprise" })]);
+    rows.push(["Place in Discover", t({ access: "Standard", pro: "Before free", premium: "Above Pro", enterprise: "Top of paid" })]);
+    rows.push(["Support", t({ access: "Standard", pro: "Priority", premium: "First in line", enterprise: "Named contact" })]);
+    if (tiers.includes("enterprise")) rows.push(["Team organization", t({ access: false, pro: false, premium: false, enterprise: true })]);
+    return rows;
+  }
+  // which boost the member buys: a profile (Discover) or a job (job list)
+  const BOOST_FOR = { worker: "profile", "project-manager": "profile", business: "profile", company: "job", "individual-employer": "job" };
+  const dur = (h) => (h < 48 ? `${h / 24 === 1 ? "1 day" : `${h} hours`}` : `${Math.round(h / 24)} days`);
 
   function openSheet(title, html) {
     const root = document.getElementById("sheetRoot");
@@ -26,87 +47,143 @@
     document.body.classList.add("sx-open");
   }
   const closeSheet = () => { const r = document.getElementById("sheetRoot"); if (r) r.innerHTML = ""; document.body.classList.remove("sx-open"); };
+  const seg = (items, cur, act, cls = "") => `<div class="bl-seg ${cls}" role="tablist">${items.map(([k, l, tag]) => `<button role="tab" aria-selected="${k === cur}" class="${k === cur ? "on" : ""}" data-bact="${act}" data-k="${k}">${esc(l)}${tag ? `<em>${esc(tag)}</em>` : ""}</button>`).join("")}</div>`;
 
   async function billingView(c) {
     const { head } = U();
-    const [plans, slots, sum, pays] = await Promise.all([
+    const [plans, slots, sum, pays, svc] = await Promise.all([
       c.sb.from("membership_plans").select("*").eq("role", c.role).eq("is_active", true).then((r) => r.data || []),
       c.sb.from("founding_slots").select("*").eq("role", c.role).maybeSingle().then((r) => r.data),
       rpc(c, "billing_summary").catch(() => ({ subscribed: false })),
-      rpc(c, "my_payments").catch(() => []),
+      rpc(c, "my_receipts").catch(() => []),
+      c.sb.from("service_catalog").select("id,kind,code,label,price_minor,currency,duration_hours,metadata,role").eq("is_active", true).order("price_minor", { ascending: true }).then((r) => r.data || []),
     ]);
-    state.ctx = { plans, role: c.role };
     const open = !!slots && !!slots.program_start && new Date(slots.program_start) <= new Date() && new Date(slots.program_end || new Date(slots.program_start).getTime() + 90 * 864e5) > new Date() && slots.claimed_slots < slots.total_slots;
+    const mine = svc.filter((x) => (!x.role || x.role === c.role) && (x.kind !== "boost" || (x.metadata?.target === "job") === (BOOST_FOR[c.role] === "job")));
+    state.ctx = { plans, role: c.role, sum, svc: mine };
     state.founding = open;
+    const tab = ["plans", "services", "history"].includes(state.tab) ? state.tab : "plans";
+    const top = head("Plans & billing") + `<p class="bl-lead">Your plan, boosts, verification and receipts. Pay with Mobile Money, bank or card.</p>`
+      + seg([["plans", "Plans"], ["services", "Services"], ["history", "Payments"]], tab, "tab", "main");
+    if (tab === "services") return `<div class="bl">${top}${await servicesView(c, mine)}</div>`;
+    if (tab === "history") return `<div class="bl">${top}${historyView(pays)}</div>`;
+    return `<div class="bl">${top}${plansView(c, plans, slots, sum, open)}</div>`;
+  }
+
+  /* ---------------- Plans ---------------- */
+  function plansView(c, plans, slots, sum, open) {
     const std = (t, i) => plans.find((p) => p.tier === t && p.billing_interval === i && !p.is_founding);
     const fnd = (t, i) => plans.find((p) => p.tier === t && p.billing_interval === i && p.is_founding);
-    const cur = sum.subscribed && ["active", "trialing", "grace_period", "past_due", "cancel_at_period_end"].includes(sum.status) ? sum.tier : "access";
+    const cur = sum.subscribed && LIVE.includes(sum.status) ? sum.tier : "access";
     const tiers = TIERS.filter((t) => std(t, "monthly"));
-
-    const tab = state.tab || "plans";
-    const tabsHtml = `<div class="segs three bt">${[["plans", "Plans"], ["services", "Services & fees"], ["history", "History"]].map(([k, l]) => `<button class="${tab === k ? "on" : ""}" data-bact="tab" data-t="${k}">${l}</button>`).join("")}</div>`;
-    if (tab === "services") return head("Plans & billing") + tabsHtml + (await servicesView(c));
-    if (tab === "history") return head("Plans & billing") + tabsHtml + HISTORY(pays);
-    let html = head("Plans & billing") + tabsHtml + currentCard(sum);
-    html += `<div class="segs two bi">${["monthly", "annual"].map((i) => `<button class="${state.interval === i ? "on" : ""}" data-bact="interval" data-i="${i}">${i === "monthly" ? "Monthly" : "Annual · 2 months free"}</button>`).join("")}</div>`;
-    if (open) html += `<div class="cap2 fnd">${icon("star", 14)} Founding member prices are open. ${slots.total_slots - slots.claimed_slots} places left. Your price stays the same for 12 months from your start date.</div>`;
-    html += `<div class="dcard plan ${cur === "access" ? "cur" : ""}"><h4><span>Access</span><span class="amb">Free</span></h4><p class="cap2">${esc(accessText(c.role))}</p>${cur === "access" ? `<span class="pill ok">Your plan</span>` : ""}</div>`;
+    const annual = state.interval === "annual";
+    let html = nowCard(sum, cur, c.role);
+    html += seg([["monthly", "Monthly"], ["annual", "Yearly", "2 months free"]], state.interval, "interval", "int");
+    if (open) html += `<div class="bl-note">${icon("star", 16)}<span>Founding prices are open: 30% off for your first 12 months. ${slots.total_slots - slots.claimed_slots} places left.</span></div>`;
+    html += `<div class="bl-plans">`;
+    html += `<article class="bl-plan ${cur === "access" ? "cur" : ""}"><header><div><h3>Access</h3><p>Everyone starts here.</p></div>${cur === "access" ? `<span class="bl-pill ok">Your plan</span>` : ""}</header>
+      <div class="bl-price"><b>Free</b><small>for good</small></div><p class="bl-small">${esc(accessText(c.role))}</p></article>`;
     html += tiers.map((t) => {
-      const p = std(t, state.interval), f = open ? fnd(t, state.interval) : null, show = f || p;
-      const perks = (Array.isArray(p.metadata?.benefits) ? p.metadata.benefits : []).map((b) => `<li>${esc(b.t || "")}</li>`).join("");
-      const caps = perks + Object.entries(p.capacity_limits || {}).map(([k, v]) => `<li>${esc(v)} ${esc(CAP[k] || pretty(k))}</li>`).join("");
-      const per = state.interval === "monthly" ? "month" : "year";
-      const isCur = cur === t;
-      return `<div class="dcard plan ${isCur ? "cur" : ""}"><h4><span>${TIER_NAME[t]}</span>${isCur ? `<span class="pill ok">Your plan</span>` : ""}</h4>
-        <div class="pr"><b>${cedi(show.price_minor)}</b><small>per ${per}</small>${f ? `<s>${cedi(p.price_minor)}</s>` : ""}</div>
-        ${caps ? `<ul class="caps">${caps}</ul>` : ""}
-        <div class="prow"><button class="more" data-bact="benefits" data-tier="${t}">See what you get</button>${isCur ? "" : `<button class="btn-light sm" data-bact="choose" data-id="${esc(show.id)}">${cur === "access" ? "Choose " + TIER_NAME[t] : "Switch to " + TIER_NAME[t]}</button>`}</div></div>`;
+      const p = std(t, state.interval), f = open ? fnd(t, state.interval) : null, show = f || p, isCur = cur === t;
+      const meta = p.metadata || {}, list = Array.isArray(meta.benefits) ? meta.benefits : [];
+      const caps = Object.entries(p.capacity_limits || {}).map(([k, v]) => ({ t: `Up to ${Number(v).toLocaleString("en-GH")} ${CAP[k] || pretty(k)}` }));
+      const perMonth = annual ? `<div class="bl-per">${cedi(Math.round(show.price_minor / 12))} a month, billed yearly · 2 months free</div>` : "";
+      const cta = isCur ? `<button class="bl-btn ghost" disabled>Your current plan</button>` : `<button class="bl-btn ${t === "pro" && cur === "access" ? "" : "dark"}" data-bact="choose" data-id="${esc(show.id)}">${cur === "access" ? "Choose" : "Switch to"} ${TIER_NAME[t]}</button>`;
+      return `<article class="bl-plan ${isCur ? "cur" : ""}"><header><div><h3>${TIER_NAME[t]} <span class="m-plan">${TIER_NAME[t]}</span></h3><p>${esc(meta.best_for || "")}</p></div>${isCur ? `<span class="bl-pill ok">Your plan</span>` : ""}</header>
+        <div class="bl-price"><b>${cedi(show.price_minor)}</b><small>/ ${annual ? "year" : "month"}</small>${f ? `<s>${cedi(p.price_minor)}</s>` : ""}</div>${perMonth}
+        <ul class="bl-list">${[...list, ...caps].filter((b) => b.t).map((b) => `<li><i>${CHECK(14)}</i><div><b>${esc(b.t)}</b>${b.d ? `<small>${esc(b.d)}</small>` : ""}</div></li>`).join("")}</ul>${cta}</article>`;
     }).join("");
+    html += `</div>`;
+    const rows = compareRows(c.role, tiers), cols = ["access", ...tiers];
+    const cell = (v) => v === true ? `<i class="y">${CHECK(15)}</i>` : v === false ? `<i class="n">${DASHI(15)}</i>` : esc(v);
+    html += `<h2 class="bl-h">Compare plans</h2><div class="bl-cmp"><table><thead><tr><th></th>${cols.map((k) => `<th class="${k === cur ? "cur" : ""}">${TIER_NAME[k]}</th>`).join("")}</tr></thead><tbody>${rows.map(([l, v]) => `<tr><th>${esc(l)}</th>${v.map((x, i) => `<td class="${cols[i] === cur ? "cur" : ""}">${cell(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    html += `<div class="bl-facts"><div>${svg('<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>')}<span><b>Cancel any time</b>Paid access lasts to the end of the period.</span></div><div>${svg('<path d="M12 3 5 6v6c0 4.500 3 7.500 7 9 4-1.500 7-4.500 7-9V6z"/><path d="m9 12 2 2 4-4"/>')}<span><b>7-day refund window</b>From the day the plan starts.</span></div><div>${icon("lock", 18)}<span><b>Paid through Paystack</b>Mobile Money, bank or card.</span></div></div>
+      <p class="bl-fine">A plan never buys a verification badge. Badges come from a review by a person at BAID X.</p>`;
     return html;
   }
+  function nowCard(s, cur, role) {
+    if (cur === "access") return `<section class="bl-now"><div class="bl-now-top"><div><small>YOUR PLAN</small><h2>Access</h2></div><span class="bl-pill">Free</span></div><p>${role === "worker" ? "You can send 5 job applications a month. Pro removes the limit and puts you ahead of free members in Discover." : role === "company" || role === "individual-employer" ? "You can keep 1 job post open at a time. Pro removes the limit and puts you ahead of free members in Discover." : "Pro puts you ahead of free members in Discover, with a Pro mark beside your name."}</p></section>`;
+    const live = LIVE.includes(s.status);
+    return `<section class="bl-now paid"><div class="bl-now-top"><div><small>YOUR PLAN</small><h2>${esc(TIER_NAME[s.tier] || s.tier)} <span class="m-plan">${esc(TIER_NAME[s.tier] || s.tier)}</span></h2></div>${pill(STATUS, s.status)}</div>
+      <dl><div><dt>${s.cancel_at_period_end ? "Access ends" : "Next payment"}</dt><dd>${s.period_end ? esc(date(s.period_end)) : "—"}${s.cancel_at_period_end ? "" : ` · ${cedi(s.price_minor, s.currency)}`}</dd></div>
+      <div><dt>Billing</dt><dd>${s.interval === "annual" ? "Yearly" : "Monthly"}</dd></div>
+      ${s.founding ? `<div><dt>Founding price until</dt><dd>${esc(date(s.founding_lock_end))}</dd></div>` : ""}
+      <div><dt>Refund deadline</dt><dd>${esc(date(s.refund_deadline))}${s.refundable ? "" : " (passed)"}</dd></div></dl>
+      ${s.status === "grace_period" ? `<p class="bl-warn">Your last payment didn't go through. Access continues until ${esc(date(s.grace_until))}. Renew below to keep it. Nothing is deleted.</p>` : ""}
+      ${s.scheduled_tier ? `<p class="bl-small">Moving to ${esc(TIER_NAME[s.scheduled_tier])} on ${esc(date(s.period_end))}.</p>` : ""}
+      ${live && !s.cancel_at_period_end ? `<button class="bl-link" data-bact="cancel">Cancel renewal</button>` : ""}</section>`;
+  }
 
-  const HISTORY = (pays) => `<div class="sec">Payment history</div>` + (pays.length ? pays.map((p) => `<div class="row"><span class="ic">${icon("pay", 17)}</span><span class="tx"><b>${esc(pretty(p.purpose === "wallet_deposit" ? "wallet top-up" : p.purpose))}</b><small>${esc(date(p.created_at))} · ${esc(p.reference)}</small></span><span class="rt"><b>${cedi(p.amount_minor || p.expected_amount_minor || 0, p.currency)}</b>${pill(PAY_STATUS, p.status)}</span></div>`).join("") : `<div class="cap2">No payments yet.</div>`);
-  const KIND = { verification: ["Verification", "shield", "Get a verified badge", "Show people you're real. Your badge colour shows how you were verified."], boost: ["Boosts", "bolt", "Be seen first", "A boost lifts your profile or listing in search for the time you choose."], xid: ["Digital ID", "id", "Your digital ID", "A shareable ID card, valid for a year."], promotion: ["Promotions", "mega", "Get your listings noticed", "Featured placement for your catalog listings."] };
-  const TIER_OF = { identity: "identity", standard: "identity", professional: "professional", advanced: "advanced", enhanced: "advanced" };
-  const BADGE_WORD = { identity: "Green", professional: "Purple", advanced: "White" };
-  const VER_WHAT = { identity: "Your ID document is checked", standard: "Your business is checked", professional: "ID plus trade and certificates checked", advanced: "Everything, plus references and a background check", enhanced: "Your business, plus a deeper check" };
-  const DUR = (h) => (!h ? "" : h < 48 ? `${h} hours` : `${Math.round(h / 24)} days`);
-  async function servicesView(c) {
-    const { data } = await c.sb.from("service_catalog").select("id,kind,code,label,price_minor,currency,duration_hours,metadata,role").eq("is_active", true).order("price_minor", { ascending: true });
-    const mine = (data || []).filter((x) => !x.role || x.role === c.role), kinds = ["verification", "boost", "xid", "promotion"].filter((k) => mine.some((x) => x.kind === k));
-    if (!kinds.length) return `<div class="cap2">No services are available for your account type yet.</div>`;
-    const k = kinds.includes(state.cat) ? state.cat : kinds[0], [title, icn, heading, blurb] = KIND[k], B = window.BX.BADGES, me = c.profile || {};
+  /* ---------------- Services: boosts, verification, fees ---------------- */
+  const VER_TIER = { identity: "identity", standard: "identity", professional: "professional", advanced: "advanced", enhanced: "advanced" };
+  const VER_CHECKS = {
+    identity: ["Your Ghana Card is checked against your profile", "Green badge on your profile and cards"],
+    standard: ["Business registration and TIN checked", "Green badge on your profile and cards"],
+    professional: ["Ghana Card, trade certificates and past work checked", "Purple badge on your profile and cards"],
+    advanced: ["Everything in Professional", "References and a background check", "White badge, the highest BAID X gives"],
+    enhanced: ["Everything in the standard check", "A deeper check of the owners and past work", "White badge, the highest BAID X gives"],
+  };
+  async function servicesView(c, mine) {
+    const kinds = ["boost", "verification"].filter((k) => mine.some((x) => x.kind === k));
+    const all = [...kinds, "fees"];
+    const k = all.includes(state.svc) ? state.svc : all[0];
+    const label = { boost: "Boosts", verification: "Verification", fees: "Fees" };
+    let html = seg(all.map((x) => [x, label[x]]), k, "svctab", "sub");
+    if (k === "boost") html += await boostView(c, mine.filter((x) => x.kind === "boost"));
+    if (k === "verification") html += verifyView(c, mine.filter((x) => x.kind === "verification"));
+    if (k === "fees") html += feesView();
+    return html;
+  }
+  async function boostView(c, list) {
+    const forJob = BOOST_FOR[c.role] === "job";
+    const [{ data: running }, jobs] = await Promise.all([
+      c.sb.from("boosts").select("target_type,target_id,expires_at").eq("user_id", c.uid).order("expires_at", { ascending: false }).limit(20).then((r) => r, () => ({ data: [] })),
+      forJob ? c.sb.from("jobs").select("id,title").eq(c.role === "company" ? "company_id" : "employer_id", c.uid).eq("status", "open").order("created_at", { ascending: false }).limit(30).then((r) => r.data || []) : Promise.resolve([]),
+    ]);
+    const now = Date.now(), active = (running || []).filter((b) => Date.parse(b.expires_at) > now);
+    const title = (b) => b.target_type === "job" ? (jobs.find((j) => j.id === b.target_id)?.title || "Your job") : "Your profile";
+    const sel = list.find((x) => x.code === state.boost) || list.find((x) => x.duration_hours === 168) || list[0];
+    if (forJob && !jobs.some((j) => j.id === state.job)) state.job = jobs[0]?.id || null;
+    let html = `<section class="bl-hero">${icon("bolt", 26)}<div><h3>Be seen first</h3><p>${forJob ? "Your job goes to the top of the job list, marked Featured, for the time you choose." : "Your profile goes to the top of Discover, marked Featured, for the time you choose."}</p></div></section>`;
+    if (active.length) html += `<div class="bl-run">${active.map((b) => `<div><i></i><span><b>${esc(title(b))}</b>Featured until ${esc(new Date(b.expires_at).toLocaleString("en-GH", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }))}</span></div>`).join("")}</div>`;
+    if (forJob && !jobs.length) return html + `<section class="bl-card"><h3>Post a job first</h3><p class="bl-small">A boost needs an open job. Post one, then come back to boost it.</p></section>`;
+    html += `<section class="bl-card">`;
+    if (forJob) html += `<label class="bl-lab" for="blJob">Job to boost</label><select id="blJob" class="bl-select">${jobs.map((j) => `<option value="${esc(j.id)}" ${j.id === state.job ? "selected" : ""}>${esc(j.title)}</option>`).join("")}</select>`;
+    html += `<div class="bl-lab">How long</div><div class="bl-dur n${list.length}">${list.map((x) => `<button class="${x === sel ? "on" : ""}" data-bact="dur" data-code="${esc(x.code)}"><b>${esc(dur(x.duration_hours))}</b><small>${cedi(x.price_minor, x.currency)}</small></button>`).join("")}</div>`;
+    const days = Math.max(1, sel.duration_hours / 24);
+    html += `<div class="bl-sum"><span>${esc(dur(sel.duration_hours))} of Featured placement</span><b>${cedi(sel.price_minor, sel.currency)}</b></div><p class="bl-small">About ${cedi(Math.round(sel.price_minor / days / 100) * 100)} a day. Starts as soon as Paystack confirms the payment.</p>
+      <button class="bl-btn" data-bact="boost-go" data-code="${esc(sel.code)}">Boost for ${cedi(sel.price_minor, sel.currency)}</button></section>`;
+    return html;
+  }
+  function verifyView(c, list) {
+    const B = window.BX.BADGES, me = c.profile || {};
     const cur = me.verification_status === "verified" ? (B[me.badge_tier] ? me.badge_tier : "verified") : null;
-    const pills = `<div class="cats">${kinds.map((x) => `<button class="cat ${x === k ? "on" : ""}" data-bact="cat" data-k="${x}">${icon(KIND[x][1], 17)} ${esc(KIND[x][0])}</button>`).join("")}</div>`;
-    let html = pills;
-    if (k === "verification" && cur) html += `<div class="dcard"><h4><span>Your badge</span><span class="pill ok">Active</span></h4><div class="bd-cur">${window.BX.badge(cur, 40)}<div><b>${esc(B[cur][1])}</b><small>${esc(B[cur][2])}. Shown on your profile, cards and search results.</small></div></div></div>`;
-    html += `<div class="herob"><span class="hi">${k === "verification" ? window.BX.badge(cur || "identity", 30) : icon(icn, 28)}</span><div><b>${esc(heading)}</b><small>${esc(blurb)}</small></div></div>`;
-    if (k === "verification") html += `<div class="lg-grid lg-one">${["verified", "identity", "professional", "advanced"].map((t) => `<div>${window.BX.badge(t, 26)}<b>${esc(t === "verified" ? "Verified" : B[t][1].replace(" verified", ""))}</b><small>${esc(B[t][2])}</small></div>`).join("")}</div>`;
-    html += mine.filter((x) => x.kind === k).map((x) => {
-      const t = x.metadata?.target, later = k === "promotion" || t === "project" || t === "business_listing";
-      const tier = k === "verification" ? TIER_OF[x.code] : null, bd = tier ? B[tier] : null, col = bd ? bd[0] : "#ffffff";
-      const what = k === "verification" ? VER_WHAT[x.code] || "One-time review" : k === "boost" ? `Lasts ${DUR(x.duration_hours)}` : k === "xid" ? "Valid for one year" : `${DUR(x.duration_hours)}${x.metadata?.listings ? ` · up to ${x.metadata.listings} listings` : ""}`;
-      const name = k === "verification" ? pretty(x.code === "standard" ? "business" : x.code) : x.label;
-      return `<div class="svc2"><span class="sic" style="background:${col}1f;border-color:${col}55;color:${col}">${tier ? window.BX.badge(tier, 24) : icon(icn, 22)}</span><div class="tx"><b>${esc(name)}</b><small>${esc(what)}</small>${bd ? `<span class="tagc" style="color:${col};border-color:${col}55;background:${col}14">${esc(BADGE_WORD[tier])} badge</span>` : ""}</div><div class="pr"><b>${cedi(x.price_minor, x.currency)}</b>${later ? `<small class="cap2">From the ${k === "promotion" ? "catalog" : t === "project" ? "project" : "listing"} page</small>` : `<button class="btn-light sm" data-bact="svc" data-kind="${esc(k)}" data-code="${esc(x.code)}" data-target="${esc(t || "")}" data-label="${esc(x.label)}" data-price="${x.price_minor}">${k === "boost" ? "Boost" : k === "xid" ? "Get" : "Buy"}</button>`}</div></div>`;
+    let html = cur ? `<section class="bl-now"><div class="bl-now-top"><div><small>YOUR BADGE</small><h2>${esc(B[cur][1])}</h2></div>${window.BX.badge(cur, 34)}</div><p>${esc(B[cur][2])}. Shown on your profile, cards and search results.</p></section>` : "";
+    html += `<section class="bl-hero">${window.BX.badge(cur || "identity", 28)}<div><h3>${cur ? "Go further" : "Get verified"}</h3><p>A person at BAID X checks your documents. The fee pays for the review, not the result, and a paid plan never buys a badge.</p></div></section>`;
+    html += list.map((x) => {
+      const tier = VER_TIER[x.code] || "identity", col = B[tier][0], has = cur === tier;
+      const name = x.code === "standard" ? "Business" : x.code === "enhanced" && c.role === "business" ? "Enhanced business" : pretty(x.code);
+      return `<article class="bl-ver"><header><span class="bl-vi" style="color:${col};border-color:${col}55;background:${col}14">${window.BX.badge(tier, 26)}</span><div><h3>${esc(name)}</h3><small>One-time review</small></div><b>${cedi(x.price_minor, x.currency)}</b></header>
+        <ul class="bl-list tight">${(VER_CHECKS[x.code] || []).map((t) => `<li><i>${CHECK(14)}</i><div><span>${esc(t)}</span></div></li>`).join("")}</ul>
+        ${has ? `<button class="bl-btn ghost" disabled>Your badge</button>` : `<button class="bl-btn dark" data-bact="svc" data-kind="verification" data-code="${esc(x.code)}">Request review · ${cedi(x.price_minor, x.currency)}</button>`}</article>`;
     }).join("");
-    return html + `<div class="foot">${icon("lock", 14)} Secure payment with Paystack · Mobile Money, bank or card</div>`;
+    html += `<ol class="bl-steps"><li><b>Pay the review fee</b>With Mobile Money, bank or card.</li><li><b>Send your documents</b>Profile → Verification documents.</li><li><b>Get the decision</b>A reviewer decides and you get a notification.</li></ol>`;
+    return html;
   }
-  async function buyService(c, el) {
-    const kind = el.dataset.kind, code = el.dataset.code, target = el.dataset.target;
-    let detail = {};
-    if (kind === "boost" && target === "job") {
-      const col = c.role === "company" ? "company_id" : "employer_id";
-      const { data } = await c.sb.from("jobs").select("id,title").eq(col, c.uid).eq("status", "open").order("created_at", { ascending: false }).limit(20);
-      if (!data || !data.length) return c.toast("Post a job first, then boost it.");
-      return openSheet(el.dataset.label, `<p class="cap2">Choose the job to boost.</p>${data.map((j) => `<button class="btn-dark" style="width:100%;margin-bottom:8px;text-align:left" data-bact="svc-go" data-kind="${esc(kind)}" data-code="${esc(code)}" data-tid="${esc(j.id)}">${esc(j.title)}</button>`).join("")}`);
-    }
-    return startService(c, kind, code, detail);
+  function feesView() {
+    const row = (a, b, c2) => `<div class="bl-fee"><span><b>${a}</b><small>${c2}</small></span><em>${b}</em></div>`;
+    return `<section class="bl-card fees">${row("Service fee", "10%", "Taken from money released to you from escrow. Nothing is charged on a refund.")}${row("Adding money", "1.95%", "Paystack's processing fee, shown before you pay.")}${row("Withdrawals", "Free", "To Mobile Money, from GH₵10.")}${row("Disputes", "Free", "Money is frozen while BAID X reviews it.")}</section>
+      <p class="bl-fine">Every fee is shown before you confirm. Full details are on the <a href="pricing/" target="_blank" rel="noopener">pricing page</a> and in the terms, sections 6 to 9.</p>`;
   }
-  async function startService(c, kind, code, detail) {
-    let ck;
-    try { ck = await rpc(c, "billing_start_service", { p_kind: kind, p_code: code, p_target: detail || {}, p_org: null }); } catch (e) { return c.toast(e.message || "Couldn't start checkout"); }
-    return goPaystack(c, ck.reference);
+
+  /* ---------------- Payments ---------------- */
+  function historyView(pays) {
+    if (!pays.length) return `<section class="bl-card"><h3>No payments yet</h3><p class="bl-small">Receipts for plans, boosts and verification show here.</p></section>`;
+    const ic = { subscription: "crown", boost: "bolt", verification: "seal", wallet_deposit: "wallet" };
+    return `<div class="bl-hist">${pays.map((p) => `<div class="bl-row"><span class="bl-ri">${icon(ic[p.purpose] || "pay", 18)}</span><span class="bl-rt"><b>${esc(p.what || pretty(p.purpose))}</b><small>${p.about ? `${esc(p.about)} · ` : ""}${esc(date(p.created_at))}</small><small class="mono">${esc(p.reference)}</small></span><span class="bl-ra"><b>${cedi(p.amount_minor || 0, p.currency)}</b>${pill(PAY_STATUS, p.status)}</span></div>`).join("")}</div>
+      <p class="bl-fine">"Not paid" means checkout was opened but Paystack never confirmed a payment. Nothing was charged.</p>`;
   }
+
   /* ---- full-screen status screens: opening Paystack, then confirming the payment ---- */
   const LOCK = (n = 14) => icon("lock", n);
   function overlay(html) { let d = document.getElementById("payOv"); if (!d) { d = document.createElement("div"); d.id = "payOv"; d.className = "pay-ov"; document.body.appendChild(d); } d.innerHTML = `<div class="pay-in">${html}</div>`; return d; }
@@ -151,7 +228,7 @@
         const j = await r.json().catch(() => ({}));
         if (j.status === "successful") {
           await app.refresh();
-          overlay(`<div class="pay-ring ok">${icon("check", 38)}</div><b>Payment confirmed</b><small>Your purchase is active.</small><div class="pay-steps">${stepRow(1, "Payment received", "Paystack confirmed it", "done")}${stepRow(2, "Verified with Paystack", "Amount and reference match", "done")}${stepRow(3, "Activated", "It's on your account now", "done")}</div><button class="btn-light" style="width:100%;margin-top:16px" data-bact="pay-done">Done</button><p class="cap2" style="text-align:center;margin-top:10px">Receipt saved in History · Ref ${esc(ref)}</p>`);
+          overlay(`<div class="pay-ring ok">${icon("check", 38)}</div><b>Payment confirmed</b><small>Your purchase is active.</small><div class="pay-steps">${stepRow(1, "Payment received", "Paystack confirmed it", "done")}${stepRow(2, "Verified with Paystack", "Amount and reference match", "done")}${stepRow(3, "Activated", "It's on your account now", "done")}</div><button class="btn-light" style="width:100%;margin-top:16px" data-bact="pay-done">Done</button><p class="cap2" style="text-align:center;margin-top:10px">Receipt saved in Payments · Ref ${esc(ref)}</p>`);
           return;
         }
         if (j.status === "failed") { closeOverlay(); return c.toast("That payment didn't go through. Nothing was charged.", "err"); }
@@ -164,49 +241,18 @@
   window.addEventListener("load", () => setTimeout(confirmReturn, 600));
 
 
-  function currentCard(s) {
-    if (!s.subscribed) return `<div class="dcard"><h4><span>Your plan</span><span class="pill ok">Access</span></h4><p class="cap2">You are on the free Access plan. Upgrade any time. Nothing is charged unless you confirm a checkout.</p></div>`;
-    const live = ["active", "trialing", "grace_period", "past_due", "cancel_at_period_end"].includes(s.status);
-    return `<div class="dcard"><h4><span>${esc(TIER_NAME[s.tier] || s.tier)} · ${esc(s.interval)}</span>${pill(STATUS, s.status)}</h4>
-      <div class="kv"><span>${s.cancel_at_period_end ? "Access ends" : "Next payment"}</span><b>${s.period_end ? esc(date(s.period_end)) : "—"}${s.cancel_at_period_end ? "" : ` · ${cedi(s.price_minor, s.currency)}`}</b></div>
-      ${s.founding ? `<div class="kv"><span>Founding price held until</span><b>${esc(date(s.founding_lock_end))}</b></div>` : ""}
-      <div class="kv"><span>Refund deadline</span><b>${esc(date(s.refund_deadline))}${s.refundable ? "" : " (passed)"}</b></div>
-      ${s.status === "grace_period" ? `<div class="cap2 warnt">Your last payment didn't go through. Access continues until ${esc(date(s.grace_until))}. Nothing is deleted.</div>` : ""}
-      ${s.scheduled_tier ? `<div class="cap2">Moving to ${esc(TIER_NAME[s.scheduled_tier])} on ${esc(date(s.period_end))}.</div>` : ""}
-      ${live && !s.cancel_at_period_end ? `<button class="btn-dark sm" data-bact="cancel">Cancel renewal</button>` : ""}</div>`;
-  }
-
-
-  const BEST = { pro: "People who use BAID X regularly and want more room to work.", premium: "Busy members who run several jobs or projects at once.", enterprise: "Teams and larger organizations that need higher limits and shared access." };
-  function benefitsSheet(tier) {
-    const plans = state.ctx.plans, p = plans.find((x) => x.tier === tier && x.billing_interval === state.interval && !x.is_founding) || plans.find((x) => x.tier === tier);
-    if (!p) return;
-    const meta = p.metadata || {}, list = Array.isArray(meta.benefits) ? meta.benefits : [];
-    const caps = Object.entries(p.capacity_limits || {}).map(([k, v]) => ({ t: `Up to ${v} ${CAP[k] || pretty(k)}`, d: "" }));
-    const items = [{ t: "Everything in Access", d: "Profile, search, messaging, reviews and escrow payments." }, ...list.map((b) => ({ t: b.t || b.title || "", d: b.d || b.desc || "" })), ...caps].filter((b) => b.t);
-    openSheet(`${TIER_NAME[tier]} plan`, `<div class="bn">${icon("crown", 22)}<div><b>${cedi(p.price_minor, p.currency)} / ${state.interval === "monthly" ? "month" : "year"}</b><small>Cancel any time · 7-day refund window</small></div></div>
-      <div class="bsec"><small>BEST FOR</small><p>${esc(meta.best_for || BEST[tier] || "")}</p></div>
-      <div class="bsec"><small>WHAT YOU GET</small>${items.map((b) => `<div class="bi2"><span class="bic">${icon("star", 16)}</span><div><b>${esc(b.t)}</b>${b.d ? `<small>${esc(b.d)}</small>` : ""}</div></div>`).join("")}</div>
-      <button class="btn-light" style="width:100%;margin-top:14px" data-bact="choose" data-id="${esc(p.id)}">Choose ${TIER_NAME[tier]} · ${cedi(p.price_minor, p.currency)}</button>`);
-  }
-
-  function checkoutSheet(plan, foundingOpen) {
+  function checkoutSheet(plan) {
     const annual = plan.billing_interval === "annual", now = new Date();
     const renew = new Date(now.getTime() + (annual ? 365 : 30) * 864e5), refund = new Date(now.getTime() + 7 * 864e5);
     const std = state.ctx.plans.find((p) => p.tier === plan.tier && p.billing_interval === plan.billing_interval && !p.is_founding);
-    const row = (a, b) => `<div class="kv"><span>${esc(a)}</span><b>${b}</b></div>`;
-    openSheet(`${TIER_NAME[plan.tier]} plan`, `
-      ${row("Account type", esc(pretty(plan.role)))}${row("Plan", esc(TIER_NAME[plan.tier]))}${row("Billing", annual ? "Once a year" : "Every month")}
-      ${row("Pay today", `<b>${cedi(plan.price_minor, plan.currency)}</b>`)}
-      ${row("Renews at", `${cedi(plan.price_minor, plan.currency)} on about ${esc(date(renew))}`)}
-      ${plan.is_founding ? row("Founding price held", "12 months from today, then " + cedi(std.price_minor, plan.currency)) : ""}
-      ${row("Free trial", "None on this checkout")}
-      ${row("Refund deadline", esc(date(refund)) + " (7 days from activation)")}
-      ${row("Payment fees", "Any Paystack processing fee is shown by Paystack before you pay")}
-      <div class="req"><small>Cancelling</small><p>You can stop renewal at any time. You keep paid access until the end of the period you paid for. Your profile, messages, jobs and projects are never deleted.</p></div>
-      <div class="req"><small>If a payment fails</small><p>You get 7 days of grace with access kept. After that the account returns to Access. Nothing is deleted.</p></div>
-      <button class="btn-light" style="width:100%" data-bact="pay" data-id="${esc(plan.id)}">Pay ${cedi(plan.price_minor, plan.currency)}</button><p class="cap2">Next, choose Mobile Money, bank or card.</p>
-      <p class="cap2">Access starts only after Paystack confirms your payment to BAID X. Returning to the site does not by itself activate anything.</p>`);
+    const row = (a, b) => `<div class="bl-kv"><span>${esc(a)}</span><b>${b}</b></div>`;
+    openSheet(`${TIER_NAME[plan.tier]} plan`, `<div class="bl-due"><small>Pay today</small><b>${cedi(plan.price_minor, plan.currency)}</b><span>${annual ? "for one year" : "for one month"}</span></div>
+      ${row("Account", esc(pretty(plan.role === "individual-employer" ? "client" : plan.role === "business" ? "supplier" : plan.role)))}${row("Renews", `${cedi(plan.price_minor, plan.currency)} on about ${esc(date(renew))}`)}
+      ${plan.is_founding ? row("Founding price", "12 months, then " + cedi(std.price_minor, plan.currency)) : ""}
+      ${row("Refund deadline", esc(date(refund)))}
+      <p class="bl-small">Stop renewal any time and keep access to the end of the period. If a payment fails you get 7 days of grace. Nothing is ever deleted.</p>
+      <button class="bl-btn" data-bact="pay" data-id="${esc(plan.id)}">Continue to payment</button>
+      <p class="bl-fine">Next you choose Mobile Money, bank or card. Access starts once Paystack confirms the payment.</p>`);
   }
 
   async function pay(c, id) {
@@ -215,7 +261,13 @@
     const plan = state.ctx.plans.find((p) => p.id === id);
     return goPaystack(c, ck.reference, null, plan?.billing_interval || "monthly");
   }
+  async function startService(c, kind, code, detail) {
+    let ck;
+    try { ck = await rpc(c, "billing_start_service", { p_kind: kind, p_code: code, p_target: detail || {}, p_org: null }); } catch (e) { return c.toast(e.message || "Couldn't start checkout"); }
+    return goPaystack(c, ck.reference);
+  }
 
+  document.addEventListener("change", (e) => { if (e.target.id === "blJob") state.job = e.target.value; });
   document.addEventListener("click", async (e) => {
     if (!window.APP?.state.me?.role) return;
     if (e.target.closest("[data-close]")) return closeSheet();
@@ -223,15 +275,15 @@
     const c = window.APP.dashCtx(), a = el.dataset.bact;
     if (a === "paywith") return goPaystack(c, el.dataset.ref, el.dataset.m);
     if (a === "pay-done") { closeOverlay(); return window.APP.route(); }
-    if (a === "cat") { state.cat = el.dataset.k; return window.APP.route(); }
-    if (a === "tab") { state.tab = el.dataset.t; return window.APP.route(); }
-    if (a === "svc") { el.disabled = true; await buyService(c, el); el.disabled = false; return; }
-    if (a === "svc-go") { el.disabled = true; closeSheet(); await startService(c, el.dataset.kind, el.dataset.code, { target_id: el.dataset.tid }); return; }
-    if (a === "interval") { state.interval = el.dataset.i; return window.APP.route(); }
-    if (a === "benefits") return benefitsSheet(el.dataset.tier);
-    if (a === "choose") { const plan = state.ctx.plans.find((p) => p.id === el.dataset.id); return checkoutSheet(plan, state.founding); }
+    if (a === "tab") { state.tab = el.dataset.k; return window.APP.route(); }
+    if (a === "svctab") { state.svc = el.dataset.k; return window.APP.route(); }
+    if (a === "interval") { state.interval = el.dataset.k; return window.APP.route(); }
+    if (a === "dur") { state.boost = el.dataset.code; return window.APP.route(); }
+    if (a === "svc") { el.disabled = true; await startService(c, el.dataset.kind, el.dataset.code, {}); el.disabled = false; return; }
+    if (a === "boost-go") { el.disabled = true; await startService(c, "boost", el.dataset.code, BOOST_FOR[c.role] === "job" ? { target_id: state.job } : {}); el.disabled = false; return; }
+    if (a === "choose") { const plan = state.ctx.plans.find((p) => p.id === el.dataset.id); return checkoutSheet(plan); }
     if (a === "pay") { el.disabled = true; await pay(c, el.dataset.id); el.disabled = false; return; }
-    if (a === "cancel") return openSheet("Cancel renewal", `<p class="cap2">Your plan will not renew. You keep paid access until the end of the period you already paid for. Nothing is deleted.</p><div class="btn-row"><button class="btn-light sm" data-bact="cancel-yes">Stop renewal</button><button class="btn-dark sm" data-close>Keep my plan</button></div>`);
+    if (a === "cancel") return openSheet("Cancel renewal", `<p class="bl-small">Your plan will not renew. You keep paid access until the end of the period you already paid for. Nothing is deleted.</p><button class="bl-btn" data-bact="cancel-yes">Stop renewal</button><button class="bl-btn dark" data-close>Keep my plan</button>`);
     if (a === "cancel-yes") { try { await rpc(c, "cancel_subscription", { p_org: null }); c.toast("Renewal stopped. Access continues to the end of the period."); closeSheet(); window.APP.route(); } catch (err) { c.toast(err.message || "Couldn't cancel"); } }
   });
   window.addEventListener("hashchange", closeSheet);
