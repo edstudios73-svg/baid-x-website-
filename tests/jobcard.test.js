@@ -182,7 +182,7 @@ test("www.baid-x.com: old host redirects except /api/, contact page, Baiden Crea
   assert.equal(host.destination, "https://www.baid-x.com/:path"); assert.match(host.source, /\(\?!api\/\)/);
   for (const f of ["index.html", "about.html", "terms.html", "privacy.html", "contact.html", "pricing/index.html", "sitemap.xml", "robots.txt", "llms.txt"]) assert.doesNotMatch(read(f), /baid-x-website\.vercel\.app/, f);
   const c = read("contact.html");
-  assert.match(c, /info@baidencreatives\.org/); assert.match(c, /\+233 20 607 1106/); assert.match(c, /East Legon/); assert.match(c, /organization under <a href="https:\/\/www\.baidencreatives\.org\/" rel="noopener"><b>Baiden Creatives/);
+  assert.match(c, /info@baidencreatives\.org/); assert.match(c, /\+233 20 607 1106/); assert.match(c, /wa\.me\/233558362423">\+233 55 836 2423/); assert.match(c, /East Legon/); assert.match(c, /organization under <a href="https:\/\/www\.baidencreatives\.org\/" rel="noopener"><b>Baiden Creatives/);
   assert.match(read("sitemap.xml"), /<loc>https:\/\/www\.baid-x\.com\/contact\.html<\/loc>/);
   assert.doesNotMatch(read("robots.txt"), /admin\.html/);
   assert.match(read("terms.html"), /10% of the amount released/); assert.doesNotMatch(read("terms.html"), /\[X\]|REGISTRATION NO|test release/);

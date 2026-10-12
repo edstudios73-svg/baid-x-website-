@@ -264,14 +264,14 @@ BAID X serves Ghana (all 16 regions). It is a web app that installs to a phone's
 - [Pricing]({SITE}/pricing/): free to join; plans by account type in GH₵
 - [Terms of service]({SITE}/terms.html)
 - [Privacy policy]({SITE}/privacy.html)
-- [Contact]({SITE}/contact.html): info@baidencreatives.org, +233 20 607 1106, East Legon, Accra
+- [Contact]({SITE}/contact.html): info@baidencreatives.org, phone +233 20 607 1106, WhatsApp +233 55 836 2423, East Legon, Accra
 - [Full details for LLMs]({SITE}/llms-full.txt)
 
 ## Regions
 {region_lines}
 
 ## Facts for accurate answers
-- Name: BAID X (always two words, capital letters). BAID X is an organization under Baiden Creatives (https://www.baidencreatives.org; East Legon, Accra, Ghana; info@baidencreatives.org; +233 20 607 1106).
+- Name: BAID X (always two words, capital letters). BAID X is an organization under Baiden Creatives (https://www.baidencreatives.org; East Legon, Accra, Ghana; info@baidencreatives.org; phone +233 20 607 1106; WhatsApp +233 55 836 2423).
 - Category: work marketplace and project management for construction and technical trades in Ghana.
 - Roles: Worker (professional), Company, Project manager, Supplier, Client.
 - Companies own projects and approve all spending. Project managers run a project day to day within limits the company sets.

@@ -40,7 +40,7 @@ Visitor tools: "Check a badge" (type at least 3 letters of a full name; it lists
 
 Safety: never send cash upfront to someone you have not checked; pay through escrow. BAID X never asks for your password or SMS code.
 
-Contact: email info@baidencreatives.org, phone and WhatsApp +233 20 607 1106, office in East Legon, Accra (Monday to Friday, 8am to 5pm). The Contact page is www.baid-x.com/contact.html. Social: @baidencreatives on Instagram, X, TikTok, Facebook, LinkedIn and YouTube. Guides: the User guide, Verification badges, Terms of Service and Privacy Policy pages on the website.`;
+Contact: email info@baidencreatives.org, phone +233 20 607 1106, WhatsApp +233 55 836 2423, office in East Legon, Accra (Monday to Friday, 8am to 5pm). The Contact page is www.baid-x.com/contact.html. Social: @baidencreatives on Instagram, X, TikTok, Facebook, LinkedIn and YouTube. Guides: the User guide, Verification badges, Terms of Service and Privacy Policy pages on the website.`;
 
 const SYSTEM = `You are BAID Bot, the assistant on BAID X's website and app. Answer questions about BAID X and about hiring or working through it in Ghana, using only the facts below.
 
@@ -70,7 +70,7 @@ const TOPICS: { keys: string[]; answer: string }[] = [
   { keys: ["client", "home", "house", "my build", "logbook", "renovat"], answer: "Clients hire for work on their home and pay through escrow. My build shows budget, progress, site photos and approvals waiting; House logbook keeps who did what, maintenance reminders and your trusted team." },
   { keys: ["job card"], answer: "Every hire gets a Digital Job Card: the scope, materials, photo evidence, payments and sign-off, so everyone sees the same record of the job." },
   { keys: ["region", "where", "location", "accra", "kumasi", "ghana", "city"], answer: "BAID X works in all 16 regions of Ghana. Amounts are in Ghana cedis and payouts go to mobile money." },
-  { keys: ["contact", "support", "help", "instagram", "phone number", "email", "call", "whatsapp", "office", "reach", "baiden"], answer: "Email info@baidencreatives.org or call or WhatsApp +233 20 607 1106 (Monday to Friday, 8am to 5pm). The office is in East Legon, Accra. You can also find BAID X at @baidencreatives on Instagram, X, TikTok, Facebook, LinkedIn and YouTube." },
+  { keys: ["contact", "support", "help", "instagram", "phone number", "email", "call", "whatsapp", "office", "reach", "baiden"], answer: "Email info@baidencreatives.org, call +233 20 607 1106 or WhatsApp +233 55 836 2423 (Monday to Friday, 8am to 5pm). The office is in East Legon, Accra. You can also find BAID X at @baidencreatives on Instagram, X, TikTok, Facebook, LinkedIn and YouTube." },
   { keys: ["password", "code", "otp", "pin"], answer: "BAID X will never ask for your password or SMS code. If you cannot sign in, use the sign-in screen's reset option." },
 ];
 const FALLBACK = "I can help with joining, plans and prices, escrow and payments, verification badges, and how BAID X works for workers, companies, project managers, suppliers and clients. What would you like to know?";
