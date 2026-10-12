@@ -91,7 +91,7 @@ def head(title, desc, path, ld, extra=""):
 <div class="orb a"></div><div class="orb b"></div>
 <header class="nav"><div class="nav-in"><a href="/"><img src="/assets/logo.png" alt="BAID X" /></a>{NAV}<span class="sp"></span><a class="cta" href="/">Open BAID X</a></div></header>
 '''
-FOOT = '''<footer class="f"><div class="f-in"><span>© BAID X · An organization under Baiden Creatives</span><nav><a href="/about.html">About</a><a href="/pricing/">Pricing</a><a href="/escrow/">Escrow</a><a href="/verification/">Verification</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact</a><a href="/for/workers/">Workers</a><a href="/for/companies/">Companies</a><a href="/for/project-managers/">Project managers</a><a href="/for/suppliers/">Suppliers</a><a href="/for/clients/">Clients</a><a href="/trades/">Trades</a><a href="/ghana/">Regions</a></div></nav></footer>
+FOOT = '''<footer class="f"><div class="f-in"><span>© BAID X · An organization under <a href="https://www.baidencreatives.org/" rel="noopener">Baiden Creatives</a></span><nav><a href="/about.html">About</a><a href="/pricing/">Pricing</a><a href="/escrow/">Escrow</a><a href="/verification/">Verification</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a><a href="/contact.html">Contact</a><a href="/for/workers/">Workers</a><a href="/for/companies/">Companies</a><a href="/for/project-managers/">Project managers</a><a href="/for/suppliers/">Suppliers</a><a href="/for/clients/">Clients</a><a href="/trades/">Trades</a><a href="/ghana/">Regions</a></div></nav></footer>
 <script>(function(){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}})},{threshold:.1});document.querySelectorAll(".rv").forEach(function(el){io.observe(el)})})();</script>
 </body></html>
 '''
@@ -103,7 +103,7 @@ def crumb_html(items):
 def ic(p): return f'<div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{p}</svg></div>'
 CHECK = '<path d="m5 12 4.500 4.500L19 7"/>'
 SAME_AS = ["https://instagram.com/baidencreatives", "https://x.com/baidencreatives", "https://tiktok.com/@baidencreatives", "https://facebook.com/baidencreatives", "https://linkedin.com/company/baidencreatives", "https://youtube.com/@baidencreatives"]
-ORG = {"@type": "Organization", "@id": ORG_ID, "name": "Baiden Creatives", "url": SITE + "/", "legalName": "Baiden Creatives", "description": "Baiden Creatives is the Ghanaian company behind BAID X. BAID X is an organization under Baiden Creatives.", "email": "info@baidencreatives.org", "telephone": "+233 20 607 1106", "contactPoint": [{"@type": "ContactPoint", "contactType": "customer support", "areaServed": "GH", "availableLanguage": ["en"], "url": SITE + "/contact.html", "email": "info@baidencreatives.org", "telephone": "+233 20 607 1106"}], "address": {"@type": "PostalAddress", "streetAddress": "East Legon", "addressLocality": "Accra", "addressRegion": "Greater Accra", "addressCountry": "GH"}, "sameAs": SAME_AS, "brand": {"@id": BRAND_ID}}
+ORG = {"@type": "Organization", "@id": ORG_ID, "name": "Baiden Creatives", "url": "https://www.baidencreatives.org/", "legalName": "Baiden Creatives", "description": "Baiden Creatives is the Ghanaian company behind BAID X. BAID X is an organization under Baiden Creatives.", "email": "info@baidencreatives.org", "telephone": "+233 20 607 1106", "contactPoint": [{"@type": "ContactPoint", "contactType": "customer support", "areaServed": "GH", "availableLanguage": ["en"], "url": SITE + "/contact.html", "email": "info@baidencreatives.org", "telephone": "+233 20 607 1106"}], "address": {"@type": "PostalAddress", "streetAddress": "East Legon", "addressLocality": "Accra", "addressRegion": "Greater Accra", "addressCountry": "GH"}, "sameAs": SAME_AS, "brand": {"@id": BRAND_ID}}
 BRAND = {"@type": "Brand", "@id": BRAND_ID, "name": "BAID X", "url": SITE + "/", "logo": SITE + "/assets/icon-512.png", "slogan": "Ghana's work network", "description": DESC}
 
 def page(path, title, desc, h1, lead, body, ld_extra, crumb_items, eyebrow):
@@ -271,7 +271,7 @@ BAID X serves Ghana (all 16 regions). It is a web app that installs to a phone's
 {region_lines}
 
 ## Facts for accurate answers
-- Name: BAID X (always two words, capital letters). BAID X is an organization under Baiden Creatives (East Legon, Accra, Ghana; info@baidencreatives.org; +233 20 607 1106).
+- Name: BAID X (always two words, capital letters). BAID X is an organization under Baiden Creatives (https://www.baidencreatives.org; East Legon, Accra, Ghana; info@baidencreatives.org; +233 20 607 1106).
 - Category: work marketplace and project management for construction and technical trades in Ghana.
 - Roles: Worker (professional), Company, Project manager, Supplier, Client.
 - Companies own projects and approve all spending. Project managers run a project day to day within limits the company sets.

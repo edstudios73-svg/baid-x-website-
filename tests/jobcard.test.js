@@ -182,7 +182,7 @@ test("www.baid-x.com: old host redirects except /api/, contact page, Baiden Crea
   assert.equal(host.destination, "https://www.baid-x.com/:path"); assert.match(host.source, /\(\?!api\/\)/);
   for (const f of ["index.html", "about.html", "terms.html", "privacy.html", "contact.html", "pricing/index.html", "sitemap.xml", "robots.txt", "llms.txt"]) assert.doesNotMatch(read(f), /baid-x-website\.vercel\.app/, f);
   const c = read("contact.html");
-  assert.match(c, /info@baidencreatives\.org/); assert.match(c, /\+233 20 607 1106/); assert.match(c, /East Legon/); assert.match(c, /organization under <b>Baiden Creatives/);
+  assert.match(c, /info@baidencreatives\.org/); assert.match(c, /\+233 20 607 1106/); assert.match(c, /East Legon/); assert.match(c, /organization under <a href="https:\/\/www\.baidencreatives\.org\/" rel="noopener"><b>Baiden Creatives/);
   assert.match(read("sitemap.xml"), /<loc>https:\/\/www\.baid-x\.com\/contact\.html<\/loc>/);
   assert.doesNotMatch(read("robots.txt"), /admin\.html/);
   assert.match(read("terms.html"), /10% of the amount released/); assert.doesNotMatch(read("terms.html"), /\[X\]|REGISTRATION NO|test release/);
@@ -208,4 +208,12 @@ test("sign-up and account fixes: blank phone is null, duplicates checked, passwo
   const toE164 = new Function("S", `${body}; return toE164;`)({ country: { d: "233" } });
   for (const x of ["0206071106", "20 607 1106", "+233 20 607 1106", "00233206071106", "+233 020 607 1106"]) assert.equal(toE164(x), "+233206071106", x);
   for (const x of ["0206071", "0806071106", "02060711066"]) assert.equal(toE164(x), null, x);
+});
+
+test("BAID X links to its company site, www.baidencreatives.org, in data and footers", () => {
+  for (const f of ["index.html", "about.html", "contact.html", "pricing/index.html", "trades/plumber/index.html"]) {
+    const h = read(f);
+    assert.match(h, /"name":"Baiden Creatives","url":"https:\/\/www\.baidencreatives\.org\/"/, f);
+    assert.match(h, /An organization under <a href="https:\/\/www\.baidencreatives\.org\/" rel="noopener">Baiden Creatives<\/a>/, f);
+  }
 });
