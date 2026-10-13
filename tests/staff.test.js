@@ -4,7 +4,7 @@ process.env.SUPABASE_URL = "https://x.supabase.test"; process.env.SUPABASE_SERVI
 const staff = require("../api/admin-users.js");
 const mkRes = () => { const r = { code: 0, body: null, headers: {} }; r.setHeader = (k, v) => (r.headers[k] = v); r.status = (c) => { r.code = c; return r; }; r.json = (b) => { r.body = b; return r; }; return r; };
 let calls; const stub = (routes) => { calls = []; global.fetch = async (url, opt = {}) => { calls.push({ url: String(url), method: opt.method, body: opt.body ? JSON.parse(opt.body) : null }); for (const [m, fn] of routes) if (String(url).includes(m)) { const out = fn(); return { ok: out.ok !== false, status: out.status || 200, text: async () => JSON.stringify(out.json), json: async () => out.json }; } return { ok: true, status: 200, text: async () => "null", json: async () => null }; }; };
-const req = (body) => ({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "create_staff", name: "Ama Ops", email: "ama@baid-x.com", role: "ops", password: "BaidX-Ops-2026", ...body } });
+const req = (body) => ({ method: "POST", headers: { authorization: "Bearer t" }, body: { action: "create_staff", name: "Ama Ops", email: "ama@baid-x.com", role: "ops", password: "Example-pass-123", ...body } });
 
 test("create_staff: only when the database says the caller is a Super Admin", async () => {
   stub([["admin_can_add_staff", () => ({ ok: false, status: 400, json: { message: "Your staff role can't do this." } })]]);
@@ -31,5 +31,5 @@ test("admin page: menus follow the role, sign-in asks for the code, first sign-i
   assert.match(a, /challengeAndVerify/); assert.match(a, /me\.mfa_required && !totp\.length/);
   const sql = fs.readFileSync(require.resolve("../supabase/phase23_staff_roles.sql"), "utf8");
   assert.match(sql, /'admin_finance', 'finance', 'VIEW'/); assert.match(sql, /Enter your authenticator code to continue/);
-  assert.doesNotMatch(sql, /BaidX-/, "no passwords in the repo");
+  assert.doesNotMatch(sql, /password\s*[:=]/i, "no passwords in the repo");
 });
