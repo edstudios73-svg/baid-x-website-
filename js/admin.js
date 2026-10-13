@@ -1,5 +1,6 @@
-/* BAID X Super Admin. Every read and every action goes through a server function that checks the caller is an
-   active staff member (and, for the sensitive ones, a Super Admin). Nothing here is trusted by the database. */
+/* BAID X Admin (Mission Control). Every read and every action goes through a server function that checks the caller's
+   staff role and, when Settings → Two-step is on, that they signed in with their authenticator code. The menu below only
+   hides what a role can't open; the database decides. Nothing here is trusted by the database. */
 (() => {
   "use strict";
   const cfg = window.BAIDX_CONFIG, sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHABLE_KEY);
@@ -36,6 +37,8 @@
     org: '<path d="M4 20V8l8-4 8 4v12M9 20v-5h6v5M8 11h2M14 11h2"/>',
     plan: '<path d="M12 3v18M17 7.500c0-1.900-2.200-3-5-3s-5 1.100-5 3 2.200 3 5 3 5 1.100 5 3-2.200 3-5 3-5-1.100-5-3"/>',
     key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M16 7l3 3"/>',
+    staff: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/><path d="M17.5 4.5 19 6l2.5-2.5"/>',
+    lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
     out: '<path d="M10 4H5v16h5M16 8l4 4-4 4M20 12H9"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
   };
@@ -43,9 +46,14 @@
 
   const NAV = [
     ["dashboard", "Dashboard", "dash"], ["finance", "Finance", "fin"], ["users", "Users", "users"], ["verification", "Verification", "ver"], ["jobs", "Jobs", "jobs"], ["projects", "Projects", "proj"], ["applications", "Applications", "app"], ["messages", "Messages", "msg"], ["notifications", "Notifications", "bell"], ["reports", "Reports", "rep"], ["analytics", "Analytics", "chart"], ["categories", "Categories", "tag"], ["audit", "Audit", "audit"], ["health", "Health", "heart"], ["settings", "Settings", "set"],
-    "Business", ["organizations", "Organizations", "org", 1], ["plans", "Plans & billing", "plan", 1], ["roles", "Roles & access", "key", 1],
+    "Business", ["organizations", "Organizations", "org"], ["plans", "Plans & billing", "plan"], ["roles", "Roles & access", "key"], ["staff", "Staff", "staff", 1],
   ];
-  const TITLES = { dashboard: ["EXECUTIVE DASHBOARD", "Mission Control", "Live platform overview for BAID X: users, hiring, verification, money and system signals in one place."], finance: ["FINANCE", "BAID X Payments", "Confirm Mobile Money deposits, hold and release escrow, pay withdrawals, and manage Paystack."], users: ["USER MANAGEMENT", "All users", ""], verification: ["VERIFICATION CENTER", "Unified queue", "Identity and business documents in one place. Documents are private and open in a secure window."], jobs: ["", "Jobs management", ""], projects: ["", "Project management", ""], applications: ["", "Applications", ""], messages: ["", "Messages", "Message any platform user. Conversations update every few seconds."], notifications: ["COMMUNICATIONS", "Notifications", "Send announcements, broadcast by role, and review delivery history."], reports: ["", "Moderation & reports", ""], analytics: ["ANALYTICS", "Platform trends", ""], categories: ["", "Categories & skills", ""], audit: ["", "Audit logs", "Every sensitive action by staff and the system."], health: ["SYSTEM", "Platform health", "Live signals from the database, payments and review queues."], settings: ["SYSTEM", "Settings", ""], organizations: ["BUSINESS", "Organizations", "Every company or crew workspace, its people and its access."], plans: ["BUSINESS", "Plans & billing", "Prices live in the database. Changing one takes effect without a redeploy."], roles: ["BUSINESS", "Roles & access", "Credential profiles. Access is deny-by-default and every change is audited."] };
+  // what each page needs (resource:action from the staff role); null = every staff member
+  const NEED = { dashboard: null, analytics: null, health: null, finance: "finance:VIEW", users: "users:VIEW", verification: "verification:VIEW", jobs: "projects:VIEW", projects: "projects:VIEW", applications: "projects:VIEW",
+    messages: "support:VIEW", notifications: "support:VIEW", reports: "support:VIEW", categories: "platform:EDIT", audit: "audit:VIEW", settings: "platform:VIEW", organizations: "organizations:VIEW", plans: "finance:VIEW", roles: "roles:VIEW", staff: "roles:VIEW" };
+  const can = (p) => !NEED[p] || (S.me?.can || []).includes(NEED[p]);
+  const STAFF_ROLES = [["super", "Super Admin", "Everything, including staff, settings and Paystack."], ["platform", "Platform Admin", "Runs the platform: members, verification, money, projects, support and settings. Not staff."], ["ops", "Operations Admin", "Members, verification, jobs, projects, reports and support. No money."], ["finance", "Platform Finance", "Deposits, withdrawals, escrow, disputes, Paystack and plans."], ["auditor", "Platform Auditor", "Read-only: members, projects, money and the audit log."]];
+  const TITLES = { dashboard: ["EXECUTIVE DASHBOARD", "Mission Control", "Live platform overview for BAID X: users, hiring, verification, money and system signals in one place."], finance: ["FINANCE", "BAID X Payments", "Confirm Mobile Money deposits, hold and release escrow, pay withdrawals, and manage Paystack."], users: ["USER MANAGEMENT", "All users", ""], verification: ["VERIFICATION CENTER", "Unified queue", "Identity and business documents in one place. Documents are private and open in a secure window."], jobs: ["", "Jobs management", ""], projects: ["", "Project management", ""], applications: ["", "Applications", ""], messages: ["", "Messages", "Message any platform user. Conversations update every few seconds."], notifications: ["COMMUNICATIONS", "Notifications", "Send announcements, broadcast by role, and review delivery history."], reports: ["", "Moderation & reports", ""], analytics: ["ANALYTICS", "Platform trends", ""], categories: ["", "Categories & skills", ""], audit: ["", "Audit logs", "Every sensitive action by staff and the system."], health: ["SYSTEM", "Platform health", "Live signals from the database, payments and review queues."], settings: ["SYSTEM", "Settings", ""], organizations: ["BUSINESS", "Organizations", "Every company or crew workspace, its people and its access."], plans: ["BUSINESS", "Plans & billing", "Prices live in the database. Changing one takes effect without a redeploy."], roles: ["BUSINESS", "Roles & access", "Credential profiles. Access is deny-by-default and every change is audited."], staff: ["BUSINESS", "Staff", "Who can sign in to Mission Control, their role and their two-step status."] };
 
   /* ---------------- modal ---------------- */
   const modal = (html) => { closeModal(); const d = document.createElement("div"); d.className = "mo"; d.id = "mo"; d.innerHTML = `<div class="md">${html}</div>`; d.addEventListener("mousedown", (e) => { if (e.target === d) closeModal(); }); document.body.appendChild(d); const f = d.querySelector("input,textarea,select"); if (f) setTimeout(() => f.focus(), 40); return d; };
@@ -57,7 +65,7 @@
 
   /* ---------------- login ---------------- */
   function login(msg) {
-    app.innerHTML = `<div class="lg"><form class="lg-card" id="lf"><img src="assets/logo.png" alt="BAID X" /><h1>Super Admin</h1><p>For BAID X staff only. Customers sign in on the main site.</p><input class="in" type="email" name="email" placeholder="Staff email" required autocomplete="username" /><input class="in" type="password" name="password" placeholder="Password" required autocomplete="current-password" /><button class="btn-or" type="submit">Sign in</button><div class="lg-err">${esc(msg || "")}</div></form></div>`;
+    app.innerHTML = `<div class="lg"><form class="lg-card" id="lf"><img src="assets/logo.png" alt="BAID X" /><h1>Mission Control</h1><p>For BAID X staff only. Customers sign in on the main site.</p><input class="in" type="email" name="email" placeholder="Staff email" required autocomplete="username" /><input class="in" type="password" name="password" placeholder="Password" required autocomplete="current-password" /><button class="btn-or" type="submit">Sign in</button><div class="lg-err">${esc(msg || "")}</div></form></div>`;
     document.getElementById("lf").addEventListener("submit", async (e) => {
       e.preventDefault(); const d = Object.fromEntries(new FormData(e.target)), b = e.target.querySelector("button"); b.disabled = true; b.textContent = "Signing in…";
       const { error } = await sb.auth.signInWithPassword({ email: d.email.trim(), password: d.password });
@@ -71,14 +79,50 @@
     if (!s.session) return login();
     let me = null; try { me = await rpc("platform_whoami"); } catch { /* not staff */ }
     if (!me) { await sb.auth.signOut(); return login("This account does not have staff access."); }
+    // Two-step: anyone with an authenticator gives its code every sign-in; when Settings → Two-step is on, a
+    // privileged role without one sets it up before going further.
+    const [{ data: aal }, { data: fs }] = await Promise.all([sb.auth.mfa.getAuthenticatorAssuranceLevel(), sb.auth.mfa.listFactors()]);
+    const totp = (fs?.totp || []).filter((f) => f.status === "verified");
+    if (totp.length && aal?.currentLevel !== "aal2") return codeStep(totp[0], s.session.user.email);
+    if (me.mfa_required && !totp.length) return enrolStep(s.session.user.email);
     S.me = me; S.email = s.session.user.email; shell(); route();
+  }
+  const card = (inner) => `<div class="lg"><div class="lg-card">${inner}</div></div>`;
+  const back = '<button class="lg-link" type="button" data-signout>Use a different account</button>';
+  function codeStep(factor, email, msg) {
+    app.innerHTML = card(`<span class="lg-ic">${ic("lock", 26)}</span><h1>Enter your code</h1><p>Open your authenticator app and type the 6-digit code for BAID X.<br><b>${esc(email)}</b></p>
+      <form id="cf2"><input class="in code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required autofocus /><button class="btn-or" type="submit">Continue</button></form><div class="lg-err">${esc(msg || "")}</div>${back}`);
+    document.getElementById("cf2").addEventListener("submit", async (e) => {
+      e.preventDefault(); const b = e.target.querySelector("button"); b.disabled = true; b.textContent = "Checking…";
+      const { error } = await sb.auth.mfa.challengeAndVerify({ factorId: factor.id, code: e.target.code.value.trim() });
+      if (error) return codeStep(factor, email, "That code didn't match. Codes change every 30 seconds.");
+      boot();
+    });
+  }
+  async function enrolStep(email, msg) {
+    // clear any half-finished setup so a fresh QR code can be made
+    const { data: fs } = await sb.auth.mfa.listFactors();
+    for (const f of (fs?.all || []).filter((x) => x.status !== "verified")) await sb.auth.mfa.unenroll({ factorId: f.id });
+    const { data, error } = await sb.auth.mfa.enroll({ factorType: "totp", friendlyName: `BAID X ${Date.now()}` });
+    if (error) { await sb.auth.signOut(); return login("Two-step setup couldn't start. Try again."); }
+    app.innerHTML = card(`<span class="lg-ic">${ic("lock", 26)}</span><h1>Set up two-step sign-in</h1><p>Mission Control needs an authenticator for your role. Do this once.<br><b>${esc(email)}</b></p>
+      <ol class="lg-steps"><li>Install <b>Google Authenticator</b> or <b>Microsoft Authenticator</b> on your phone.</li><li>Tap <b>+</b> and scan this code.</li><li>Type the 6-digit code it shows.</li></ol>
+      <div class="lg-qr"><img src="${esc(data.totp.qr_code)}" alt="QR code for your authenticator" width="180" height="180" /></div>
+      <details class="lg-key"><summary>Can't scan? Type this key instead</summary><span class="mono">${esc(data.totp.secret)}</span></details>
+      <form id="ef2"><input class="in code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required /><button class="btn-or" type="submit">Turn on and continue</button></form><div class="lg-err">${esc(msg || "")}</div>${back}`);
+    document.getElementById("ef2").addEventListener("submit", async (e) => {
+      e.preventDefault(); const b = e.target.querySelector("button"); b.disabled = true; b.textContent = "Checking…";
+      const { error: er } = await sb.auth.mfa.challengeAndVerify({ factorId: data.id, code: e.target.code.value.trim() });
+      if (er) { b.disabled = false; b.textContent = "Turn on and continue"; const x = document.querySelector(".lg-err"); if (x) x.textContent = "That code didn't match. Use the newest code in the app."; return; }
+      toast("Two-step is on for your account"); boot();
+    });
   }
 
   /* ---------------- shell ---------------- */
   function shell() {
-    const nav = NAV.map((n) => (typeof n === "string" ? `<div class="grp">${esc(n.toUpperCase())}</div>` : `<button class="nv" data-go="${n[0]}">${ic(n[2])}<span>${esc(n[1])}</span>${n[3] ? '<span class="new">NEW</span>' : `<span class="dot" data-badge="${n[0]}" hidden></span>`}</button>`)).join("");
-    app.innerHTML = `<aside class="side" id="side"><img class="logo" src="assets/logo.png" alt="BAID X" /><div class="mc">MISSION CONTROL</div><nav class="snav"><div class="grp">PLATFORM</div>${nav}</nav><div class="me"><b>${esc(S.me.label)}</b><small>${esc(S.me.admin_id || "BAID-SUPER-000001")}</small></div><button class="out" id="out">${ic("out")}Log out</button></aside>
-      <header class="top"><button class="menu" id="menu" aria-label="Menu">${ic("menu", 20)}</button><div class="t"><small>BAID X SUPER ADMIN</small><span>${esc(S.me.admin_id || "BAID-SUPER-000001")} · platform operating system</span></div><div class="srch"><input id="gs" placeholder="Search people on BAID X…" autocomplete="off" /><div class="res" id="gres"></div></div><div class="bell" id="bell" title="Open queues">${ic("bell", 18)}<i id="belld" hidden></i></div><div class="who"><b>${esc(S.me.name || "BAID X Super Admin")}</b><small>${esc(S.email || "")}</small></div></header>
+    const nav = NAV.filter((n, i) => (typeof n === "string" ? NAV.slice(i + 1).some((x) => typeof x !== "string" && can(x[0])) : can(n[0]))).map((n) => (typeof n === "string" ? `<div class="grp">${esc(n.toUpperCase())}</div>` : `<button class="nv" data-go="${n[0]}">${ic(n[2])}<span>${esc(n[1])}</span>${n[3] ? '<span class="new">NEW</span>' : `<span class="dot" data-badge="${n[0]}" hidden></span>`}</button>`)).join("");
+    app.innerHTML = `<aside class="side" id="side"><img class="logo" src="assets/logo.png" alt="BAID X" /><div class="mc">MISSION CONTROL</div><nav class="snav"><div class="grp">PLATFORM</div>${nav}</nav><div class="me"><b>${esc(S.me.label)}</b><small>${esc(S.me.admin_id || "")}</small></div><button class="out" id="out">${ic("out")}Log out</button></aside>
+      <header class="top"><button class="menu" id="menu" aria-label="Menu">${ic("menu", 20)}</button><div class="t"><small>BAID X ${esc((S.me.label || "Admin").toUpperCase())}</small><span>${esc(S.me.admin_id || "")} · platform operating system</span></div><div class="srch"><input id="gs" placeholder="Search people on BAID X…" autocomplete="off" /><div class="res" id="gres"></div></div><div class="bell" id="bell" title="Open queues">${ic("bell", 18)}<i id="belld" hidden></i></div><div class="who"><b>${esc(S.me.name || S.me.label || "BAID X staff")}</b><small>${esc(S.email || "")}</small></div></header>
       <main class="main" id="main"></main>`;
     refreshBadges();
   }
@@ -95,7 +139,9 @@
   const parse = () => { const [p, sub] = (location.hash || "#/dashboard").replace(/^#\/?/, "").split("/"); return { p: TITLES[p] ? p : "dashboard", sub: sub || "" }; };
   async function route() {
     if (!S.me) return;
-    const { p } = parse(); S.page = p;
+    let { p } = parse();
+    if (!can(p)) { p = "dashboard"; history.replaceState(null, "", "#/dashboard"); }
+    S.page = p;
     document.querySelectorAll(".nv").forEach((b) => b.classList.toggle("on", b.dataset.go === p));
     document.getElementById("side")?.classList.remove("open");
     const m = document.getElementById("main"), [eb, title, sub] = TITLES[p], token = (S.tok = (S.tok || 0) + 1);
@@ -275,6 +321,17 @@
       return tabs("roles", [["platform", "Platform staff"], ["organization", "Organizations"]], t) + `<div class="g g3">${m.roles.filter((r) => r.tier === t).map((r) => `<div class="c"><div class="row2"><b>${esc(r.label)}</b>${r.privileged ? '<span class="pill w ml">2-step</span>' : ""}</div><div class="mut" style="margin:6px 0 10px;font-size:12.5px">${esc(r.description)}</div>${grants(r.key)}</div>`).join("")}</div>
         <div class="c" style="margin-top:16px"><span class="l">Two-step verification</span><div class="row2" style="margin-top:10px"><span class="pill ${h.mfa_enforced ? "ok" : ""}">${h.mfa_enforced ? "Enforced" : "Not enforced"}</span><span class="mut">Turn it on in Settings once everyone has enrolled.</span><button class="btn-or ml" data-go="settings">Open settings</button></div></div>`;
     },
+
+    async staff() {
+      const list = await rpc("admin_staff"), sup = (S.me.can || []).includes("roles:ADMINISTER");
+      S.staff = list;
+      const on = list.filter((m) => m.active), two = on.filter((m) => m.two_step).length;
+      const head = `<div class="g g4" style="margin-bottom:16px">${tile("Active staff", on.length)}${tile("Two-step set up", `${two} of ${on.length}`, two < on.length)}${tile("Super Admins", on.filter((m) => m.role === "super_admin").length)}${tile("Switched off", list.length - on.length)}</div>`
+        + (sup ? `<div class="row2" style="margin-bottom:14px"><button class="btn-or" data-staff-add>Add staff member</button><span class="mut">They sign in on this page with the email and password you set, then set up two-step on their phone.</span></div>` : "");
+      const rows = list.map((m, i) => `<tr><td>${avatar(m.name)}<b>${esc(m.name)}</b>${m.me ? ' <span class="pill b">You</span>' : ""}<div class="mono">${esc(m.admin_id || "")} · ${esc(m.email || "")}</div></td><td>${esc(m.label || "—")}</td><td>${m.two_step ? '<span class="pill ok">On</span>' : '<span class="pill w">Not set up</span>'}</td><td class="mut">${esc(m.last_sign_in ? ago(m.last_sign_in) : "Never")}</td><td>${stPill(m.active ? "active" : "disabled")}</td><td>${sup && !m.me ? `<button class="btn gh" data-staff-edit="${i}">Change</button>${m.two_step ? `<button class="btn gh" data-staff-2fa="${i}">Reset two-step</button>` : ""}` : "—"}</td></tr>`);
+      return head + table(["Staff member", "Role", "Two-step", "Last sign-in", "Status", "Actions"], rows, "No staff yet.")
+        + `<h2 class="sec">What each role can do</h2><div class="g g3">${STAFF_ROLES.map(([, l, d]) => `<div class="c"><b>${esc(l)}</b><div class="mut" style="margin-top:6px;font-size:12.5px;line-height:1.5">${esc(d)}</div></div>`).join("")}</div>`;
+    },
   };
 
   const AFTER = {
@@ -379,6 +436,12 @@
     const r = await fetch("/api/paystack-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ ...extra, action }) });
     return { ok: r.ok, json: await r.json().catch(() => ({})) };
   }
+  async function staffCall(body) {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch("/api/admin-users", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify(body) });
+    return { ok: r.ok, json: await r.json().catch(() => ({})) };
+  }
+  const roleSelect = (cur) => `<select class="in" name="role">${STAFF_ROLES.map(([k, l]) => `<option value="${k}" ${k === cur ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
   async function smsCall(body) {
     const { data: { session } } = await sb.auth.getSession();
     const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify(body) });
@@ -585,6 +648,22 @@
       d.querySelector("#mfaf").onsubmit = async (ev) => { ev.preventDefault(); const code = ev.target.code.value, ch = await sb.auth.mfa.challenge({ factorId: data.id }); if (ch.error) return toast(ch.error.message); const v = await sb.auth.mfa.verify({ factorId: data.id, challengeId: ch.data.id, code }); if (v.error) return toast("That code didn't match."); closeModal(); toast("Authenticator is on"); };
       return;
     }
+    if (q("[data-staff-add]")) {
+      const d = modal(`<h3>Add staff member</h3><p class="d">They sign in at /admin.html with this email and password, then set up two-step on their phone. Tell them the password in person or by phone.</p><form id="sf"><label class="fl"><span>Full name</span><input class="in" name="name" required maxlength="80" /></label><label class="fl"><span>Email</span><input class="in" type="email" name="email" required autocomplete="off" /></label><label class="fl"><span>Role</span>${roleSelect("ops")}</label><label class="fl"><span>Password</span><input class="in" name="password" minlength="10" maxlength="72" required autocomplete="new-password" /><small>At least 10 characters. They can change it in Settings.</small></label><div class="acts"><button type="button" class="btn gh" data-closem>Cancel</button><button class="btn ap" type="submit">Add</button></div></form>`);
+      d.querySelector("#sf").addEventListener("submit", async (ev) => { ev.preventDefault(); const f = ev.target, b = f.querySelector("[type=submit]"); b.disabled = true; const r = await staffCall({ action: "create_staff", name: f.name.value, email: f.email.value, role: f.role.value, password: f.password.value }); b.disabled = false; if (!r.ok) return toast(r.json.error || "Couldn't add them."); closeModal(); toast(`Added ${r.json.email}`); rerender(); });
+      return;
+    }
+    if ((el = q("[data-staff-edit]"))) {
+      const m = S.staff[+el.dataset.staffEdit], cur = { super_admin: "super", platform_admin: "platform", ops_admin: "ops", finance_admin: "finance", platform_auditor: "auditor" }[m.role];
+      const d = modal(`<h3>${esc(m.name)}</h3><p class="d">${esc(m.email)}</p><form id="se"><label class="fl"><span>Role</span>${roleSelect(cur)}</label><label class="fl"><span><input type="checkbox" name="on" ${m.active ? "checked" : ""} /> Can sign in</span></label><div class="acts"><button type="button" class="btn gh" data-closem>Cancel</button><button class="btn ap" type="submit">Save</button></div></form>`);
+      d.querySelector("#se").addEventListener("submit", (ev) => { ev.preventDefault(); const f = ev.target; closeModal(); act("Staff", () => rpc("admin_set_staff", { p_id: m.id, p_role: f.role.value, p_active: f.on.checked }), "Saved"); });
+      return;
+    }
+    if ((el = q("[data-staff-2fa]"))) {
+      const m = S.staff[+el.getAttribute("data-staff-2fa")];
+      if (!(await ask(`Reset two-step for ${m.name}?`, "Use this when they lose their phone. Their authenticator is removed and they set up a new one the next time they sign in.", { label: "Reset", danger: true }))) return;
+      return act("Two-step", () => rpc("admin_reset_staff_two_step", { p_id: m.id }), "Two-step reset");
+    }
     if ((el = q("[data-prov]"))) { const p = S.fin.providers.find((x) => x.id === el.dataset.prov); return modal(`<h3>Edit provider</h3><form id="pf"><label class="fl"><span>Display name</span><input class="in" name="name" value="${esc(p.display_name)}" required /></label><div class="fr"><label class="fl"><span>Number</span><input class="in" name="num" value="${esc(p.account_number || "")}" /></label><label class="fl"><span>Account name</span><input class="in" name="acc" value="${esc(p.account_name || "")}" /></label></div><label class="fl"><span>Instructions shown to members</span><textarea class="in" name="ins">${esc(p.instructions || "")}</textarea></label><label class="fl"><span><input type="checkbox" name="on" ${p.is_active ? "checked" : ""} /> Active</span></label><div class="acts"><button type="button" class="btn gh" data-closem>Cancel</button><button class="btn ap" type="submit">Save</button></div></form>`).querySelector("#pf").addEventListener("submit", (ev) => { ev.preventDefault(); const f = ev.target; closeModal(); act("Provider", () => rpc("admin_update_provider", { p_id: p.id, p_name: f.name.value, p_number: f.num.value, p_account_name: f.acc.value, p_instructions: f.ins.value, p_active: f.on.checked }), "Provider saved"); }); }
     if ((el = q("[data-cat]"))) { const c = el.dataset.cat === "new" ? null : S.cats[+el.dataset.cat]; const phases = ["structural", "electrical_mechanical", "plumbing_water", "finishing_interior", "exterior_compound", "support_general"]; return modal(`<h3>${c ? "Edit" : "Add"} category</h3><form id="cf"><label class="fl"><span>Name</span><input class="in" name="name" value="${esc(c?.name || "")}" required /></label><label class="fl"><span>Phase</span><select class="in" name="phase">${phases.map((p) => `<option value="${p}" ${c?.phase === p ? "selected" : ""}>${esc(pretty(p))}</option>`).join("")}</select></label><label class="fl"><span><input type="checkbox" name="on" ${c?.is_active === false ? "" : "checked"} /> Active</span></label><div class="acts"><button type="button" class="btn gh" data-closem>Cancel</button><button class="btn ap" type="submit">Save</button></div></form>`).querySelector("#cf").addEventListener("submit", (ev) => { ev.preventDefault(); const f = ev.target; closeModal(); act("Category", () => rpc("admin_save_category", { p_id: c?.id || null, p_name: f.name.value, p_phase: f.phase.value, p_active: f.on.checked }), "Category saved"); }); }
     if ((el = q("#roleseg [data-r]"))) { const seg = el.parentElement; if (el.dataset.r === "") seg.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b === el)); else { seg.querySelector('[data-r=""]').classList.remove("on"); el.classList.toggle("on"); if (!seg.querySelector(".on")) seg.querySelector('[data-r=""]').classList.add("on"); } return; }
@@ -599,6 +678,8 @@
     if (!q(".srch")) document.getElementById("gres")?.classList.remove("on");
   });
 
+  // sign-in screens (before the shell exists)
+  document.addEventListener("click", async (e) => { if (e.target.closest("[data-signout]")) { await sb.auth.signOut(); S.me = null; login(); } });
   document.addEventListener("submit", async (e) => {
     const f = e.target;
     if (f.id === "uq") { e.preventDefault(); S.q = document.getElementById("uqi").value.trim(); return rerender(); }

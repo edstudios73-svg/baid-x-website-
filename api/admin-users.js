@@ -1,4 +1,6 @@
-// POST /api/admin-users { action: "remove", role, id, confirm: "REMOVE" } — super admins only.
+// POST /api/admin-users — Super Admin only (checked by the database as the caller).
+//   { action: "create_staff", name, email, role, password }  adds a Mission Control login (two-step is set up at first sign-in)
+//   { action: "remove", role, id, confirm: "REMOVE" }          removes a member
 // The database checks permission, wallet and escrow first (admin_remove_prepare, run as the caller), then the
 // account and everything that belongs only to it is deleted with the service key. Removal can't be undone.
 const { supa, env } = require("./_lib/paystack");
@@ -11,6 +13,30 @@ const LEFTOVERS = [
   ["project_reviews", ["reviewer_id", "reviewee_id"]], ["company_pm_links", ["requested_by"]],
 ];
 
+const STAFF_ROLES = ["super", "platform", "ops", "finance", "auditor"];
+async function createStaff(req, res, token) {
+  const b = req.body || {}, email = String(b.email || "").trim().toLowerCase(), name = String(b.name || "").trim(), role = String(b.role || ""), password = String(b.password || "");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return res.status(400).json({ error: "Enter a valid email." });
+  if (name.length < 2 || name.length > 80) return res.status(400).json({ error: "Enter their name." });
+  if (!STAFF_ROLES.includes(role)) return res.status(400).json({ error: "Choose a role." });
+  if (password.length < 10 || password.length > 72) return res.status(400).json({ error: "The password needs at least 10 characters." });
+  if (!env().serviceKey) return res.status(503).json({ error: "Adding staff isn't configured on the server." });
+  // the database decides: only a Super Admin who has passed two-step (when it is on) gets true
+  const ok = await supa("/rest/v1/rpc/admin_can_add_staff", { method: "POST", body: {}, token });
+  if (!ok.ok || ok.json !== true) return res.status(403).json({ error: ok.json?.message || "Only a Super Admin can add staff." });
+  const e = env();
+  const made = await fetch(`${e.supaUrl}/auth/v1/admin/users`, { method: "POST", headers: { apikey: e.serviceKey, authorization: `Bearer ${e.serviceKey}`, "content-type": "application/json" },
+    body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { full_name: name, staff: true } }) });
+  const u = await made.json().catch(() => ({}));
+  if (!made.ok || !u.id) return res.status(made.status === 422 ? 409 : 500).json({ error: made.status === 422 ? "That email already has a BAID X account. Use another email." : "The login couldn't be created." });
+  const row = await supa("/rest/v1/admin_users", { method: "POST", body: { id: u.id, email, full_name: name, admin_role: role, is_active: true } });
+  if (!row.ok) {
+    await fetch(`${e.supaUrl}/auth/v1/admin/users/${u.id}`, { method: "DELETE", headers: { apikey: e.serviceKey, authorization: `Bearer ${e.serviceKey}` } });
+    return res.status(500).json({ error: "The staff record couldn't be saved. Nothing was created." });
+  }
+  return res.status(200).json({ created: true, email });
+}
+
 module.exports = async (req, res) => {
   res.setHeader("cache-control", "no-store");
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -18,6 +44,7 @@ module.exports = async (req, res) => {
     const token = String(req.headers.authorization || "").replace(/^Bearer /i, "");
     if (!token) return res.status(401).json({ error: "Sign in again." });
     const { action, role, id, confirm } = req.body || {};
+    if (action === "create_staff") return createStaff(req, res, token);
     if (action !== "remove") return res.status(400).json({ error: "Unknown action." });
     if (!UUID.test(String(id || ""))) return res.status(400).json({ error: "Choose a member." });
     if (!env().serviceKey) return res.status(503).json({ error: "Removal isn't configured on the server." });
