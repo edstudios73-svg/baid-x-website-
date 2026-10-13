@@ -27,7 +27,7 @@ ffmpeg -v error -stats -y -progress out/composite.progress \
 [7:v]split[bK1][bK2];[9:v]split[dK1][dK2];
 [6:v][bK1][8:v][dK1]concat=n=4:v=1:a=0,format=gbrp,split=2[K1][K2];
 [10:v][bK2][11:v][dK2]concat=n=4:v=1:a=0,format=gbrp[W];
-[W][K1]blend=all_expr='A-B'[D];
+[W][K1]blend=all_expr='max(A-B,0)'[D];
 [world]format=gbrp[wg];[wg][D]blend=all_mode=multiply[T];[T][K2]blend=all_mode=addition,format=yuv420p[v];
 [12:a][13:a]amix=inputs=2:normalize=0:weights='0.55 1',loudnorm=I=-14.5:TP=-2:LRA=11,aresample=48000[a]" \
   -map "[v]" -map "[a]" -t 20 -c:v libx264 -preset slow -crf 17 -pix_fmt yuv420p -profile:v high -level 5.2 -c:a aac -b:a 256k -movflags +faststart "$OUT"
