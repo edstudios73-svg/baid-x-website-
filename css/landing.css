@@ -82,7 +82,7 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
 .lp-foot { padding: 64px 0 40px !important; border-top: 1px solid var(--line); text-align: center; }
 .lp-foot .f-logo { height: 30px; display: block; margin: 0 auto; }
 .lp-foot .f-tag { margin: 10px 0 0; font-size: 14px; color: #a3a3a3; font-weight: 600; }
-.lp-foot .f-social { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 34px auto 0; max-width: 600px; }
+.lp-foot .f-social { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 34px auto 0; max-width: 780px; }
 .lp-foot .f-social a { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px 9px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--card); color: #e6e6e6; text-decoration: none; text-align: left; }
 .lp-foot .f-social a:hover { border-color: rgba(255,255,255,.5); }
 .lp-foot .f-social svg { width: 30px; height: 30px; padding: 6px; border-radius: 50%; background: #fff; color: #000; flex: none; }
@@ -218,9 +218,10 @@ body.is-guest { padding-bottom: 0 !important; background-image: none; }
   .lp-hero .wrap > div { min-height: calc(100svh - 68px); display: flex; flex-direction: column; justify-content: center; padding: 28px 0 32px; }
 }
 @media (max-width: 560px) {
-  .lp-hero .proof { display: flex; justify-content: space-between; padding: 9px 0; }
-  .lp-hero .proof span { padding: 0 9px; font-size: 11.5px; gap: 4px; flex: 1 1 auto; justify-content: center; }
-  .lp-hero .proof b { font-size: 12.5px; }
+  /* four stat columns, number above label, clear of the buttons */
+  .lp-hero .proof { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 36px; padding: 14px 0; border-radius: 18px; }
+  .lp-hero .proof span { flex-direction: column; align-items: center; gap: 3px; padding: 0 4px; font-size: 11px; line-height: 1.2; text-align: center; white-space: normal; }
+  .lp-hero .proof b { font-size: 15px; }
   .lp-stack .scene { margin-top: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .lp-stack { height: auto; } .lp-stack .stage { position: static; height: auto; padding: 64px 0; } }

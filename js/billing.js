@@ -98,7 +98,7 @@
     const cell = (v) => v === true ? `<i class="y">${CHECK(15)}</i>` : v === false ? `<i class="n">${DASHI(15)}</i>` : esc(v);
     html += `<h2 class="bl-h">Compare plans</h2><div class="bl-cmp"><table><thead><tr><th></th>${cols.map((k) => `<th class="${k === cur ? "cur" : ""}">${TIER_NAME[k]}</th>`).join("")}</tr></thead><tbody>${rows.map(([l, v]) => `<tr><th>${esc(l)}</th>${v.map((x, i) => `<td class="${cols[i] === cur ? "cur" : ""}">${cell(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
     html += `<div class="bl-facts"><div>${svg('<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>')}<span><b>Cancel any time</b>Paid access lasts to the end of the period.</span></div><div>${svg('<path d="M12 3 5 6v6c0 4.500 3 7.500 7 9 4-1.500 7-4.500 7-9V6z"/><path d="m9 12 2 2 4-4"/>')}<span><b>7-day refund window</b>From the day the plan starts.</span></div><div>${icon("lock", 18)}<span><b>Paid through Paystack</b>Mobile Money, bank or card.</span></div></div>
-      <p class="bl-fine">A plan never buys a verification badge. Badges come from a review by a person at BAID X.</p>`;
+      <p class="bl-fine">A plan never includes a badge. Badges come from a review by our team.</p>`;
     return html;
   }
   function nowCard(s, cur, role) {
@@ -159,7 +159,7 @@
     const B = window.BX.BADGES, me = c.profile || {};
     const cur = me.verification_status === "verified" ? (B[me.badge_tier] ? me.badge_tier : "verified") : null;
     let html = cur ? `<section class="bl-now"><div class="bl-now-top"><div><small>YOUR BADGE</small><h2>${esc(B[cur][1])}</h2></div>${window.BX.badge(cur, 34)}</div><p>${esc(B[cur][2])}. Shown on your profile, cards and search results.</p></section>` : "";
-    html += `<section class="bl-hero">${window.BX.badge(cur || "identity", 28)}<div><h3>${cur ? "Go further" : "Get verified"}</h3><p>A person at BAID X checks your documents. The fee pays for the review, not the result, and a paid plan never buys a badge.</p></div></section>`;
+    html += `<section class="bl-hero">${window.BX.badge(cur || "identity", 28)}<div><h3>${cur ? "Go further" : "Get verified"}</h3><p>Our team checks your documents by hand. The fee pays for the check, not the result, and no plan includes a badge.</p></div></section>`;
     html += list.map((x) => {
       const tier = VER_TIER[x.code] || "identity", col = B[tier][0], has = cur === tier;
       const name = x.code === "standard" ? "Business" : x.code === "enhanced" && c.role === "business" ? "Enhanced business" : pretty(x.code);

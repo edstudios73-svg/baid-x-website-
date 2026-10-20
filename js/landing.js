@@ -75,9 +75,9 @@
   let people = null, region = null;
 
   const checkOut = root.querySelector("#lpCheckOut"), checkQ = root.querySelector("#lpCheckQ");
-  const TIPS = [["A badge is earned, not bought", "Badges come from checks a person at BAID X has done: profile, Ghana Card, trade and background."],
-    ["Pay through escrow", "On BAID X the money waits safely until you approve the work. Never send cash upfront to someone you have not checked."],
-    ["Ask for their BAID X name", "The name on their profile is the one to search here, the same as on their Ghana Card."]];
+  const TIPS = [["A badge is earned, not bought", "Every badge comes from checks our team does by hand: profile, Ghana Card, trade and background."],
+    ["Pay through escrow", "Your money waits safely until you approve the work. Never send cash up front to someone you haven't checked."],
+    ["Ask for their BAID X name", "Search the full name on their profile. It matches the name on their Ghana Card."]];
   const note = (t, b, warn) => `<div class="lp-note-row${warn ? " warn" : ""}"><b>${esc(t)}</b><span>${esc(b)}</span></div>`;
   function renderCheck() {
     if (!checkOut) return;
@@ -91,7 +91,7 @@
       const av = m.image ? `<i class="av" style="background-image:url('${esc(m.image)}')"></i>` : `<i class="av">${esc(String(m.name || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase())}</i>`;
       const st = `<em class="ok">${esc(BADGE[m.badge] || "Verified")} by BAID X</em>`;
       return `<div class="lp-check-row">${av}<div><b>${esc(m.name)}</b><small>${esc(KIND[m.kind] || "Member")} &middot; ${esc(m.place)}</small>${st}</div></div>`;
-    }).join("") : note("No verified member by that name", "Check the spelling and use the full name on their profile. If they still don't appear, BAID X has not verified them: be careful before paying, and hire through escrow.", true);
+    }).join("") : note("No verified member by that name", "Check the spelling and try their full name. If they still don't show up, we haven't verified them. Be careful, and only pay through escrow.", true);
   }
   checkQ?.addEventListener("input", renderCheck);
 
@@ -125,7 +125,7 @@
     ratesEl.innerHTML = rates.length ? rates.map((r) => `<div class="lp-rate"><div class="top"><b>${esc(r.trade)}</b><strong>${cedi(r.median)}<small> / day</small></strong></div>
       <div class="bar"><i class="range" style="left:${x(r.low)}%;width:max(4px, ${x(r.high) - x(r.low)}%)"></i><i class="mid" style="left:${x(r.median)}%"></i></div>
       <div class="ends"><span>${cedi(r.low)}</span><span>${cedi(r.high)}</span></div></div>`).join("")
-      : note("Not enough rates here yet", "A trade appears once several professionals have set a daily rate, so one rate never sets the guide. Try All Ghana.");
+      : note("No rates here yet", "A trade shows up once enough pros in the area have set their rate, so one price can't skew the guide. Try All Ghana for now.");
   }
   regionsEl?.addEventListener("click", (e) => { const b = e.target.closest("[data-lp-region]"); if (!b) return; region = b.dataset.lpRegion || null; renderRates(); });
 
