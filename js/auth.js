@@ -163,6 +163,8 @@
   const setBusy = (btn, on, label) => { btn.disabled = on; btn.classList.toggle("is-loading", on); if (label) btn.textContent = label; };
 
   /* ---------- 1. phone ---------- */
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const reduced = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function resetPhoneView() {
     const reset = S.mode === "reset";
     $("#phoneTitle").textContent = reset ? "Reset password" : "Phone number";
@@ -173,7 +175,9 @@
   $("#phoneNext").addEventListener("click", async () => {
     const phone = toE164($("#phone").value); if (!phone) return;
     setBusy($("#phoneNext"), true, "Continue");
-    const ok = await sendCode(phone);
+    moment("sending");
+    const [ok] = await Promise.all([sendCode(phone), wait(reduced() ? 0 : 900)]); // the dots show for a beat, so a fast network doesn't flash
+    moment(null);
     setBusy($("#phoneNext"), false, "Continue");
     if (ok) { S.phone = phone; prepCode(); show("code"); }
   });
@@ -200,7 +204,8 @@
   function otpValue() { return $$("#otp input").map((i) => i.value).join(""); }
   function prepCode() {
     buildOtp(); $("#codeErr").textContent = ""; $("#codeNext").disabled = true;
-    $("#codeSub").textContent = `Enter the confirmation code sent to ${"***" + S.phone.slice(-4)}.`;
+    $("#codeSub").textContent = `Enter the 6-digit code sent to ${shownPhone()}.`;
+    const art = $(".code-art"); art.classList.remove("go"); void art.offsetWidth; art.classList.add("go");
     startResend();
   }
   function startResend() {
@@ -224,21 +229,25 @@
     if (e.key === "Backspace" && !e.target.value && inputs[i - 1]) { inputs[i - 1].focus(); inputs[i - 1].value = ""; }
   });
   $("#codeNext").addEventListener("click", verifyCode);
-  /* ---- OTP motion: checking wave, right-code seal, wrong-code shake ---- */
-  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const reduced = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* ---- OTP motion: checking wave, wrong-code shake, and the full-screen moments ---- */
   function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch { /* not supported */ } }
+  function shownPhone() { return S.phone.replace(/^\+233(\d{2})(\d{3})(\d{4})$/, "+233 $1 $2 $3"); }
+  // the screen blurs with bouncing dots while a code is sent or checked; a right code turns a lock into a green check
+  function moment(kind) {
+    const m = $("#moment");
+    if (!kind) { m.classList.remove("on"); setTimeout(() => { if (!m.classList.contains("on")) m.hidden = true; }, 320); return; }
+    m.hidden = false; m.dataset.kind = kind;
+    if (kind !== "ok") $("#momentLabel").textContent = kind === "sending" ? "Sending code\u2026" : "Verifying\u2026";
+    else $("#momentPhone").textContent = `${shownPhone()} is confirmed.`;
+    requestAnimationFrame(() => m.classList.add("on"));
+  }
   async function playOk() {
-    const otp = $("#otp"), seal = $("#seal");
-    if (!seal.querySelector("i")) { // sparkle burst, built once
-      const cols = ["#ffffff", "#bff3d9", "#7dd3fc", "#34d399"];
-      seal.insertAdjacentHTML("beforeend", Array.from({ length: 20 }, (_, k) => `<i style="--a:${Math.round((k / 20) * 360 + (k % 2 ? 9 : 0))}deg;--d:${78 + (k % 3) * 22}px;--s:${k % 4 === 0 ? 7 : 4}px;--t:${(k % 5) * 40 + 380}ms;--col:${cols[k % 4]}"></i>`).join(""));
-    }
-    otp.classList.remove("is-checking"); otp.classList.add("is-ok"); seal.classList.add("on"); buzz([14, 40, 22]);
-    await wait(reduced() ? 250 : 1150);
-    seal.classList.remove("on");
+    $("#otp").classList.remove("is-checking"); $("#otp").classList.add("is-ok"); moment("ok"); buzz([14, 40, 22]);
+    await wait(reduced() ? 600 : 2100);
+    moment(null);
   }
   async function playBad() {
+    moment(null);
     const otp = $("#otp"); otp.classList.remove("is-checking"); otp.classList.add("is-bad"); buzz([40, 50, 40, 50, 60]);
     await wait(reduced() ? 150 : 560);
     otp.classList.remove("is-bad"); otp.classList.add("is-clearing");
@@ -247,7 +256,8 @@
   }
   let verifying = false;
   async function verifyCode() {
-    if (verifying) return; verifying = true; setBusy($("#codeNext"), true, "Continue"); $("#otp").classList.add("is-checking");
+    if (verifying) return; verifying = true; setBusy($("#codeNext"), true, "Continue"); $("#otp").classList.add("is-checking"); moment("verifying");
+    const beat = wait(reduced() ? 0 : 900);
     let data, error;
     if (phoneApi) {
       const r = await fetch("/api/auth/phone/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ phone: S.phone, code: otpValue() }) });
@@ -255,6 +265,7 @@
       if (r.ok && j.session) { const x = await sb.auth.setSession({ access_token: j.session.access_token, refresh_token: j.session.refresh_token }); data = x.data; error = x.error; }
       else error = { message: j.error || "That code isn't right." };
     } else ({ data, error } = await sb.auth.verifyOtp({ phone: S.phone, token: otpValue(), type: "sms" }));
+    await beat;
     setBusy($("#codeNext"), false, "Continue");
     if (error) { $("#codeErr").textContent = friendly(error); $("#codeNext").disabled = true; await playBad(); verifying = false; $$("#otp input")[0].focus(); return; }
     await playOk(); $("#otp").classList.remove("is-ok"); verifying = false;

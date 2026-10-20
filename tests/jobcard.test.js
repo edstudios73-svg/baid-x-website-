@@ -161,17 +161,29 @@ test("BAID Bot: floating on the landing for visitors, answers from the baid-bot 
   assert.match(css, /body:not\(\.is-guest\) \.bb \{ display: none; \}/, "visitors only");
   assert.doesNotMatch(bot + html, /sk-ant-|ANTHROPIC_API_KEY/, "the AI key lives only in the function's secrets");
   assert.match(fn, /Deno\.env\.get\("ANTHROPIC_API_KEY"\)/); assert.match(fn, /function limited\(ip/); assert.match(fn, /MAX_CHARS = 600/);
-  assert.match(fn, /if \(!key\) return json\(\{ reply: topicAnswer/, "works without a key, from BAID X's facts");
+  assert.match(fn, /if \(!key\) return guide\(\)/, "works without a key"); assert.match(fn, /reply: topicAnswer\(last\.content\)/, "from BAID X's facts");
   new Function(bot);
 });
 
-test("app on the web: an animated splash in the page while the app loads, never the old loading text", () => {
+test("BAID Bot finds real people and jobs: service-role search, public fields only, cards escaped, key never in the repo", () => {
+  const fn = read("supabase/functions/baid-bot/index.ts"), sql = read("supabase/phase24_bot_match.sql"), bot = read("js/baidbot.js");
+  assert.match(fn, /name: "find_people"/); assert.match(fn, /name: "find_jobs"/); assert.match(fn, /rpc\("bot_find_people"/); assert.match(fn, /rpc\("bot_find_jobs"/);
+  assert.match(fn, /Never give out phone numbers or emails of members/); assert.match(fn, /round < 4/, "a bounded number of tool rounds");
+  assert.match(fn, /guideMatch/, "without the AI a trade and place still find matches");
+  assert.match(sql, /grant execute on function public\.bot_find_people\([^)]*\) to service_role/); assert.match(sql, /revoke all on function public\.bot_find_people\([^)]*\) from public, anon, authenticated/);
+  assert.match(sql, /revoke all on function public\._bot_ai_key\(\) from public, anon, authenticated/);
+  const out = sql.slice(sql.indexOf("jsonb_build_object(\n      'kind'"), sql.indexOf("into out"));
+  for (const f of ["phone", "email", "ghana_card", "payout", "date_of_birth"]) assert.doesNotMatch(out, new RegExp(f), `${f} never leaves the database`);
+  assert.doesNotMatch(sql + fn + bot, /sk-ant-/, "the key lives in Vault and Vercel only");
+  assert.match(bot, /\$\{esc\(name\)\}/, "card text is escaped"); assert.match(bot, /map\(\(\{ role, content \}\) => \(\{ role, content \}\)\)/, "cards are never sent back");
+});
+
+test("app on the web: a quiet loading board in the page, then the app's own splash sketches the logo", () => {
   const html = read("app/index.html");
   assert.doesNotMatch(html, /Loading BAID X/);
-  for (const c of ["r1", "orbit", "logo", "word", "tag", "BAIDEN CREATIVES", "prog"]) assert.ok(html.includes(c), c);
-  assert.match(html, /flutter-first-frame/); assert.match(html, /onSplash\(\)/, "stays until the app leaves its splash route");
+  assert.match(html, /id="boot"/); assert.match(html, /flutter-first-frame/, "leaves on the app's first frame");
+  assert.doesNotMatch(html, /minMs/, "no fixed wait: the app's splash plays the opening");
   assert.match(html, /prefers-reduced-motion: reduce/);
-  assert.match(html, /minMs = calm \? 600 : 4000/, "4 seconds"); assert.match(html, /animation: bFill 4s linear forwards/, "the bar fills across the 4 seconds");
   const v = JSON.parse(read("vercel.json"));
   assert.ok(v.headers.some((h) => h.source.startsWith("/app/(assets|canvaskit") && /stale-while-revalidate/.test(h.headers[0].value)), "the app's files are kept by the browser so later visits open fast");
 });

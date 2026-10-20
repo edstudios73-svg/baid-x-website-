@@ -1,10 +1,12 @@
-// BAID Bot: answers visitors' questions about BAID X on the website landing and the
-// app's visitor Home. With ANTHROPIC_API_KEY set (Supabase function secret) it answers
-// with Claude, grounded in the facts below; without it, it answers from the same facts
-// by matching the question to a topic. Public (no sign-in), rate-limited per address.
-// Deployed to Supabase project igfmmprlrybxsdzehwid as "baid-bot".
+// BAID Bot: the assistant on the website landing and the app's visitor Home. It answers
+// questions about BAID X and finds real people and open jobs: "I need a top electrician in
+// Kumasi" searches the live directory (bot_find_people / bot_find_jobs, phase24) and returns
+// cards with the best matches. With an Anthropic key (function secret ANTHROPIC_API_KEY, or the
+// copy in Vault read by _bot_ai_key) Claude chooses the search and explains its picks; without
+// one it still matches trades and places and answers from the facts below. Public (no sign-in),
+// rate-limited per address. Deployed to Supabase project igfmmprlrybxsdzehwid as "baid-bot".
 
-const MODEL = "claude-haiku-4-5-20251001";
+const MODELS = ["claude-sonnet-5-5", "claude-haiku-4-5-20251001"]; // the first one this key can use
 const MAX_TURNS = 8; // conversation turns sent to the model
 const MAX_CHARS = 600; // per message
 const LIMIT = 20; // requests per address per window
@@ -36,23 +38,98 @@ For companies and project managers: projects, crews, tasks, site reports, expens
 
 Suppliers list materials and equipment with up to 6 photos; companies and clients can order.
 
+BAID Bot (this assistant) can find the best matching verified professionals, project managers, companies, suppliers and open jobs from the live directory.
+
 Visitor tools: "Check a badge" (type at least 3 letters of a full name; it lists only members a person at BAID X has verified, so someone who does not appear has not been verified) and "Rates" (the middle daily rate and range per trade from rates professionals set on BAID X, by region).
 
 Safety: never send cash upfront to someone you have not checked; pay through escrow. BAID X never asks for your password or SMS code.
 
 Contact: email info@baidencreatives.org, phone +233 20 607 1106, WhatsApp +233 55 836 2423, office in East Legon, Accra (Monday to Friday, 8am to 5pm). The Contact page is www.baid-x.com/contact.html. Social: Baiden Creatives on Instagram and TikTok (@baidencreatives) and on X (@baidencteatives). Guides: the User guide, Verification badges, Terms of Service and Privacy Policy pages on the website.`;
 
-const SYSTEM = `You are BAID Bot, the assistant on BAID X's website and app. Answer questions about BAID X and about hiring or working through it in Ghana, using only the facts below.
+const SYSTEM = `You are BAID Bot, the assistant on BAID X's website and app. You help people hire, find work and understand BAID X in Ghana, using only the facts below and what your tools return.
 
-Rules:
-- Be brief, warm and plain-spoken, like a helpful person on the BAID X team: say "we" and "you", 1 to 4 short sentences, or a short list when steps help. Plain text, no markdown headings, no emoji.
-- Use only these facts. If something is not covered, say you are not sure and point to the Pricing page, the User guide or signing in, rather than guessing. Never invent prices, fees, features, dates or people.
-- Never ask for or accept passwords, SMS codes, card numbers or Ghana Card numbers. Never say a payment, verification or account change has been done; you cannot do those.
-- For questions about one person, suggest the Check a badge tool. For prices of work, suggest the Rates tool.
+How to help:
+- When someone wants a person (a worker in any trade, a project manager, a company or a supplier of materials or equipment), call find_people. Pick the trade or need from their words, and the town or region if they gave one. Use kind "worker" for tradespeople, "pm" for project managers, "company" for companies and contractors, "supplier" for materials and equipment.
+- When someone is looking for work, call find_jobs.
+- If the first search finds nothing, try once more with a broader need or without the place.
+- Recommend from the results only. Name your top 1 to 3 picks and say in a few words why each fits: their badge, experience, daily rate, rating, town. Verified members come first; if you mention someone who is not verified yet, say so. The results appear as cards under your answer, so do not list every detail again.
+- If nobody matches, say so plainly and suggest Discover, a nearby region, or posting a job so verified pros can apply. Never invent people, jobs, ratings or prices.
+- Contact happens on BAID X: tap a card to see the profile; sign in to message or hire, and pay through escrow. Never give out phone numbers or emails of members.
+
+Style:
+- Warm, confident and plain-spoken, like a helpful person on the BAID X team. Say "we" and "you". Keep it under 70 words: 1 to 4 short sentences, or a short list when steps help. Plain text, no markdown, no headings, no emoji.
+- Refer to members by name or as "they"; never guess "he" or "she" from a name.
+- If something is not covered, say you are not sure and point to the Pricing page or the User guide.
+- Never ask for or accept passwords, SMS codes, card numbers or Ghana Card numbers. Never say a payment, verification or account change has been done.
+- For questions about one named person, suggest Check a badge. For what work usually costs, suggest Rates.
 - If asked about something unrelated to BAID X or work, say briefly that you only help with BAID X.
 
 Facts:
 ${FACTS}`;
+
+const TOOLS = [
+  {
+    name: "find_people",
+    description: "Search BAID X's live directory for the best matching members, ranked: featured, paid plans, verified, rating, experience. Returns public profile details only.",
+    input_schema: {
+      type: "object",
+      properties: {
+        kind: { type: "string", enum: ["worker", "pm", "company", "supplier"], description: "worker = tradesperson or professional; pm = project manager; company = company or contractor; supplier = materials or equipment" },
+        need: { type: "string", description: "Trade or need in a few words, e.g. 'electrician', 'tiler bathroom', 'cement blocks', 'excavator'" },
+        place: { type: "string", description: "Town or region in Ghana, e.g. 'Accra', 'Kumasi', 'Ashanti'. Omit if not given." },
+        min_years: { type: "integer", description: "Minimum years of experience, if asked" },
+        max_daily_rate: { type: "number", description: "Highest daily rate in GH₵, if the person gave a budget" },
+        verified_only: { type: "boolean", description: "Only members with a BAID X badge" },
+      },
+      required: ["kind"],
+    },
+  },
+  {
+    name: "find_jobs",
+    description: "Search open jobs on BAID X, featured first. Use for people looking for work.",
+    input_schema: {
+      type: "object",
+      properties: {
+        need: { type: "string", description: "Trade or kind of work, e.g. 'tiling', 'electrical'" },
+        place: { type: "string", description: "Town or region in Ghana. Omit if not given." },
+      },
+    },
+  },
+];
+
+const SB_URL = Deno.env.get("SUPABASE_URL") || "https://igfmmprlrybxsdzehwid.supabase.co";
+const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+async function rpc(fn: string, args: Record<string, unknown>): Promise<unknown> {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+    method: "POST",
+    headers: { apikey: SERVICE, authorization: `Bearer ${SERVICE}`, "content-type": "application/json" },
+    body: JSON.stringify(args),
+  });
+  if (!r.ok) throw new Error(`${fn} ${r.status}`);
+  return r.json();
+}
+
+// The Anthropic key: a function secret if one is set, otherwise the copy kept in Vault.
+let aiKey: string | null | undefined;
+async function getKey(): Promise<string | null> {
+  if (aiKey !== undefined) return aiKey;
+  aiKey = Deno.env.get("ANTHROPIC_API_KEY") || null;
+  if (!aiKey && SERVICE) { try { aiKey = (await rpc("_bot_ai_key", {})) as string || null; } catch (e) { console.error("baid-bot key", String(e)); aiKey = null; } }
+  return aiKey;
+}
+
+type Card = Record<string, unknown>;
+async function runTool(name: string, input: Record<string, unknown>): Promise<Card[]> {
+  const s = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim().slice(0, 80) : null);
+  if (name === "find_jobs") return (await rpc("bot_find_jobs", { p_query: s(input.need), p_region: s(input.place), p_limit: 5 })) as Card[] || [];
+  const kind = ["worker", "pm", "company", "supplier"].includes(String(input.kind)) ? String(input.kind) : "worker";
+  return (await rpc("bot_find_people", {
+    p_kind: kind, p_query: s(input.need), p_region: s(input.place),
+    p_min_years: Number.isFinite(Number(input.min_years)) ? Math.round(Number(input.min_years)) : null,
+    p_max_rate: Number.isFinite(Number(input.max_daily_rate)) ? Number(input.max_daily_rate) : null,
+    p_verified_only: input.verified_only === true, p_limit: 5,
+  })) as Card[] || [];
+}
 
 // Answers when no AI key is set (and the opening greeting). Each topic matches on words.
 const TOPICS: { keys: string[]; answer: string }[] = [
@@ -95,6 +172,39 @@ function limited(ip: string): boolean {
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
+// Without the AI: "I need a top electrician in Kumasi" still gets real matches.
+const PLACES = ["accra", "kumasi", "tamale", "takoradi", "tema", "cape coast", "koforidua", "ho", "sunyani", "bolgatanga", "wa", "techiman", "kasoa", "madina", "east legon", "spintex", "ashanti", "greater accra", "northern", "western", "central", "eastern", "volta", "bono", "upper east", "upper west", "oti", "ahafo", "savannah", "north east", "western north", "bono east"];
+async function guideMatch(q: string): Promise<{ reply: string; cards: Card[] } | null> {
+  const t = ` ${q.toLowerCase()} `;
+  const place = PLACES.filter((p) => t.includes(` ${p} `) || t.includes(` ${p},`) || t.includes(` ${p}.`) || t.includes(` ${p}?`)).sort((a, b) => b.length - a.length)[0] || null;
+  if (/\b(job|jobs|work for me|find work|looking for work|hiring now)\b/.test(t) && !/\b(hire|need a|need an|find me a|recommend)\b/.test(t)) {
+    const cards = await runTool("find_jobs", { need: q, place });
+    return { reply: cards.length ? `Here are open jobs${place ? ` around ${place.replace(/\b\w/g, (c) => c.toUpperCase())}` : ""}. Sign in to apply.` : "No open jobs match that right now. Try another trade or region, and turn on job alerts after you sign in.", cards };
+  }
+  if (!/\b(find|need|needs|looking for|recommend|hire|top|best|good|get me|suggest|who can)\b/.test(t)) return null;
+  const kind = /\b(project manager|pm)\b/.test(t) ? "pm" : /\b(supplier|cement|blocks|sand|material|materials|equipment|rent|excavator hire)\b/.test(t) ? "supplier" : /\b(company|companies|contractor|firm)\b/.test(t) ? "company" : "worker";
+  const cards = await runTool("find_people", { kind, need: q, place });
+  if (!cards.length) return { reply: "I couldn't find a match for that yet. Try a nearby region or a different trade, or post a job so verified pros can apply.", cards };
+  const top = cards[0] as Record<string, unknown>;
+  const why = [top.verified ? "verified by our team" : "not verified yet", top.experience ? `${top.experience} years' experience` : "", top.rate ? `GH₵${top.rate} a day` : ""].filter(Boolean).join(", ");
+  return { reply: `My top pick is ${top.name}, ${String(top.trade).toLowerCase()}${top.town ? ` in ${top.town}` : ""}: ${why}. Tap a card to see the profile, then sign in to message or hire through escrow.`, cards };
+}
+
+async function claude(key: string, messages: unknown[]): Promise<{ data: Record<string, unknown>; model: string }> {
+  let last = "";
+  for (const model of MODELS) {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model, max_tokens: 700, system: SYSTEM, tools: TOOLS, messages }),
+    });
+    if (r.ok) return { data: await r.json(), model };
+    last = `anthropic ${r.status} ${model}`;
+    if (r.status !== 404 && r.status !== 400) break; // only a model this key can't use moves on to the next
+  }
+  throw new Error(last);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "method" }, 405);
@@ -113,21 +223,37 @@ Deno.serve(async (req) => {
   const last = messages[messages.length - 1];
   if (!last || last.role !== "user") return json({ error: "no question" }, 400);
 
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) return json({ reply: topicAnswer(last.content), source: "guide" });
+  const guide = async () => {
+    try { const m = await guideMatch(last.content); if (m) return json({ ...m, source: "guide" }); } catch (e) { console.error("baid-bot match", String(e)); }
+    return json({ reply: topicAnswer(last.content), cards: [], source: "guide" });
+  };
+  const key = await getKey();
+  if (!key) return guide();
 
   try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: MODEL, max_tokens: 450, system: SYSTEM, messages }),
-    });
-    if (!r.ok) throw new Error(`anthropic ${r.status}`);
-    const data = await r.json();
-    const reply = (data?.content || []).filter((c: { type: string }) => c.type === "text").map((c: { text: string }) => c.text).join("").trim();
-    return json({ reply: reply || topicAnswer(last.content), source: reply ? "ai" : "guide" });
+    const convo: unknown[] = [...messages];
+    let cards: Card[] = [];
+    for (let round = 0; round < 4; round++) {
+      const { data } = await claude(key, convo);
+      const content = (data.content || []) as { type: string; text?: string; id?: string; name?: string; input?: Record<string, unknown> }[];
+      const uses = content.filter((c) => c.type === "tool_use");
+      if (data.stop_reason !== "tool_use" || !uses.length || round === 3) {
+        const reply = content.filter((c) => c.type === "text").map((c) => c.text).join("").trim();
+        if (!reply) break;
+        return json({ reply, cards, source: "ai" });
+      }
+      convo.push({ role: "assistant", content });
+      const results = [];
+      for (const u of uses) {
+        let out: Card[] = [];
+        try { out = await runTool(u.name || "", u.input || {}); } catch (e) { console.error("baid-bot tool", String(e)); }
+        if (out.length) cards = out; // the cards shown are the latest search that found someone
+        results.push({ type: "tool_result", tool_use_id: u.id, content: JSON.stringify(out.map(({ photo: _p, ...rest }) => rest)) });
+      }
+      convo.push({ role: "user", content: results });
+    }
   } catch (e) {
     console.error("baid-bot", String(e));
-    return json({ reply: topicAnswer(last.content), source: "guide" });
   }
+  return guide();
 });

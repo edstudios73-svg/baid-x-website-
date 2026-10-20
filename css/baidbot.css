@@ -55,3 +55,25 @@ body:not(.is-guest) .bb { display: none; }
   .bb-panel { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; height: min(78svh, 640px); border-radius: 26px; transform-origin: bottom center; }
 }
 @media (prefers-reduced-motion: reduce) { .bb-ping, .bb-panel, .bb-msg, .bb-msg.typing i { animation: none !important; } .bb-fab, .bb-hint { transition: none; } }
+
+/* Match cards under an answer: the first pick is the top match */
+.bb-cards { display: grid; gap: 6px; margin: -2px 0 6px; }
+.bb-card { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; text-align: left; font: inherit; color: #fff; cursor: pointer;
+  border-radius: 18px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14); animation: bbCard .42s cubic-bezier(.2,.8,.3,1) var(--d, 0ms) both; transition: background .2s, border-color .2s; }
+.bb-card:hover, .bb-card:focus-visible { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.35); outline: 0; }
+.bb-card.top { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.35); }
+@keyframes bbCard { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.bb-av2 { width: 46px; height: 46px; flex: none; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 15px; color: #000; background: #fff center / cover no-repeat; }
+.bb-av2.job { border-radius: 14px; color: #fff; background: rgba(255,255,255,.12); }
+.bb-cbody { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.bb-cbody b { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 14.5px; font-weight: 700; }
+.bb-cbody b em { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bb-cbody b .ok { flex: none; color: #fff; }
+.bb-cbody b u { flex: none; margin-left: 2px; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 800; text-decoration: none; color: #000; background: #fff; }
+.bb-cbody b s { flex: none; margin-left: 2px; font-size: 10.5px; font-weight: 700; text-decoration: none; color: #bdbdbd; }
+.bb-cbody small { font-size: 12px; color: #bdbdbd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bb-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.bb-facts span { padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; color: #e6e6e6; background: rgba(255,255,255,.08); }
+.bb-facts span.un { font-weight: 500; color: #bdbdbd; background: none; border: 1px solid rgba(255,255,255,.2); }
+.bb-card .chev { flex: none; color: #8a8a8a; }
+@media (prefers-reduced-motion: reduce) { .bb-card { animation: none !important; } }

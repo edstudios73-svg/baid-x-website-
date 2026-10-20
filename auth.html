@@ -127,12 +127,10 @@
 
     <!-- 2. Confirm code -->
     <section class="view" id="v-code">
-      <h1 class="h1">Confirm phone number</h1>
-      <p class="sub" id="codeSub">Enter the confirmation code sent to your phone.</p>
+      <div class="code-art" aria-hidden="true"><i class="disc"></i><i class="ph"><i></i></i><i class="msg"><b>*</b><b>*</b><b>*</b></i></div>
+      <h1 class="h1">Confirmation</h1>
+      <p class="sub" id="codeSub">Enter the 6-digit code sent to your phone.</p>
       <div class="otp" id="otp"></div>
-      <div class="seal" id="seal" aria-hidden="true"><span class="halo"></span><span class="rg"></span><span class="rg b"></span>
-        <svg viewBox="0 0 96 96"><defs><linearGradient id="sealGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bff3d9"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient></defs><circle class="c" cx="48" cy="48" r="38"/><path class="k" d="M31 49.5l12.5 12.5L67 35"/></svg>
-        <b class="word">Verified</b></div>
       <p class="err center" id="codeErr" role="alert"></p>
       <button class="btn-text" id="resend">Resend code</button>
       <div class="foot"><button class="btn-primary wide" id="codeNext" disabled>Continue</button></div>
@@ -189,6 +187,16 @@
 
   <div class="toast" id="toast" role="status"></div>
 
+  <!-- the phone-code moments: sending, checking, verified (js/auth.js moment()) -->
+  <div class="moment" id="moment" hidden>
+    <div class="mo-wait" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><b id="momentLabel">Sending code&hellip;</b></div>
+    <div class="mo-ok" role="status">
+      <span class="tile" aria-hidden="true"><i class="ring"></i>
+        <svg class="lock" viewBox="0 0 24 24" width="38" height="38"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="#000"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <svg class="tick" viewBox="0 0 42 42" width="42" height="42"><path d="M7.5 22l10 9.3L35 11.8" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <b>You&rsquo;re verified</b><small id="momentPhone"></small>
+    </div>
+  </div>
   <script src="js/vendor/supabase.js"></script>
   <script src="js/config.js"></script>
   <script src="js/common.js"></script>
