@@ -8,8 +8,10 @@ const { cfg } = require("../sasusync/config");
 const id = require("../sasusync/identity");
 const { audit, rpc, supa } = require("../sasusync/route");
 
-// 8+ characters (<= 72 bytes), a letter, a number, and a capital letter or a symbol: the same rules the page shows.
-const strong = (p) => typeof p === "string" && p.length >= 8 && Buffer.byteLength(p) <= 72 && /[A-Za-z]/.test(p) && /\d/.test(p) && (/[A-Z]/.test(p) || /[^A-Za-z0-9]/.test(p));
+// 8+ characters (<= 72 bytes) with a small letter, a capital, a number and a symbol: Supabase Auth's own rule, which the
+// page shows. Anything looser passed here and was then refused by Auth (422), leaving the new account without a password.
+const strong = (p) => typeof p === "string" && p.length >= 8 && Buffer.byteLength(p) <= 72 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /\d/.test(p) && /[!@#$%^&*()_+\-=\[\]{};'\\:"|<>?,./`~]/.test(p);
+const RULE = "Use at least 8 characters with a small letter, a capital letter, a number and a symbol.";
 
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
@@ -19,7 +21,7 @@ module.exports = async (req, res) => {
     const token = String(req.headers.authorization || "").replace(/^Bearer /i, "");
     if (!token) return res.status(401).json({ error: "Please verify your number again." });
     const password = req.body && req.body.password;
-    if (!strong(password)) return res.status(400).json({ error: "Use at least 8 characters with a letter, a number, and a capital letter or symbol." });
+    if (!strong(password)) return res.status(400).json({ error: RULE });
     const me = await supa("/auth/v1/user", { token });
     const uid = me.ok && me.json && me.json.id;
     if (!uid) return res.status(401).json({ error: "Please verify your number again." });
@@ -39,7 +41,8 @@ module.exports = async (req, res) => {
     if (!u.ok) {
       await supa(`/rest/v1/sasusync_otp_requests?otp_id=eq.${encodeURIComponent(row.otp_id)}`, { method: "PATCH", body: { password_set_at: null } }); // let them retry
       await audit("phone.password_failed", row.otp_id, { status: u.status }, uid);
-      return res.status(502).json({ error: "We couldn't save your password. Try again." });
+      // 422 is Auth refusing the password itself (its strength rule); say so instead of a vague failure
+      return u.status === 422 ? res.status(400).json({ error: RULE }) : res.status(502).json({ error: "We couldn't save your password. Try again." });
     }
     await audit("phone.password_set", row.otp_id, {}, uid);
     // Changing a password makes Supabase end the user's existing sessions, which silently broke the session this browser holds

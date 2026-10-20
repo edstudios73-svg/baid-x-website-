@@ -27,10 +27,10 @@ test("admin UI: result shows provider outcome and charged state, never the numbe
 });
 
 const auth = fs.readFileSync(require.resolve("../js/auth.js"), "utf8"), html = fs.readFileSync(require.resolve("../auth.html"), "utf8");
-test("signup UI: password needs 8+ chars, a letter, a number and a capital or symbol; Create account saves password + profile together", () => {
-  assert.ok(/len: \(p\) => p\.length >= 8/.test(auth) && /mix:/.test(auth) && html.includes('data-r="mix"'));
+test("signup UI: password needs 8+ chars with a small letter, a capital, a number and a symbol; Create account saves the password, then the profile", () => {
+  assert.ok(/len: \(p\) => p\.length >= 8/.test(auth) && /sym:/.test(auth) && html.includes('data-r="sym"'));
   assert.ok(/finishProfile\(label, \$\("#pass"\)\.value\)/.test(auth));
-  assert.ok(/Promise\.all\(\[password \? savePassword/.test(auth), "password save and profile insert run together");
+  assert.ok(/const pw = password \? await savePassword\(password\)/.test(auth), "a refused password stops before the profile is made");
   assert.ok(!/getUser\(\)/.test(auth.slice(auth.indexOf("async function finishProfile"), auth.indexOf("/* ---------- sign in"))), "no network getUser in the create step");
 });
 

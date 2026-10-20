@@ -315,7 +315,8 @@
   });
 
   /* ---------- 5. password ---------- */
-  const rules = { len: (p) => p.length >= 8, num: (p) => /\d/.test(p), let: (p) => /[A-Za-z]/.test(p), mix: (p) => /[A-Z]/.test(p) || /[^A-Za-z0-9]/.test(p) };
+  // the sign-in service's own rule (Supabase Auth): 8+ characters with a small letter, a capital, a number and a symbol
+  const rules = { len: (p) => p.length >= 8, low: (p) => /[a-z]/.test(p), up: (p) => /[A-Z]/.test(p), num: (p) => /\d/.test(p), sym: (p) => /[!@#$%^&*()_+\-=\[\]{};'\\:"|<>?,./`~]/.test(p) };
   function prepPass() {
     const reset = S.mode === "reset";
     $("#passTitle").textContent = reset ? "Set a new password" : "Create a password";
@@ -327,7 +328,7 @@
     $$("#rules li").forEach((li) => { const pass = rules[li.dataset.r](p); li.classList.toggle("ok", pass); ok = ok && pass; });
     $("#passNext").disabled = !ok; $("#passErr").textContent = "";
     // strength: Weak / Fair while a rule is missing; Good when all pass; Strong at 12+ characters
-    const passed = Object.values(rules).filter((f) => f(p)).length, lvl = !p ? 0 : !ok ? (passed >= 3 ? 2 : 1) : p.length >= 12 ? 4 : 3;
+    const passed = Object.values(rules).filter((f) => f(p)).length, lvl = !p ? 0 : !ok ? (passed >= 4 ? 2 : 1) : p.length >= 12 ? 4 : 3;
     const [word, col] = [["", "#9a9a9a"], ["Weak", "#f87171"], ["Fair", "#ffffff"], ["Good", "#7dd3fc"], ["Strong", "#34d399"]][lvl];
     $$("#meter i").forEach((b, k) => { b.classList.toggle("on", k < lvl); b.style.setProperty("--mc", col); });
     $("#meterL").style.setProperty("--mc", col); $("#meterL").textContent = word;
@@ -358,9 +359,12 @@
       "individual-employer": { full_name: name, phone_number: phone, email, profile_sections: { need_category: S.cat?.name } },
     };
     setBusy(btn, true, label);
-    // save the password and create the profile at the same time (a retry is safe: an existing profile row is accepted)
-    const [pw, ins] = await Promise.all([password ? savePassword(password) : Promise.resolve({}), sb.from(ROLES[S.role].table).insert({ id: user.id, ...rows[S.role] })]);
-    let error = pw.error || (ins.error && ins.error.code !== "23505" ? ins.error : null);
+    // the password first, then the profile: a password the sign-in service refuses must not leave an account without one
+    // (a retry is safe: an existing profile row is accepted)
+    const pw = password ? await savePassword(password) : {};
+    if (pw.error) { setBusy(btn, false, label); $("#passErr").textContent = friendly(pw.error); return; }
+    const ins = await sb.from(ROLES[S.role].table).insert({ id: user.id, ...rows[S.role] });
+    let error = ins.error && ins.error.code !== "23505" ? ins.error : null;
     // a duplicate is fine only when it is this user's own profile (a retry); otherwise another account holds the number
     if (!error && ins.error) {
       const { data: mine } = await sb.from(ROLES[S.role].table).select("id").eq("id", user.id).maybeSingle();

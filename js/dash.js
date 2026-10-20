@@ -33,6 +33,20 @@
   const empty = (ic, title, text, cta = "") => `<div class="d-empty">${icon(ic, 44)}<h3>${esc(title)}</h3><p>${esc(text)}</p>${cta}</div>`;
   const segs = (items, active) => `<div class="segs">${items.map(([k, l, to]) => `<button class="${k === active ? "on" : ""}" data-go="${to}">${esc(l)}</button>`).join("")}</div>`;
   const head = (title, right = "") => `<div class="d-head"><h1>${esc(title)}</h1>${right}</div>`;
+  // BAID Bot on every Home: a field that opens it and two questions that fit the account (js/baidbot.js [data-bot-q])
+  const AI_BAR = {
+    worker: ["Ask for jobs near you, or anything about BAID X", ["Any jobs for me near me?", "How do I get verified?"]],
+    company: ["Find verified pros, project managers or equipment", ["Find a project manager in Accra", "Rent an excavator"]],
+    "project-manager": ["Build your crew with verified professionals", ["Find verified masons", "Cement suppliers near me"]],
+    business: ["Find companies, projects and open jobs", ["Companies in Accra", "How do boosts work?"]],
+    "individual-employer": ["Who do you need for your home?", ["Find a plumber near me", "Top verified electricians"]],
+  };
+  const aiBar = (c) => {
+    const [hint, qs] = AI_BAR[c.role] || AI_BAR.worker;
+    return `<div class="ai-bar"><button type="button" class="ai-field" data-bot-q=""><span class="ai-ic">${AI_SPARK}</span><span class="ai-hint">${esc(hint)}</span><span class="ai-go"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
+      <div class="ai-qs">${qs.map((q) => `<button type="button" data-bot-q="${esc(q)}">${esc(q)}</button>`).join("")}</div></div>`;
+  };
+  const AI_SPARK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l1.7 4.3 4.3 1.7-4.3 1.7L12 15.5l-1.7-4.3L6 9.5l4.3-1.7z"/><path d="M18.5 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>';
   const banner = (c) => (c.cl && c.cl.done < c.cl.total && c.profile.verification_status !== "verified"
     ? `<div class="banner"><span class="b-ic">${icon("star", 18)}</span><div class="b-txt"><p>Your profile isn't public yet. Complete the required items to be approved.</p><b>${c.cl.done}/${c.cl.total} complete</b></div><button class="b-btn" data-go="checklist">Continue setup</button></div>` : "");
   const soonBtn = (t) => `<button class="btn-light sm" data-soon>${esc(t)}</button>`;
@@ -51,7 +65,7 @@
         rows(c, "wallet_accounts", "available_ghs,pending_ghs", (x) => x.eq("owner_id", c.uid), 1),
       ]);
       return hero(esc(first(p.full_name)), `${esc(trade(p.primary_job_category_id) || "Professional")} · ${esc([p.city_town, p.region].filter((v) => v && v !== "Pending").join(", ") || "Add your location")}`, [p.available_for_work ? `<span class="h-chip">● Available for work</span>` : "", `<span class="h-chip">${esc(pretty(p.rank_tier) || "New")} · ${p.xp_total || 0} XP</span>`], p.verification_status === "verified")
-        + banner(c) + stats([[nz(open), "Open jobs", "work"], [nz(apps), "Applications", "mail"], [nz(accepted), "Accepted", "task"]])
+        + banner(c) + aiBar(c) + stats([[nz(open), "Open jobs", "work"], [nz(apps), "Applications", "mail"], [nz(accepted), "Accepted", "task"]])
         + card(pretty(p.rank_tier) || "New worker", `${p.xp_total || 0} XP`, `${bar(Math.min(100, ((p.xp_total || 0) / 2000) * 100))}<div class="cap2">Earn XP by finishing your profile, getting accepted and completing jobs.</div>`)
         + sec("Quick access") + tiles([["wallet", "Wallet", money(wallet[0]?.available_ghs), "wallet"], ["grow", "Career growth", `${p.xp_total || 0} XP`, "growth"], ["work", "Applications", `${nz(apps)} total`, "work"], ["star", "Trust score", Number(p.trust_score || 0).toFixed(1), "growth"]]);
     },
@@ -64,7 +78,7 @@
       const active = projects.filter((x) => ["active", "planning"].includes(String(x.status).toLowerCase())).length;
       const p0 = projects[0];
       return hero(`<em>${esc(p.company_name || "Your company")}</em>`, "Here's how your projects and hiring are doing.", [], p.verification_status === "verified")
-        + banner(c) + stats([[active, "Active projects", "proj"], [jobs.filter((j) => j.status === "open").length, "Open jobs", "work"], [applicants, "Applicants", "team"]])
+        + banner(c) + aiBar(c) + stats([[active, "Active projects", "proj"], [jobs.filter((j) => j.status === "open").length, "Open jobs", "work"], [applicants, "Applicants", "team"]])
         + (p0 ? card(p0.name, `${p0.progress_pct || 0}%`, `${bar(p0.progress_pct)}<div class="cap2">${pill(pretty(p0.status), statusKind(p0.status))} ${esc(p0.city_town || "")}</div>`)
                : card("Start your first project", "", `<div class="cap2" style="margin:0 0 10px">Define the workers, project manager, equipment and materials you need, then invite people in.</div><button class="btn-light sm" data-go="new-project">Create a project</button>`))
         + sec("Run the business") + tiles([["pay", "Payments", "Records and invoices", "payments"], ["equip", "Equipment", "Find and request", "equipment"], ["mat", "Materials", "Compare supply", "materials"], ["key", "Join code", "Link a project manager", "team-link"]]);
@@ -77,7 +91,7 @@
       const avg = projects.length ? Math.round(projects.reduce((a, x) => a + (Number(x.progress_pct) || 0), 0) / projects.length) : 0;
       const p0 = projects[0];
       return hero(`${esc(first(p.full_name))} <em>on site</em>`, `${projects.length} assigned project${projects.length === 1 ? "" : "s"} · ${nz(openTasks)} open task${openTasks === 1 ? "" : "s"}`, [], p.verification_status === "verified")
-        + banner(c) + stats([[projects.length, "Projects", "proj"], [nz(openTasks), "Open tasks", "task"], [`${avg}%`, "Avg progress", "prog"]])
+        + banner(c) + aiBar(c) + stats([[projects.length, "Projects", "proj"], [nz(openTasks), "Open tasks", "task"], [`${avg}%`, "Avg progress", "prog"]])
         + (p0 ? card(p0.name, pretty(p0.status), `${bar(p0.progress_pct)}<div class="cap2">${esc(p0.city_town || "")} ${p0.progress_pct || 0}% complete</div>`)
                : card("No project yet", "", `<div class="cap2" style="margin:0">Ask your company for a join code. Once they approve the link, their projects appear here.</div>`))
         + sec("Your projects") + tiles([["task", "Tasks", `${nz(openTasks)} open`, "ws/tasks"], ["team", "Team", "Build your crew", "ws/team"], ["rep", "Reports", "Daily and weekly", "ws/reports"], ["pay", "Finance", "Requests and records", "ws/finance"]]);
@@ -90,7 +104,7 @@
       ]);
       const l = latest[0];
       return hero(`<em>${esc(c.profile.business_name || "Your shop")}</em>`, "Your catalog, equipment and customer inquiries.", [c.profile.accepting_orders ? `<span class="h-chip">● Accepting orders</span>` : ""], c.profile.verification_status === "verified")
-        + banner(c) + stats([[nz(products), "Products", "box"], [nz(equip), "Equipment", "equip"], [nz(inq), "Inquiries", "mail"]])
+        + banner(c) + aiBar(c) + stats([[nz(products), "Products", "box"], [nz(equip), "Equipment", "equip"], [nz(inq), "Inquiries", "mail"]])
         + (l ? card(`Inquiry from ${l.inquirer_name || "a customer"}`, ago(l.created_at), `<div class="cap2" style="margin:0">${esc(l.message || "")}</div>`)
               : card("No inquiries yet", "", `<div class="cap2" style="margin:0">When a customer or company asks about your listings, it shows up here.</div>`))
         + sec("Quick access") + tiles([["plus", "Add product", "Catalog", "catalog"], ["mail", "Inquiries", `${nz(inq)} total`, "inquiries"], ["equip", "Equipment", `${nz(equip)} listed`, "catalog/equipment"], ["wallet", "Wallet", "Balance and payouts", "wallet"]]);
@@ -101,7 +115,7 @@
       const hired = ids.length ? await count(c, "job_applications", (x) => x.in("job_id", ids).eq("status", "accepted")) : 0;
       const trades = ["Electrician", "Plumber", "Painter", "General Handyman"];
       return hero(esc(first(c.profile.full_name)), "Need something fixed or built?", [], c.profile.verification_status === "verified")
-        + banner(c) + (window.BUILD ? await window.BUILD.homeCard(c) : "") + (window.HOUSE ? await window.HOUSE.homeCard(c) : "") + stats([[jobs.length, "Jobs posted", "work"], [jobs.filter((j) => j.status === "open").length, "Open", "mail"], [hired, "Hired", "hire"]])
+        + banner(c) + aiBar(c) + (window.BUILD ? await window.BUILD.homeCard(c) : "") + (window.HOUSE ? await window.HOUSE.homeCard(c) : "") + stats([[jobs.length, "Jobs posted", "work"], [jobs.filter((j) => j.status === "open").length, "Open", "mail"], [hired, "Hired", "hire"]])
         + sec("Find a trade") + tiles(trades.map((t) => ["work", t, "Browse pros", `trade:${t}`]));
     },
   };

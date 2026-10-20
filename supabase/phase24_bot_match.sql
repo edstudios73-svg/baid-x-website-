@@ -100,7 +100,7 @@ returns jsonb language sql stable security definer set search_path = public as $
               where length(w) > 2 and w not in ('the','and','for','job','jobs','work','need','want','find','any','near','looking')) ws),
   cand as (
     select j.id, j.title, coalesce(c.name, 'General') trade, j.city_town town, j.region, j.daily_rate_ghs rate, j.workers_needed,
-      j.starts_on, j.created_at, (bo.id is not null) featured, left(j.description, 160) about,
+      j.starts_on, j.created_at, (bo.id is not null) featured, left(j.description, 300) about, j.job_category_id,
       coalesce(co.company_name, 'A client') posted_by,
       (select count(*) from words, unnest(ws) w where lower(concat_ws(' ', j.title, j.description, c.name)) like '%' || w || '%') hits,
       (select cardinality(ws) from words) nwords
@@ -109,7 +109,8 @@ returns jsonb language sql stable security definer set search_path = public as $
     where j.status = 'open'
       and (nullif(trim(coalesce(p_region, '')), '') is null or lower(concat_ws(' ', j.city_town, j.region)) like '%' || lower(trim(p_region)) || '%'))
   select coalesce(jsonb_agg(jsonb_build_object('kind', 'job', 'id', id, 'title', title, 'trade', trade, 'town', town, 'region', region,
-      'rate', rate, 'workers_needed', workers_needed, 'starts_on', starts_on, 'featured', featured, 'about', about, 'posted_by', posted_by)
+      'rate', rate, 'workers_needed', workers_needed, 'starts_on', starts_on, 'featured', featured, 'about', about, 'posted_by', posted_by,
+      'job_category_id', job_category_id, 'created_at', created_at)
       order by featured desc, hits desc, created_at desc), '[]'::jsonb)
   from (select * from cand where nwords = 0 or hits > 0 order by featured desc, hits desc, created_at desc
         limit least(greatest(coalesce(p_limit, 5), 1), 8)) t;
@@ -127,3 +128,43 @@ create or replace function public._bot_ai_key() returns text language sql stable
 $$;
 revoke all on function public._bot_ai_key() from public, anon, authenticated;
 grant execute on function public._bot_ai_key() to service_role;
+
+-- Equipment and materials for BAID Bot, with the same fields the marketplace card shows (supplier_catalog),
+-- featured suppliers and verified suppliers first. Visitors see them through the bot only.
+create or replace function public.bot_find_listings(p_kind text default 'equipment', p_query text default null, p_region text default null,
+  p_max_price numeric default null, p_limit int default 6)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  words text[] := array(select w from unnest(regexp_split_to_array(lower(coalesce(p_query, '')), '[^a-z0-9]+')) w
+                        where length(w) > 2 and w not in ('the','and','for','need','want','find','rent','hire','buy','sell','any','some','good','best','top','near','equipment','materials','material'));
+  place text := nullif(lower(trim(coalesce(p_region, ''))), '');
+  lim int := least(greatest(coalesce(p_limit, 6), 1), 8);
+  boosted uuid[] := array(select (b->>'id')::uuid from jsonb_array_elements(public.promoted()->'boosts') b where b->>'type' not in ('job', 'project'));
+begin
+  return (select coalesce(jsonb_agg(x.j order by x.hits desc, x.feat desc, x.ver desc, x.created_at desc), '[]'::jsonb) from (
+    select j, hits, feat, ver, created_at from (
+      select jsonb_build_object('kind', case when p_kind = 'equipment' then 'equipment' else 'material' end, 'id', l.id, 'business_id', l.business_id,
+          'business', b.business_name, 'logo', b.logo_url, 'verified', b.verification_status::text = 'verified', 'region', b.region, 'town', b.city_town,
+          'name', l.name, 'category', l.category, 'daily_rate', l.daily_rate, 'sale_price', l.sale_price, 'rental_price', l.rental_price,
+          'price', l.price, 'quantity', l.quantity, 'condition', l.condition, 'description', left(l.description, 200),
+          'images', coalesce(l.image_urls, '{}'), 'accepting', coalesce(b.accepting_orders, true), 'featured', b.id = any(boosted), 'created_at', l.created_at) j,
+        (select count(*) from unnest(words) w where lower(concat_ws(' ', l.name, l.category, l.description, b.business_name)) like '%' || w || '%') hits,
+        b.id = any(boosted) feat, b.verification_status::text = 'verified' ver, l.created_at, coalesce(l.daily_rate, l.price, l.sale_price) cost,
+        lower(concat_ws(' ', b.city_town, b.region)) at_place
+      from (
+        select e.id, e.business_id, e.name, e.category, e.daily_rate, e.sale_price, e.rental_price, null::numeric price, null::numeric quantity,
+               e.condition::text condition, e.description, e.image_urls, e.created_at
+          from business_equipment e where p_kind = 'equipment' and e.available
+        union all
+        select p.id, p.business_id, p.name, p.category, null, null, null, p.price, p.quantity, null, p.description, p.image_urls, p.created_at
+          from business_products p where p_kind <> 'equipment' and p.available
+      ) l join business_profiles b on b.id = l.business_id
+      where coalesce(b.account_status, 'active') = 'active' and b.verification_status::text <> 'rejected'
+    ) s
+    where (cardinality(words) = 0 or s.hits > 0)
+      and (place is null or s.at_place like '%' || place || '%')
+      and (p_max_price is null or s.cost is null or s.cost <= p_max_price)
+    order by s.hits desc, s.feat desc, s.ver desc, s.created_at desc limit lim) x);
+end $$;
+revoke all on function public.bot_find_listings(text, text, text, numeric, int) from public, anon, authenticated;
+grant execute on function public.bot_find_listings(text, text, text, numeric, int) to service_role;

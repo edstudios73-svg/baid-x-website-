@@ -158,7 +158,7 @@ test("BAID Bot: floating on the landing for visitors, answers from the baid-bot 
   const html = read("index.html"), bot = read("js/baidbot.js"), css = read("css/baidbot.css"), fn = read("supabase/functions/baid-bot/index.ts");
   assert.ok(html.indexOf("js/baidbot.js") > html.indexOf("js/landing.js")); assert.match(html, /css\/baidbot\.css/);
   assert.match(bot, /functions\/v1\/baid-bot/); assert.match(bot, /esc\(text\)/, "replies are escaped before they are shown");
-  assert.match(css, /body:not\(\.is-guest\) \.bb \{ display: none; \}/, "visitors only");
+  assert.match(css, /body:not\(\.is-guest\) \.bb-fab, body:not\(\.is-guest\) \.bb-hint \{ display: none; \}/, "members open it from beside the bell, not a floating button");
   assert.doesNotMatch(bot + html, /sk-ant-|ANTHROPIC_API_KEY/, "the AI key lives only in the function's secrets");
   assert.match(fn, /Deno\.env\.get\("ANTHROPIC_API_KEY"\)/); assert.match(fn, /function limited\(ip/); assert.match(fn, /MAX_CHARS = 600/);
   assert.match(fn, /if \(!key\) return guide\(\)/, "works without a key"); assert.match(fn, /reply: topicAnswer\(last\.content\)/, "from BAID X's facts");
@@ -175,7 +175,18 @@ test("BAID Bot finds real people and jobs: service-role search, public fields on
   const out = sql.slice(sql.indexOf("jsonb_build_object(\n      'kind'"), sql.indexOf("into out"));
   for (const f of ["phone", "email", "ghana_card", "payout", "date_of_birth"]) assert.doesNotMatch(out, new RegExp(f), `${f} never leaves the database`);
   assert.doesNotMatch(sql + fn + bot, /sk-ant-/, "the key lives in Vault and Vercel only");
-  assert.match(bot, /\$\{esc\(name\)\}/, "card text is escaped"); assert.match(bot, /map\(\(\{ role, content \}\) => \(\{ role, content \}\)\)/, "cards are never sent back");
+  assert.match(bot, /\$\{esc\(j\.title\)\}/, "job text is escaped"); assert.match(bot, /\$\{esc\(i\.name\)\}/, "listing text is escaped");
+  assert.match(bot, /map\(\(\{ role: who, content \}\) => \(\{ role: who, content \}\)\)/, "cards are never sent back");
+  assert.match(sql, /grant execute on function public\.bot_find_listings\([^)]*\) to service_role/); assert.match(fn, /name: "find_listings"/);
+});
+
+test("BAID Bot shows the site's own cards and sits beside the bell for members", () => {
+  const bot = read("js/baidbot.js"), app = read("js/app.js"), html = read("index.html"), fn = read("supabase/functions/baid-bot/index.ts");
+  assert.match(app, /cardHTML,/, "Discover's card is shared with the bot"); assert.match(bot, /window\.APP\.cardHTML\(it\)/, "members are drawn as Discover cards from their live row");
+  assert.match(bot, /class="job"/, "jobs as Find work cards"); assert.match(bot, /class="mk-card"/, "listings as marketplace cards");
+  assert.match(app, /data-bot aria-label="Ask BAID Bot"/, "the button beside the bell"); assert.match(html, /id="dirBot" data-bot/);
+  assert.match(fn, /never write a member's name, a job title or a listing name/, "the answer introduces the cards, never repeats them");
+  assert.match(bot, /viewer: role\(\)/, "suggestions and answers fit the account type");
 });
 
 test("app on the web: a quiet loading board in the page, then the app's own splash sketches the logo", () => {
@@ -209,7 +220,7 @@ test("sign-up and account fixes: blank phone is null, duplicates checked, passwo
   assert.match(auth, /already on another BAID X account/);
   assert.match(auth, /params\.get\("mode"\) === "reset"\) \{ S\.mode = "reset"/); assert.match(auth, /!GROUP && S\.mode !== "reset"/);
   assert.match(fx, /inp\("cur", \{ type: "password"/); assert.match(fx, /signInWithPassword\(\{ email, password: d\.cur \}\)/);
-  assert.match(fx, /Add a capital letter or a symbol\./); assert.match(fx, /"forgot-password":/);
+  assert.match(fx, /Add a capital letter\./); assert.match(fx, /Add a symbol, like ! @ # \?/); assert.match(fx, /"forgot-password":/);
   assert.match(css, /font-size: 16px !important/);
   for (const t of ["worker_profiles", "company_profiles", "project_manager_profiles", "business_profiles", "individual_employer_profiles"]) {
     assert.match(sql, new RegExp(`alter table public\\.${t} alter column \\w+ drop not null`), t);
@@ -239,4 +250,15 @@ test("pricing v2: free-plan limits, no trial, 2 months free, new prices everywhe
   assert.match(sql, /if n >= 5 then/); assert.match(sql, /if n >= 1 then/);
   assert.match(bot, /Worker Pro GH₵200/); assert.doesNotMatch(bot, /start at GH₵2\b|from GH₵10\b/);
   assert.match(home, /There is no free trial/);
+});
+
+test("sign-up password: the page, the server and Supabase Auth ask for the same thing, and the password is saved before the profile", () => {
+  const auth = read("js/auth.js"), html = read("auth.html"), srv = read("api/_lib/phoneauth/password.js");
+  for (const r of ["len", "low", "up", "num", "sym"]) { assert.match(html, new RegExp(`data-r="${r}"`), r); assert.match(auth, new RegExp(`${r}: \\(p\\) =>`), r); }
+  const strong = new Function(`return ${srv.match(/const strong = (\(p\) => [\s\S]+?);\nconst RULE/)[1]}`)();
+  global.Buffer = Buffer;
+  assert.equal(strong("Password1"), false, "Auth refuses a password with no symbol"); assert.equal(strong("Password1!"), true);
+  assert.match(srv, /u\.status === 422 \? res\.status\(400\)\.json\(\{ error: RULE \}\)/, "a refused password says why");
+  const fin = auth.slice(auth.indexOf("async function finishProfile"));
+  assert.ok(fin.indexOf("await savePassword(password)") < fin.indexOf(".insert({ id: user.id"), "password first, then the profile");
 });

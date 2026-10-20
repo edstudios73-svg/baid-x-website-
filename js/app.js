@@ -115,7 +115,9 @@
   const myInitials = () => { const me = state.me, p = me?.profile || {}; return initials(p[ROLES[me?.role]?.nameKey] || "BX"); };
   const myPhoto = () => { const p = state.me?.profile || {}; return p.profile_photo_url || p.company_logo_url || p.logo_url || ""; };
   const bellInner = () => `${icon("bell", 21)}<i class="bn" data-bn ${state.notif > 0 ? "" : "hidden"}>${state.notif > 9 ? "9+" : state.notif || ""}</i>`;
-  const appbar = () => `<div class="appbar"><img class="ab-logo" src="assets/logo.png" alt="BAID X" /><span class="sp"></span><button class="bell" data-go="notifications" aria-label="Notifications">${bellInner()}</button><button class="ab-me" data-go="profile" aria-label="My profile" ${myPhoto() ? `style="background-image:url('${esc(myPhoto())}')"` : ""}>${myPhoto() ? "" : esc(myInitials())}</button></div>`;
+  // BAID Bot opens from beside the bell on every signed-in screen (js/baidbot.js listens for [data-bot])
+  const AI_ICON = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l1.7 4.3 4.3 1.7-4.3 1.7L12 15.5l-1.7-4.3L6 9.5l4.3-1.7z"/><path d="M18.5 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>';
+  const appbar = () => `<div class="appbar"><img class="ab-logo" src="assets/logo.png" alt="BAID X" /><span class="sp"></span><button class="ab-ai" data-bot aria-label="Ask BAID Bot">${AI_ICON}</button><button class="bell" data-go="notifications" aria-label="Notifications">${bellInner()}</button><button class="ab-me" data-go="profile" aria-label="My profile" ${myPhoto() ? `style="background-image:url('${esc(myPhoto())}')"` : ""}>${myPhoto() ? "" : esc(myInitials())}</button></div>`;
   function updateBell(ring) {
     $$(".bell").forEach((b) => { if (!b.querySelector("[data-bn]")) b.innerHTML = bellInner(); const n = b.querySelector("[data-bn]"); n.hidden = !(state.notif > 0); n.textContent = state.notif > 9 ? "9+" : state.notif || ""; if (ring) { b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring"); } });
   }
@@ -235,7 +237,7 @@
   function paintMember() {
     const me = state.me, member = !!me?.role;
     document.body.classList.toggle("is-member", member);
-    $("#joinBtn").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member;
+    $("#joinBtn").hidden = member; $("#filterBtn").hidden = !member; $("#dirBell").hidden = !member; $("#dirBot").hidden = !member;
     if (member) { $("#dirBell").innerHTML = bellInner(); $$("[data-appbar]").forEach((el) => { el.innerHTML = appbar(); }); }
     $("#chatsGuest").hidden = member; $("#chatsMember").hidden = !member;
     $("#profileGuest").hidden = member; $("#profileMember").hidden = !member;
@@ -359,7 +361,7 @@
   });
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; renderFeed(); });
   window.addEventListener("hashchange", route);
-  window.APP = { state, go, route, dashCtx, appbar, updateBell, sources: SOURCES, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
+  window.APP = { state, go, route, dashCtx, appbar, updateBell, sources: SOURCES, cardHTML, renderNav: () => renderNav(), loadUnread: () => loadUnread(), refresh: async () => { state.me = await loadMe(); paintMember(); renderNav(); route(); } };
 
   /* ---------- Boot ---------- */
   renderChips(); renderNav(); // a website opens straight on the page: no splash

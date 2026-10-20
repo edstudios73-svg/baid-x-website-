@@ -1,6 +1,7 @@
-/* BAID Bot: the floating assistant on the landing (visitors only). Black, white and glass. */
+/* BAID Bot: the floating assistant on the landing (visitors) and, for members, the panel that opens
+   from the button beside the bell. Black, white and glass. */
 .bb { position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 60; font-family: inherit; }
-body:not(.is-guest) .bb { display: none; }
+body:not(.is-guest) .bb-fab, body:not(.is-guest) .bb-hint { display: none; }
 .bb-fab { position: relative; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #000; background: #fff; border: 0;
   box-shadow: 0 18px 40px -10px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.4), 0 0 30px -6px rgba(255,255,255,.45); transition: transform .2s cubic-bezier(.2,.9,.3,1.3); }
 .bb-fab:hover { transform: translateY(-2px) scale(1.04); }
@@ -12,7 +13,7 @@ body:not(.is-guest) .bb { display: none; }
   opacity: 0; transform: translateX(8px); transition: opacity .3s, transform .3s; pointer-events: none; }
 .bb.hint:not(.open) .bb-hint { opacity: 1; transform: none; }
 
-.bb-panel { position: absolute; right: 0; bottom: 74px; width: min(380px, calc(100vw - 32px)); height: min(560px, calc(100svh - 120px)); display: flex; flex-direction: column;
+.bb-panel { position: absolute; right: 0; bottom: 74px; width: min(420px, calc(100vw - 32px)); height: min(680px, calc(100svh - 110px)); display: flex; flex-direction: column;
   border-radius: 26px; overflow: hidden; color: #fff;
   background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.03) 50%, rgba(255,255,255,.06)), rgba(10,10,10,.88);
   border: 1px solid rgba(255,255,255,.22); box-shadow: 0 40px 80px -20px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.18);
@@ -27,13 +28,14 @@ body:not(.is-guest) .bb { display: none; }
 .bb-head b { font-size: 15.5px; font-weight: 800; letter-spacing: -.01em; }
 .bb-head small { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #a3a3a3; }
 .bb-head small i { width: 6px; height: 6px; border-radius: 50%; background: #3ddc84; }
-.bb-x { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #fff; cursor: pointer; }
+.bb-new, .bb-x { width: 38px; flex: none; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); color: #fff; cursor: pointer; }
 .bb-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; overscroll-behavior: contain; }
 .bb-msg { max-width: 86%; padding: 10px 13px; border-radius: 18px; font-size: 14px; line-height: 1.45; white-space: normal; overflow-wrap: anywhere; animation: bbMsg .22s ease-out both; }
 @keyframes bbMsg { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .bb-msg.bot { align-self: flex-start; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-bottom-left-radius: 6px; }
 .bb-msg.me { align-self: flex-end; background: #fff; color: #000; font-weight: 500; border-bottom-right-radius: 6px; }
-.bb-msg.typing { display: inline-flex; gap: 4px; padding: 13px 14px; }
+.bb-msg.typing { display: inline-flex; align-items: center; gap: 4px; padding: 12px 14px; }
+.bb-msg.typing span { margin-left: 8px; font-size: 12.5px; color: #bdbdbd; }
 .bb-msg.typing i { width: 6px; height: 6px; border-radius: 50%; background: #bdbdbd; animation: bbDot 1s infinite ease-in-out; }
 .bb-msg.typing i:nth-child(2) { animation-delay: .15s; } .bb-msg.typing i:nth-child(3) { animation-delay: .3s; }
 @keyframes bbDot { 0%, 80%, 100% { opacity: .3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
@@ -52,28 +54,52 @@ body:not(.is-guest) .bb { display: none; }
   .bb { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
   .bb.open { left: 0; right: 0; bottom: 0; }
   .bb.open .bb-fab, .bb.open .bb-hint { display: none; }
-  .bb-panel { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; height: min(78svh, 640px); border-radius: 26px; transform-origin: bottom center; }
+  .bb-panel { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); width: auto; height: min(88svh, 760px); border-radius: 26px; transform-origin: bottom center; }
 }
-@media (prefers-reduced-motion: reduce) { .bb-ping, .bb-panel, .bb-msg, .bb-msg.typing i { animation: none !important; } .bb-fab, .bb-hint { transition: none; } }
 
-/* Match cards under an answer: the first pick is the top match */
-.bb-cards { display: grid; gap: 6px; margin: -2px 0 6px; }
-.bb-card { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; text-align: left; font: inherit; color: #fff; cursor: pointer;
-  border-radius: 18px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.14); animation: bbCard .42s cubic-bezier(.2,.8,.3,1) var(--d, 0ms) both; transition: background .2s, border-color .2s; }
-.bb-card:hover, .bb-card:focus-visible { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.35); outline: 0; }
-.bb-card.top { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.35); }
-@keyframes bbCard { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-.bb-av2 { width: 46px; height: 46px; flex: none; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 15px; color: #000; background: #fff center / cover no-repeat; }
-.bb-av2.job { border-radius: 14px; color: #fff; background: rgba(255,255,255,.12); }
-.bb-cbody { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.bb-cbody b { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 14.5px; font-weight: 700; }
-.bb-cbody b em { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bb-cbody b .ok { flex: none; color: #fff; }
-.bb-cbody b u { flex: none; margin-left: 2px; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 800; text-decoration: none; color: #000; background: #fff; }
-.bb-cbody b s { flex: none; margin-left: 2px; font-size: 10.5px; font-weight: 700; text-decoration: none; color: #bdbdbd; }
-.bb-cbody small { font-size: 12px; color: #bdbdbd; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bb-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-.bb-facts span { padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; color: #e6e6e6; background: rgba(255,255,255,.08); }
-.bb-facts span.un { font-weight: 500; color: #bdbdbd; background: none; border: 1px solid rgba(255,255,255,.2); }
-.bb-card .chev { flex: none; color: #8a8a8a; }
-@media (prefers-reduced-motion: reduce) { .bb-card { animation: none !important; } }
+
+/* members: the panel drops from the button beside the bell (wide screens) */
+body:not(.is-guest) .bb { position: fixed; top: 0; right: 0; bottom: auto; }
+body:not(.is-guest) .bb-panel { position: fixed; top: calc(74px + env(safe-area-inset-top, 0px)); right: 18px; bottom: auto; transform-origin: top right; }
+.ab-ai { position: relative; width: 42px; height: 42px; flex: none; border-radius: 14px; display: grid; place-items: center; cursor: pointer; color: #fff;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.24); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); margin-right: 8px; transition: border-color .2s, background .2s; }
+.ab-ai:hover { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.16); }
+.ab-ai[hidden] { display: none; }
+
+/* results: a label, then the site's own cards (Discover, Find work, marketplace) in a row you swipe */
+.bb-res { margin: 2px -14px 8px; animation: bbMsg .3s ease-out both; }
+.bb-res-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 16px 8px; }
+.bb-res-h span { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #d6d6d6; }
+.bb-res-h small { font-size: 11.5px; color: #8a8a8a; white-space: nowrap; }
+.bb-rail { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 14px; padding: 4px 14px 12px; scrollbar-width: none; overscroll-behavior-x: contain; outline: 0; }
+.bb-rail::-webkit-scrollbar { display: none; }
+.bb-slot { flex: 0 0 86%; scroll-snap-align: start; min-width: 0; display: flex; animation: bbCard .45s cubic-bezier(.2,.8,.3,1) var(--d, 0ms) both; }
+.bb-res:not(.bb-people) .bb-slot { flex-basis: 78%; }
+.bb-res .bb-slot:only-child { flex-basis: 100%; }
+.bb-slot > * { flex: 1; min-width: 0; margin: 0 !important; }
+.bb-slot .card.c3 { width: 100%; }
+.bb-slot .mk-card { width: 100%; }
+.bb-slot .job { width: 100%; display: flex; flex-direction: column; }
+.bb-slot .job .job-act { margin-top: auto; padding-top: 10px; }
+@keyframes bbCard { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+.bb-ghost { height: 360px; border-radius: 26px; padding: 18px; display: grid; align-content: end; gap: 10px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12); overflow: hidden; position: relative; }
+.bb-ghost::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.07) 50%, transparent 70%); animation: bbShine 1.4s linear infinite; }
+.bb-ghost i { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.1); }
+.bb-ghost b { height: 16px; width: 60%; border-radius: 8px; background: rgba(255,255,255,.12); }
+.bb-ghost s { height: 10px; width: 85%; border-radius: 6px; background: rgba(255,255,255,.07); }
+@keyframes bbShine { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .bb-ping, .bb-panel, .bb-msg, .bb-msg.typing i, .bb-res, .bb-slot, .bb-ghost::before { animation: none !important; } .bb-fab, .bb-hint { transition: none; } }
+.bb-slot .job .tr { display: block; width: max-content; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* BAID Bot on every Home (js/dash.js aiBar): a field that opens it and two ready questions */
+.ai-bar { margin: 14px 0 4px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.ai-field { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 8px 8px 8px 14px; text-align: left; font: inherit; color: #fff; cursor: pointer; border-radius: 20px;
+  background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,.04) 60%, rgba(255,255,255,.08)); border: 1px solid rgba(255,255,255,.26);
+  box-shadow: 0 18px 40px -18px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.25); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: border-color .2s, transform .18s; }
+.ai-field:hover { border-color: rgba(255,255,255,.5); } .ai-field:active { transform: scale(.99); }
+.ai-ic { width: 36px; height: 36px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #000; background: #fff; }
+.ai-hint { flex: 1; min-width: 0; font-size: 14px; color: #cfcfcf; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-go { width: 40px; height: 40px; flex: none; border-radius: 14px; display: grid; place-items: center; color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); }
+.ai-qs { display: flex; flex-wrap: wrap; gap: 8px; }
+.ai-qs button { padding: 7px 12px; border-radius: 99px; font: inherit; font-size: 12.5px; font-weight: 600; color: #e6e6e6; cursor: pointer; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); }
+.ai-qs button:hover { background: rgba(255,255,255,.12); }
