@@ -3,44 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>SiteMart · Equipment and building materials in Ghana</title>
-  <meta name="description" content="Rent machines and buy cement, blocks, iron rods and more from verified suppliers across Ghana. Order and pay safely through BAID X." />
+  <title>SiteMart · Building materials and equipment in Ghana</title>
+  <meta name="description" content="Buy cement, blocks, iron rods and roofing, rent or buy heavy equipment, and pay safely through BAID X escrow. Verified suppliers across Ghana." />
   <meta name="theme-color" content="#050505" />
   <meta name="color-scheme" content="dark" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="SiteMart" />
   <meta property="og:title" content="SiteMart" />
-  <meta property="og:description" content="Equipment and building materials from verified suppliers across Ghana." />
+  <meta property="og:description" content="Building materials, equipment and delivery from verified suppliers in Ghana, paid through escrow." />
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/icon-192.png" />
   <link rel="preload" href="assets/fonts/inter-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="css/site.css" />
 </head>
 <body>
+  <a class="skip" href="#view">Skip to content</a>
   <header class="bar">
     <div class="wrap">
       <a class="brand" href="#/" aria-label="SiteMart, home">
         <img src="assets/bx-mark.png" alt="" width="34" height="34" />
-        <span><b>SiteMart</b></span>
+        <b>SiteMart</b>
       </a>
-      <nav class="tabs" aria-label="Browse">
-        <a href="#/?kind=equipment" data-kind="equipment">Equipment</a>
-        <a href="#/?kind=materials" data-kind="materials">Materials</a>
+      <nav class="tabs" aria-label="Main">
+        <a href="#/" data-nav="">Home</a>
+        <a href="#/market" data-nav="market">Marketplace</a>
+        <a href="#/equipment" data-nav="equipment">Equipment</a>
+        <a href="#/property" data-nav="property">Real Estate</a>
+        <a href="#/logistics" data-nav="logistics">Logistics</a>
+        <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
       </nav>
-      <a class="btn light sm" href="https://www.baid-x.com/auth.html?mode=signup&amp;group=pro">List your items</a>
+      <form class="topsearch" id="topsearch" role="search">
+        <input name="q" type="search" placeholder="Search SiteMart" aria-label="Search SiteMart" autocomplete="off" />
+      </form>
+      <a class="btn light sm" id="acct" href="#/signin">Sign in</a>
     </div>
   </header>
 
-  <main id="view" class="wrap" aria-live="polite"></main>
+  <main id="view" class="wrap" tabindex="-1"></main>
 
   <footer class="foot">
     <div class="wrap">
-      <p><b>SiteMart</b> · Equipment and building materials from verified suppliers across Ghana.</p>
-      <p class="fine">Orders and payments run through <a href="https://www.baid-x.com/">BAID X</a>, an organization under <a href="https://www.baidencreatives.org/" rel="noopener">Baiden Creatives</a>, East Legon, Accra. <a href="https://www.baid-x.com/contact.html">Contact</a> · <a href="https://www.baid-x.com/terms.html">Terms</a> · <a href="https://www.baid-x.com/privacy.html">Privacy</a></p>
+      <p><b>SiteMart</b> · Every material, every machine, every project, connected.</p>
+      <p class="fine">Payments run through <a href="https://www.baid-x.com/">BAID X</a> escrow. BAID X is an organization under <a href="https://www.baidencreatives.org/" rel="noopener">Baiden Creatives</a>, East Legon, Accra. <a href="https://www.baid-x.com/contact.html">Contact</a> · <a href="https://www.baid-x.com/terms.html">Terms</a> · <a href="https://www.baid-x.com/privacy.html">Privacy</a></p>
     </div>
   </footer>
 
+  <nav class="bottom" aria-label="Main">
+    <a href="#/" data-nav=""><span class="i" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg></span>Home</a>
+    <a href="#/market" data-nav="market"><span class="i" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1 4H5z"/><path d="M5 11v9h14v-9M9 20v-5h6v5"/></svg></span>Market</a>
+    <a href="#/equipment" data-nav="equipment"><span class="i" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h10v-4H6z"/><path d="M13 14l3-7 4 2-1 4h-3"/><circle cx="5" cy="20" r="1"/><circle cx="11" cy="20" r="1"/></svg></span>Equipment</a>
+    <a href="#/logistics" data-nav="logistics"><span class="i" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span>Logistics</a>
+    <a href="#/dashboard" data-nav="dashboard"><span class="i" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>Account</a>
+  </nav>
+
+  <script src="js/vendor/supabase.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/core.js"></script>
   <script src="js/site.js"></script>
 </body>
 </html>
