@@ -1,4 +1,4 @@
--- Phase 26: Blueprint by BAID X, house plans and designs sold by architects and designers.
+-- Phase 26: Blueprint, house plans and designs sold by architects and designers.
 -- Blueprint (sites/blueprint) is its own website on the same database and BAID X accounts.
 --   house_plans        a plan for sale: details, photos (public bucket plan-previews), price
 --   plan_purchases     who bought which plan; one purchase per buyer per plan

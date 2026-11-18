@@ -1,4 +1,4 @@
-// Blueprint by BAID X (sites/blueprint): house plans sold by verified designers, bought with the BAID X wallet.
+// Blueprint (sites/blueprint): house plans sold by verified designers, bought with the BAID X wallet.
 const test = require("node:test"), assert = require("node:assert"), fs = require("fs");
 const read = (f) => fs.readFileSync(f, "utf8");
 const code = (f) => read(f).split("\n").filter((l) => !l.trim().startsWith("--")).join("\n");

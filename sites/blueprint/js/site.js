@@ -1,4 +1,4 @@
-/* Blueprint by BAID X: house plans by verified designers in Ghana.
+/* Blueprint: house plans by verified designers in Ghana.
    It reads published plans through two public database functions (blueprint_plans,
    blueprint_plan; supabase/phase26_blueprint.sql). Buying happens on BAID X with the member's
    wallet, and the plan is then built there with verified workers.
@@ -90,7 +90,7 @@
     let p;
     try { p = await rpc("blueprint_plan", { p_id: id }); } catch (e) { console.error(e); }
     if (!p) { v.innerHTML = `<div class="empty"><b>This plan isn't available</b><p>The designer may have taken it down.</p><a class="btn ghost sm" href="#/">Back to Blueprint</a></div>`; return; }
-    document.title = `${p.title} · Blueprint by BAID X`;
+    document.title = `${p.title} · Blueprint`;
     const imgs = p.images || [], d = p.designer || {};
     const rows = [["Bedrooms", p.bedrooms], ["Bathrooms", p.bathrooms], ["Storeys", p.storeys], ["Floor area", p.floor_area_m2 && `${Number(p.floor_area_m2).toLocaleString("en-GH")} m²`],
       ["Plot size", p.plot_size], ["Estimated build cost", p.est_build_cost_ghs && `${money(p.est_build_cost_ghs)}`]].filter(([, val]) => val != null && val !== "");
@@ -122,7 +122,7 @@
   }
 
   function render() {
-    document.title = "Blueprint by BAID X · House plans by verified designers in Ghana";
+    document.title = "Blueprint · House plans by verified designers in Ghana";
     const r = route();
     if (r.parts[0] === "plan" && r.parts[1]) return plan(r.parts[1]);
     return home(r);
