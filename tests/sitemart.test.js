@@ -1,4 +1,4 @@
-// SiteMart by BAID X (sites/sitemart): a public storefront over BAID X's supplier listings.
+// SiteMart (sites/sitemart): a public storefront over BAID X's supplier listings.
 const test = require("node:test"), assert = require("node:assert"), fs = require("fs");
 const read = (f) => fs.readFileSync(f, "utf8");
 

@@ -1,4 +1,4 @@
--- Phase 25: SiteMart by BAID X, the public storefront for equipment and building materials.
+-- Phase 25: SiteMart, the public storefront for equipment and building materials.
 -- SiteMart (sites/sitemart, its own website) shows what suppliers already list on BAID X
 -- (business_equipment, business_products). Visitors browse without signing in; ordering and paying
 -- stay on BAID X (place_order, wallet and escrow from phase 9), so no money path changes here.

@@ -1,4 +1,4 @@
-/* SiteMart by BAID X: the public storefront for equipment and building materials.
+/* SiteMart: the public storefront for equipment and building materials.
    It reads the listings suppliers keep on BAID X through two public database functions
    (sitemart_catalog, sitemart_item; supabase/phase25_sitemart.sql). Ordering and paying happen
    on BAID X, where the buyer's money is held in escrow until delivery is confirmed.
@@ -105,7 +105,7 @@
     let i;
     try { i = await rpc("sitemart_item", { p_kind: kind, p_id: id }); } catch (e) { console.error(e); }
     if (!i) { v.innerHTML = `<div class="empty"><b>This listing isn't available</b><p>It may have been sold or taken down.</p><a class="btn ghost sm" href="#/">Back to SiteMart</a></div>`; return; }
-    document.title = `${i.name} · SiteMart by BAID X`;
+    document.title = `${i.name} · SiteMart`;
     const imgs = i.images || [], s = i.supplier || {}, eq = i.kind === "equipment";
     const prices = eq ? [Number(i.daily_rate) > 0 && ["Rent", money(i.daily_rate), "per day"], Number(i.sale_price) > 0 && ["Buy", money(i.sale_price), ""]].filter(Boolean)
       : [Number(i.price) > 0 && ["Price", money(i.price), ""]].filter(Boolean);
@@ -135,7 +135,7 @@
   }
 
   function render() {
-    document.title = "SiteMart by BAID X · Equipment and building materials in Ghana";
+    document.title = "SiteMart · Equipment and building materials in Ghana";
     const r = route();
     if (r.parts[0] === "item" && ["equipment", "materials"].includes(r.parts[1]) && r.parts[2]) return item(r.parts[1], r.parts[2]);
     return home(r);
