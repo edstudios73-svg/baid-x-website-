@@ -234,7 +234,7 @@
       const items = [["broadcast", "Broadcast"], ["scheduled", "Scheduled"], ["automations", "Automations", 1], ["history", "History"], ["delivery", "Delivery"]];
       if (t === "broadcast") return tabs("notif", items, t) + `<form class="c" id="bf"><div class="row2" style="margin-bottom:14px;color:var(--or);font-weight:800">Compose announcement</div><label class="fl"><span>Title</span><input class="in" name="title" placeholder="Platform update" required maxlength="100" /></label><label class="fl"><span>Message</span><textarea class="in" name="body" placeholder="Tell members what's new…" required maxlength="1000"></textarea></label><label class="fl"><span>Link (optional)</span><input class="in" name="href" placeholder="#/billing" /></label>
         <div class="fl"><span>Target roles</span><div class="seg" id="roleseg">${[["", "All members"], ["worker", "Workers"], ["company", "Companies"], ["project-manager", "Project managers"], ["business", "Businesses"], ["individual-employer", "Clients"]].map(([k, l], i) => `<button type="button" class="${i === 0 ? "on" : ""}" data-r="${k}">${l}</button>`).join("")}</div></div>
-        <div class="fl"><span>Channels</span><div class="seg"><button type="button" class="chan on" disabled>In-app</button><button type="button" class="chan" data-ch="email">Email</button><button type="button" class="chan" data-ch="sms">SMS</button><button type="button" class="chan" data-ch="push">Push</button></div><small>In-app delivers now. Tick SMS to also text everyone in the audience who has a phone number (you'll see the cost and confirm first). Email and push are recorded only.</small></div>
+        <div class="fl"><span>Channels</span><div class="seg"><button type="button" class="chan on" disabled>In-app</button><button type="button" class="chan" data-ch="sms" data-out="1">SMS</button><button type="button" class="chan" data-ch="whatsapp" data-out="1">WhatsApp</button><button type="button" class="chan" data-ch="email" data-out="1">Email</button><button type="button" class="chan" data-ch="push">Push</button></div><small>In-app delivers now. Add SMS, WhatsApp or email (one at a time) to also send it outside the app through Zend: you\'ll see who it reaches and confirm first. WhatsApp falls back to SMS for anyone not on WhatsApp. For email, the title is the subject. Push is recorded only.</small></div>
         <div class="fl"><span>When</span><div class="seg" id="whenseg"><button type="button" class="on" data-w="now">Send now</button><button type="button" data-w="later">Schedule for later</button></div><input class="in" type="datetime-local" name="run_at" id="runat" hidden style="margin-top:8px" /><small id="whenhelp">Goes out the moment you confirm.</small></div>
         <button class="btn-or" type="submit" id="bsend">Send broadcast</button></form>`;
       if (t === "scheduled") {
@@ -254,7 +254,7 @@
       }
       const b = await rpc("admin_broadcasts"), sb2 = t === "delivery" ? await rpc("admin_sms_broadcasts").catch(() => []) : [];
       if (t === "history") return tabs("notif", items, t) + table(["When", "Title", "To", "Recipients", "Channels"], b.history.map((x) => `<tr><td class="mut">${esc(when(x.created_at))}</td><td><b>${esc(x.title)}</b><div class="mut">${esc(x.body)}</div></td><td>${esc((x.target_roles || []).length ? x.target_roles.map(pretty).join(", ") : "All members")}</td><td>${x.recipient_count}</td><td>${(x.channels || []).map((c) => `<span class="pill ${c === "in_app" ? "ok" : "w"}">${esc(pretty(c))}</span>`).join(" ")}</td></tr>`), "No broadcasts yet.");
-      return tabs("notif", items, t) + `<div class="c" style="margin-bottom:14px"><span class="l">Delivery</span><p class="mut" style="margin-top:8px">In-app announcements are delivered the moment you send. SMS announcements go out through SasuSync when SMS is ticked. Email has no provider connected.</p></div>` + `<h2 class="sec">SMS announcements</h2>` + table(["When", "Message", "To", "People", "Accepted", "Credits", "Status"], sb2.map((x) => `<tr><td class="mut">${esc(when(x.created_at))}</td><td>${esc(x.message)}${x.mode === "sandbox" ? ' <span class="pill b">sandbox</span>' : ""}</td><td>${esc((x.target_roles || []).length ? x.target_roles.map(pretty).join(", ") : "All members")}</td><td>${x.recipients}</td><td>${x.accepted}</td><td>${x.credits_used ?? "—"}</td><td>${stPill(x.status)}${x.error ? `<div class="mut">${esc(x.error)}</div>` : ""}</td></tr>`), "No SMS announcements yet.") + `<h2 class="sec" style="margin-top:18px">Other deliveries</h2>` + table(["When", "Channel", "Status", "Provider", "Note"], b.logs.map((l) => `<tr><td class="mut">${esc(when(l.created_at))}</td><td>${esc(pretty(l.channel))}</td><td>${stPill(l.status)}</td><td>${esc(l.provider || "—")}</td><td class="mut">${esc(l.error || "")}</td></tr>`), "No delivery logs yet.");
+      return tabs("notif", items, t) + `<div class="c" style="margin-bottom:14px"><span class="l">Delivery</span><p class="mut" style="margin-top:8px">In-app announcements are delivered the moment you send. SMS, WhatsApp and email announcements go out through Zend when that channel is ticked.</p></div>` + `<h2 class="sec">SMS announcements</h2>` + table(["When", "Message", "To", "People", "Accepted", "Credits", "Status"], sb2.map((x) => `<tr><td class="mut">${esc(when(x.created_at))}</td><td>${esc(x.message)}${x.mode === "sandbox" ? ' <span class="pill b">sandbox</span>' : ["whatsapp", "email"].includes(x.mode) ? ` <span class="pill b">${esc(pretty(x.mode))}</span>` : ""}</td><td>${esc((x.target_roles || []).length ? x.target_roles.map(pretty).join(", ") : "All members")}</td><td>${x.recipients}</td><td>${x.accepted}</td><td>${x.credits_used ?? "—"}</td><td>${stPill(x.status)}${x.error ? `<div class="mut">${esc(x.error)}</div>` : ""}</td></tr>`), "No SMS announcements yet.") + `<h2 class="sec" style="margin-top:18px">Other deliveries</h2>` + table(["When", "Channel", "Status", "Provider", "Note"], b.logs.map((l) => `<tr><td class="mut">${esc(when(l.created_at))}</td><td>${esc(pretty(l.channel))}</td><td>${stPill(l.status)}</td><td>${esc(l.provider || "—")}</td><td class="mut">${esc(l.error || "")}</td></tr>`), "No delivery logs yet.");
     },
 
     async reports() {
@@ -444,27 +444,25 @@
   const roleSelect = (cur) => `<select class="in" name="role">${STAFF_ROLES.map(([k, l]) => `<option value="${k}" ${k === cur ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
   async function smsCall(body) {
     const { data: { session } } = await sb.auth.getSession();
-    const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify(body) });
+    const r = await fetch("/api/messaging-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify(body) });
     return { ok: r.ok, json: await r.json().catch(() => ({})) };
   }
-  /* SasuSync SMS/OTP health: read-only provider checks (spend nothing). Never shows keys, secrets or codes. */
+  /* Zend messaging health (SMS, WhatsApp, email, sign-in codes). The refresh only checks the API key with a free read. Never shows keys or codes. */
   async function smsPanel() {
     try {
-      const { data: { session } } = await sb.auth.getSession();
-      const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "refresh" }) });
-      const j = await r.json().catch(() => ({}));
+      const r = await smsCall({ action: "refresh" });
+      const j = r.json || {};
       if (!r.ok) return "";
-      const c = j.capacity, o = j.overview || {}, lvl = c ? c.level : null;
+      const o = j.overview || {}, d7 = o.delivery_7d || {}, wa = j.whatsapp || {};
       const pill = (t, cls) => `<span class="pill ${cls}">${esc(t)}</span>`;
       const kv = (k, v) => `<div class="kv"><span>${esc(k)}</span><b>${esc(v)}</b></div>`;
-      const d7 = o.delivery_7d || {};
-      return `<h2 class="sec" style="margin-top:22px">SMS &amp; verification codes (SasuSync)</h2><div class="c">
-        <div class="row2">${pill(j.live_allowed ? "Live enabled" : "Live disabled", j.live_allowed ? "ok" : "w")}${pill(j.mode === "live" ? "Live mode" : "Sandbox mode", "b")}${j.sender ? pill(`Sender “${j.sender_id}”: ${pretty(j.sender.status)}`, j.sender.status === "approved" ? "ok" : "w") : ""}${lvl && lvl !== "OK" ? pill(lvl === "EXHAUSTED" ? "Credits exhausted" : "Credits low", "w") : ""}${pill(j.phone_auth ? "Phone sign-in on" : "Phone sign-in off", j.phone_auth ? "ok" : "b")}${pill(o.sms_notifications_enabled ? "SMS alerts on" : "SMS alerts off", o.sms_notifications_enabled ? "ok" : "b")}</div>
-        ${c ? kv("SMS you can still send", c.sms_sendable) + kv("Verification codes you can still send", c.otp_sendable) + (c.credits_per_otp ? kv("Credits per code", c.credits_per_otp) : "") + (c.main_balance !== undefined ? kv("Main balance", `${c.main_balance} ${c.currency || ""}`) : "") : `<p class="mut">${j.error ? "The provider couldn't be reached." : "Provider not configured."}</p>`}
+      const key = !j.configured ? pill("API key missing", "w") : j.key_check && j.key_check.ok ? pill("API key works", "ok") : pill(`API key check failed${j.key_check ? ` (${j.key_check.kind})` : ""}`, "w");
+      return `<h2 class="sec" style="margin-top:22px">SMS, WhatsApp, email &amp; sign-in codes (Zend)</h2><div class="c">
+        <div class="row2">${key}${pill(j.live ? "Live: sending on" : "Live: sending off", j.live ? "ok" : "w")}${pill(wa.announce ? "WhatsApp template ready" : "WhatsApp: no template yet", wa.announce ? "ok" : "b")}${pill(j.email_ready ? "Email ready" : "Email not set up", j.email_ready ? "ok" : "b")}${pill(j.webhook_secret ? "Delivery reports on" : "Delivery reports off", j.webhook_secret ? "ok" : "b")}${pill(j.phone_auth ? "Phone sign-in on" : "Phone sign-in off", j.phone_auth ? "ok" : "b")}${pill(o.sms_notifications_enabled ? "Text alerts on" : "Text alerts off", o.sms_notifications_enabled ? "ok" : "b")}</div>
+        ${kv("Sign-in codes sent by", j.otp_channel === "whatsapp" ? "WhatsApp" : "SMS")}${kv("Sender name", j.sender_id || "Zend default")}${kv("Emails sent from", j.email_from || "Not set")}
         ${kv("Last delivery report received", o.last_webhook_at ? ago(o.last_webhook_at) : "None yet")}${kv("Deliveries (7 days)", Object.keys(d7).length ? Object.entries(d7).map(([k, v]) => `${k} ${v}`).join(" · ") : "None")}${kv("Codes requested / verified (24h)", `${o.otp_requests_24h ?? 0} / ${o.otp_verified_24h ?? 0}`)}
-        ${j.live_allowed && isSuper() ? `<div style="margin-top:12px"><button class="btn-or" data-sms-live>Send ONE live test SMS</button> <span class="pill w">LIVE — REAL SMS · uses 1+ credits</span> <button class="btn gh" data-sms-lookup>Look up job</button><div id="smsres" class="mut" style="margin-top:8px"></div></div>` : ""}
-        ${j.mode === "sandbox" && isSuper() ? `<div style="margin-top:12px"><button class="btn gh" data-sms-sandbox>Send Sandbox Test</button> <span class="pill b">SANDBOX — NO DELIVERY</span> <button class="btn gh" data-sms-lookup>Look up job</button><div id="smsres" class="mut" style="margin-top:8px"></div></div>` : ""}
-        <p class="mut" style="margin-top:8px">Live sending is off until the owner turns it on in Vercel.</p></div>`;
+        ${isSuper() ? `<div style="margin-top:12px">${j.live ? `<button class="btn-or" data-sms-live="sms">Test SMS</button> ${wa.announce ? `<button class="btn-or" data-sms-live="whatsapp">Test WhatsApp</button> ` : ""}${j.email_ready ? `<button class="btn-or" data-sms-live="email">Test email</button> ` : ""}<span class="pill w">LIVE — sends one real message</span> ` : ""}<button class="btn gh" data-sms-lookup>Look up a message</button><div id="smsres" class="mut" style="margin-top:8px"></div></div>` : ""}
+        <p class="mut" style="margin-top:8px">${j.live ? "Messages go out through Zend. Zend checks your credit on every send." : "Nothing is sent until the owner sets MESSAGING_LIVE to true in Vercel."}</p></div>`;
     } catch { return ""; }
   }
   async function paystackBox() {
@@ -601,42 +599,29 @@
     if ((el = q("[data-price]"))) { const r = await ask("Change price", "Enter the new price in cedis. It applies to new checkouts only.", { field: true, label: "Save price", ph: `Currently ${(el.dataset.v / 100).toFixed(2)}` }); if (!r) return; const v = Math.round(parseFloat(r.value) * 100); if (!(v >= 0)) return toast("Enter a valid amount."); return act("Price", () => rpc("admin_set_plan_price", { p_id: el.dataset.price, p_price_minor: v }), "Price updated"); }
     if (q("[data-founding]")) { if (!(await ask("Start the founding program?", "The 90-day clock starts now for all five account types. This cannot be undone.", { label: "Start" }))) return; return act("Founding", () => rpc("admin_start_founding"), "Founding program started"); }
     if ((el = q("[data-sms-live]"))) {
-      const a = await ask("LIVE — REAL SMS", "This sends ONE real text message through SasuSync and uses credits. Enter YOUR OWN Ghana mobile number, then type SEND ONE LIVE SMS below. It is checked against the provider before sending and is never retried.", { field: true, danger: true, label: "Send one live SMS", ph: "0XX XXX XXXX" });
+      const ch = el.dataset.smsLive, name = ch === "email" ? "email" : ch === "whatsapp" ? "WhatsApp message" : "text message";
+      const a = await ask(`LIVE — one real ${name}`, `This sends ONE real ${name} through Zend and costs money. Enter YOUR OWN ${ch === "email" ? "email address" : "Ghana mobile number"}. It is never retried.`, { field: true, danger: true, label: "Continue", ph: ch === "email" ? "you@example.com" : "0XX XXX XXXX" });
       if (!a) return;
-      const typed = await ask("Final confirmation", "Type SEND ONE LIVE SMS exactly to send.", { field: true, danger: true, label: "Send now", ph: "SEND ONE LIVE SMS" });
+      const typed = await ask("Final confirmation", "Type SEND ONE LIVE TEST exactly to send.", { field: true, danger: true, label: "Send now", ph: "SEND ONE LIVE TEST" });
       if (!typed) return;
-      const out = document.getElementById("smsres"); el.disabled = true; if (out) out.textContent = "Sending one live SMS…";
+      const out = document.getElementById("smsres"); el.disabled = true; if (out) out.textContent = `Sending one live ${name}…`;
       try {
-        const { data: { session } } = await sb.auth.getSession();
-        const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "live_test", live_test: true, confirm: typed.value.trim(), to: a.value.trim() }) });
-        const j = await r.json().catch(() => ({}));
-        if (out) out.innerHTML = r.ok && j.result ? `<b>${esc(j.result)}</b> · ${j.sent ? "Accepted by SasuSync" : `Not sent (${esc(j.error_category || "error")}${j.sender_status ? `: sender ${esc(j.sender_status)}` : ""})`}${j.queued ? " · queued" : ""}${j.job_id ? ` · job ${esc(j.job_id)}` : ""}${j.credits_used !== undefined && j.credits_used !== null ? ` · credits used ${esc(j.credits_used)}, remaining ${esc(j.credits_remaining)}` : ""}${j.note ? ` · ${esc(j.note)}` : ""}` : esc(j.error || "The test could not run.");
-      } catch { if (out) out.textContent = "The test could not run. It may or may not have been sent: use Look up job before trying again."; }
+        const r = await smsCall({ action: "live_test", live_test: true, channel: ch, confirm: typed.value.trim(), to: a.value.trim() });
+        const j = r.json || {};
+        if (out) out.innerHTML = r.ok && j.result ? `<b>LIVE ${esc(pretty(j.channel || ch))}</b> · ${j.sent ? "Accepted by Zend" : `Not sent (${esc(j.error_category || "error")})`}${j.message_id ? ` · id ${esc(j.message_id)}` : ""}${j.note ? ` · ${esc(j.note)}` : ""}` : esc(j.error || "The test could not run.");
+      } catch { if (out) out.textContent = "The test could not run. It may or may not have been sent: look it up before trying again."; }
       el.disabled = false; return;
     }
     if ((el = q("[data-sms-lookup]"))) {
-      const a = await ask("Look up a send", "Reads the delivery status of one job from SasuSync. Nothing is sent and nothing is charged.", { field: true, label: "Look up", ph: "Job id" });
+      const a = await ask("Look up a message", "Reads the delivery status of one message or bulk send from Zend. Nothing is sent and nothing is charged.", { field: true, label: "Look up", ph: "Message or bulk id" });
       if (!a || !a.value.trim()) return;
       const out = document.getElementById("smsres"); if (out) out.textContent = "Looking up…";
       try {
-        const { data: { session } } = await sb.auth.getSession();
-        const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "sms_status", job_id: a.value.trim() }) });
-        const j = await r.json().catch(() => ({}));
-        if (out) out.innerHTML = r.ok && j.job_id && !j.error_category ? `Job ${esc(j.job_id)} · ${esc(j.delivery_status)}${j.sandbox ? " (sandbox)" : ""} · ${j.messages.length} message(s)${j.messages.map((m) => ` · ${esc(m.provider_status || "?")}${m.webhook_state ? `/webhook ${esc(m.webhook_state)}` : ""}`).join("")} · ${j.matched_log ? "matched to a notification log" : "no notification log"}` : esc(j.error || `Lookup failed (${j.error_category || "error"})`);
+        const r = await smsCall({ action: "message_status", id: a.value.trim() });
+        const j = r.json || {};
+        if (out) out.innerHTML = r.ok && j.id && !j.error_category ? `${esc(j.id)} · ${esc(j.delivery_status)}${j.channel_used ? ` by ${esc(j.channel_used)}` : ""}${j.totals ? ` · delivered ${esc(j.totals.delivered ?? "?")}, failed ${esc(j.totals.failed ?? "?")}, pending ${esc(j.totals.pending ?? "?")}` : ""} · ${j.messages.length} message(s)${j.messages.slice(0, 5).map((m) => ` · ${esc(m.provider_status || "?")}${m.webhook_state ? `/report ${esc(m.webhook_state)}` : ""}`).join("")} · ${j.matched_log ? "matched to a notification log" : "no notification log"}` : esc(j.error || `Lookup failed (${j.error_category || "error"})`);
       } catch { if (out) out.textContent = "The lookup could not run."; }
       return;
-    }
-    if ((el = q("[data-sms-sandbox]"))) {
-      const a = await ask("SANDBOX — NO DELIVERY", "This calls SasuSync's sandbox only. Nothing is delivered to any phone and no credits are charged. Enter a Ghana mobile number to use as the test recipient.", { field: true, label: "Run sandbox test", ph: "0XX XXX XXXX" });
-      if (!a) return;
-      const out = document.getElementById("smsres"); el.disabled = true; if (out) out.textContent = "Running sandbox test…";
-      try {
-        const { data: { session } } = await sb.auth.getSession();
-        const r = await fetch("/api/sasusync-admin", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ action: "sandbox_test", sandbox_test: true, to: a.value.trim() }) });
-        const j = await r.json().catch(() => ({}));
-        if (out) out.innerHTML = r.ok && j.result ? `<b>${esc(j.result)}</b> · ${j.success ? "Accepted by sandbox" : `Failed (${esc(j.error_category || "error")}${j.http_status ? ` ${esc(j.http_status)}` : ""})`}${j.queued ? " · queued" : ""}${j.job_id ? ` · job ${esc(j.job_id)}` : ""} · ${j.delivered ? "delivered" : "not delivered"} · ${j.charged ? "charged" : "not charged"}` : esc(j.error || "The test could not run.");
-      } catch { if (out) out.textContent = "The test could not run."; }
-      el.disabled = false; return;
     }
     if ((el = q("[data-psp]"))) { S.psPage = Math.max(1, (S.psPage || 1) + Number(el.dataset.psp)); return paystackMoney(); }
     if ((el = q("[data-psf]"))) { S.psStatus = el.dataset.psf; S.psPage = 1; return paystackMoney(); }
@@ -672,7 +657,7 @@
     if ((el = q("[data-auto-master]"))) { const on = el.dataset.autoMaster === "1"; if (on && !(await ask("Turn on automated welcome texts?", "New accounts will start getting a personal text for their role. Each costs 1-2 credits. Only roles switched On below are used.", { label: "Turn on" }))) return; const r = await smsCall({ action: "sms_automations_master", enabled: on }); toast(r.ok ? (on ? "Automated texts are on" : "Automated texts are off") : r.json.error || "Couldn't change it"); return rerender(); }
     if ((el = q("[data-auto-save]"))) { const box = el.closest("[data-auto]"), tpl = box.querySelector("[data-auto-tpl]").value.trim(), on = box.querySelector("[data-auto-on]").checked; el.disabled = true; const r = await smsCall({ action: "sms_automation_save", role: box.dataset.auto, template: tpl, enabled: on }); el.disabled = false; toast(r.ok ? "Saved" : r.json.error || "Couldn't save"); return r.ok ? rerender() : undefined; }
     if ((el = q("[data-job-cancel]"))) { if (!(await ask("Cancel this scheduled message?", "It will not be sent.", { label: "Cancel it", danger: true }))) return; const r = await smsCall({ action: "sms_job_cancel", job_id: el.dataset.jobCancel }); toast(r.ok ? "Cancelled" : r.json.error || "Couldn't cancel"); return rerender(); }
-    if ((el = q("[data-ch]"))) return el.classList.toggle("on");
+    if ((el = q("[data-ch]"))) { if (el.dataset.out && !el.classList.contains("on")) document.querySelectorAll("[data-out].on").forEach((b) => b.classList.remove("on")); return el.classList.toggle("on"); }
     if ((el = q("[data-mres]"))) { try { const cid = await rpc("start_conversation", { p_other: el.dataset.mres, p_subject: null }); S.msgConv = cid; rerender(); } catch (er) { toast(er.message); } return; }
     if ((el = q("[data-gs]"))) { document.getElementById("gres").classList.remove("on"); const u = S.gsr[+el.dataset.gs]; return openReview(u.role, u.id); }
     if (!q(".srch")) document.getElementById("gres")?.classList.remove("on");
@@ -684,52 +669,58 @@
     const f = e.target;
     if (f.id === "uq") { e.preventDefault(); S.q = document.getElementById("uqi").value.trim(); return rerender(); }
     if (f.id === "bf") {
-      e.preventDefault(); const d = Object.fromEntries(new FormData(f)), roles = [...document.querySelectorAll("#roleseg .on")].map((b) => b.dataset.r).filter(Boolean), chans = ["in_app", ...[...document.querySelectorAll("[data-ch].on")].map((b) => b.dataset.ch)];
+      e.preventDefault(); const d = Object.fromEntries(new FormData(f)), roles = [...document.querySelectorAll("#roleseg .on")].map((b) => b.dataset.r).filter(Boolean), picked = [...document.querySelectorAll("[data-ch].on")].map((b) => b.dataset.ch);
+      const outCh = ["sms", "whatsapp", "email"].find((c) => picked.includes(c)) || null;
+      // admin_broadcast records the channels; WhatsApp is recorded as sms (it falls back to SMS)
+      const chans = ["in_app", ...new Set(picked.map((c) => (c === "whatsapp" ? "sms" : c)))];
+      const CH = { sms: ["SMS", "text"], whatsapp: ["WhatsApp", "WhatsApp message (SMS if they're not on WhatsApp)"], email: ["Email", "email"] };
       const aud = roles.length ? roles.map(pretty).join(", ") : "all members", btn = f.querySelector("button[type=submit]");
+      const tooLong = () => outCh !== "email" && d.body.trim().length > 440;
+      const preview = async () => {
+        btn.disabled = true; const pv = await smsCall({ action: "sms_broadcast", dry_run: true, channel: outCh, roles, message: d.body, subject: d.title }); btn.disabled = false;
+        if (!pv.ok || pv.json.error) { toast(pv.json.error || "Couldn't prepare the preview."); return null; }
+        const p = pv.json;
+        if (!p.recipients) { toast(outCh === "email" ? "No one in this audience has an email address." : "No one in this audience has a phone number."); return null; }
+        if (!p.within_limit) { toast(`That is ${p.recipients} people; the limit per announcement is ${p.max_recipients}.`); return null; }
+        if (!p.channel_ready) { toast(outCh === "email" ? "Email isn't set up in Zend yet." : "WhatsApp needs an approved template in Zend first."); return null; }
+        return p;
+      };
       if (document.querySelector("#whenseg .on")?.dataset.w === "later") {
         // Schedule for later: preview the audience now (free), confirm, and queue it. It re-checks everything when it runs.
         const at = new Date(d.run_at || ""); if (Number.isNaN(at.getTime()) || at.getTime() < Date.now() + 60000) return toast("Pick a time at least a minute from now.");
-        const sms = chans.includes("sms"), when2 = at.toLocaleString("en-GH", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
-        let est = null, body = `It will be posted in-app${sms ? " and texted" : ""} to ${aud} on ${when2} (your device's time).`;
-        if (sms) {
-          if (d.body.trim().length > 440) return toast("SMS announcements can be at most 440 characters. Shorten the message.");
-          btn.disabled = true; const pv = await smsCall({ action: "sms_broadcast", dry_run: true, roles, message: d.body }); btn.disabled = false;
-          if (!pv.ok || pv.json.error || pv.json.error_category) return toast(pv.json.error || pv.json.note || "Couldn't prepare the SMS preview.");
-          const p = pv.json; if (!p.recipients) return toast("No one in this audience has a phone number right now.");
-          est = p.recipients; body += ` Right now that is ${p.recipients} ${p.recipients === 1 ? "person" : "people"}, about ${p.credits_estimate} credits. The audience and your credit are checked again when it runs, and it is skipped if they don't fit. ${p.mode === "live" ? "Real texts." : "Sandbox mode."} Type SEND to schedule.`;
+        const when2 = at.toLocaleString("en-GH", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+        let est = null, body = `It will be posted in-app${outCh ? ` and sent by ${CH[outCh][0]}` : ""} to ${aud} on ${when2} (your device's time).`;
+        if (outCh) {
+          if (tooLong()) return toast("SMS and WhatsApp announcements can be at most 440 characters. Shorten the message.");
+          const p = await preview(); if (!p) return;
+          est = p.recipients; body += ` Right now that is ${p.recipients} ${p.recipients === 1 ? "person" : "people"}. The audience is checked again when it runs. ${p.mode === "live" ? "Real messages, charged by Zend." : "Live sending is off: unless it is switched on by then, nothing will be sent."} Type SEND to schedule.`;
         }
-        const go = await ask(sms ? "Schedule SMS announcement" : "Schedule announcement", body, { field: sms, label: "Schedule", ph: "SEND" });
-        if (!go || (sms && go.value.trim().toUpperCase() !== "SEND")) return toast("Cancelled. Nothing was scheduled.");
+        const go = await ask(outCh ? `Schedule ${CH[outCh][0]} announcement` : "Schedule announcement", body, { field: !!outCh, label: "Schedule", ph: "SEND" });
+        if (!go || (outCh && go.value.trim().toUpperCase() !== "SEND")) return toast("Cancelled. Nothing was scheduled.");
         btn.disabled = true;
-        const r = await smsCall({ action: "sms_schedule", roles, sms, message: sms ? d.body : undefined, run_at: at.toISOString(), confirm: sms ? "SCHEDULE SMS" : undefined, expected_recipients: est ?? undefined, in_app: { title: d.title, body: d.body, href: d.href || null } });
+        const r = await smsCall({ action: "sms_schedule", roles, sms: !!outCh, channel: outCh || undefined, subject: outCh === "email" ? d.title : undefined, message: outCh ? d.body : undefined, run_at: at.toISOString(), confirm: outCh ? "SCHEDULE BROADCAST" : undefined, expected_recipients: est ?? undefined, in_app: { title: d.title, body: d.body, href: d.href || null } });
         btn.disabled = false;
         if (!r.ok) return toast(r.json.error || "Couldn't schedule it.");
         toast(`Scheduled for ${when2}`); S.tab.notif = "scheduled"; return rerender();
       }
-      let smsNote = "";
-      if (chans.includes("sms")) {
-        // SMS goes through SasuSync. Preview first (free), then an explicit typed confirmation before any message is sent.
-        if (d.body.trim().length > 440) return toast("SMS announcements can be at most 440 characters. Shorten the message.");
-        btn.disabled = true;
-        const pv = await smsCall({ action: "sms_broadcast", dry_run: true, roles, message: d.body });
-        btn.disabled = false;
-        if (!pv.ok || pv.json.error || pv.json.error_category) return toast(pv.json.error || pv.json.note || "Couldn't prepare the SMS preview.");
-        const p = pv.json;
-        if (!p.recipients) return toast("No one in this audience has a phone number, so no SMS would be sent.");
-        if (!p.within_limit) return toast(`That is ${p.recipients} people; the limit per broadcast is ${p.max_recipients}.`);
-        if (!p.enough_credit) return toast(`Not enough SMS credit: this needs about ${p.credits_estimate}, you have ${p.sms_sendable} (${p.otp_reserve} are kept for sign-in codes).`);
+      let outNote = "";
+      if (outCh) {
+        // Sent through Zend. Preview first (free), then an explicit typed confirmation before any message is sent.
+        if (tooLong()) return toast("SMS and WhatsApp announcements can be at most 440 characters. Shorten the message.");
+        const p = await preview(); if (!p) return;
+        if (p.mode !== "live") return toast(`Live sending is off, so no ${CH[outCh][0]} can be sent. Untick ${CH[outCh][0]} to post in-app only.`);
         const skipped = Object.values(p.skipped || {}).reduce((a, b) => a + b, 0);
-        const go = await ask(`${p.result}`, `SMS to ${p.recipients} ${p.recipients === 1 ? "person" : "people"} (${aud}). ${p.parts} message part${p.parts === 1 ? "" : "s"} each, about ${p.credits_estimate} credits${p.mode === "live" ? ` of ${p.sms_sendable} available` : ""}.${skipped ? ` ${skipped} skipped (no valid number or duplicate).` : ""} ${p.mode === "live" ? "Real text messages will be sent and cannot be recalled. Type SEND to confirm." : "Sandbox: nothing is delivered or charged. Type SEND to continue."}`, { field: true, danger: p.mode === "live", label: p.mode === "live" ? "Send SMS" : "Run sandbox", ph: "SEND" });
+        const go = await ask(`${p.result}`, `${CH[outCh][0]} to ${p.recipients} ${p.recipients === 1 ? "person" : "people"} (${aud}).${outCh !== "email" ? ` ${p.parts} SMS part${p.parts === 1 ? "" : "s"} each if sent by text.` : ` Subject: “${d.title}”.`}${skipped ? ` ${skipped} skipped (no ${outCh === "email" ? "email" : "valid number"} or duplicate).` : ""} Each ${CH[outCh][1]} is real, charged by Zend and cannot be recalled. Type SEND to confirm.`, { field: true, danger: true, label: `Send ${CH[outCh][0]}`, ph: "SEND" });
         if (!go || go.value.trim().toUpperCase() !== "SEND") return toast("Cancelled. Nothing was sent.");
-        btn.disabled = true; btn.textContent = "Sending SMS…";
+        btn.disabled = true; btn.textContent = `Sending ${CH[outCh][0]}…`;
         const rq = crypto.randomUUID ? crypto.randomUUID() : "00000000-0000-4000-8000-" + String(Date.now()).padStart(12, "0");
-        const sr = await smsCall({ action: "sms_broadcast", roles, message: d.body, confirm: "SEND SMS BROADCAST", request_id: rq, expected_recipients: p.recipients });
+        const sr = await smsCall({ action: "sms_broadcast", channel: outCh, roles, message: d.body, subject: d.title, confirm: "SEND BROADCAST", request_id: rq, expected_recipients: p.recipients });
         btn.disabled = false; btn.textContent = "Send broadcast";
         const j = sr.json || {};
-        if (!sr.ok && !j.status) return toast(j.error || "The SMS broadcast could not run. Nothing was sent.");
-        smsNote = ` · SMS: ${j.accepted ?? 0} of ${j.recipients ?? p.recipients} accepted${j.status && j.status !== "sent" ? ` (${j.status}${j.error_category ? `: ${j.error_category}` : ""})` : ""}`;
+        if (!sr.ok && !j.status) return toast(j.error || `The ${CH[outCh][0]} announcement could not run. Nothing was sent.`);
+        outNote = ` · ${CH[outCh][0]}: ${j.accepted ?? 0} of ${j.recipients ?? p.recipients} accepted${j.status && j.status !== "sent" ? ` (${j.status}${j.error_category ? `: ${j.error_category}` : ""})` : ""}`;
       } else if (!(await ask("Send this broadcast?", `It goes to ${aud}.`, { label: "Send now" }))) return;
-      try { const n = await rpc("admin_broadcast", { p_title: d.title, p_body: d.body, p_href: d.href || null, p_roles: roles, p_channels: chans }); toast(`In-app: ${n} member${n === 1 ? "" : "s"}${smsNote}`); S.tab.notif = "history"; rerender(); } catch (er) { toast(er.message); }
+      try { const n = await rpc("admin_broadcast", { p_title: d.title, p_body: d.body, p_href: d.href || null, p_roles: roles, p_channels: chans }); toast(`In-app: ${n} member${n === 1 ? "" : "s"}${outNote}`); S.tab.notif = "history"; rerender(); } catch (er) { toast(er.message); }
     }
     if (f.id === "setf") { e.preventDefault(); const v = parseFloat(f.rate.value); if (!(v >= 0 && v <= 0.5)) return toast("Enter a rate between 0 and 0.5."); act("Setting", () => rpc("admin_set_setting", { p_key: "commission_rate", p_value: v }), "Saved"); }
     if (f.id === "pwf") { e.preventDefault(); const { error } = await sb.auth.updateUser({ password: f.pw.value }); if (error) return toast(error.message); f.reset(); toast("Password changed"); }

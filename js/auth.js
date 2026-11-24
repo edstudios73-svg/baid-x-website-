@@ -127,7 +127,7 @@
   });
 
   // Accepts 020 607 1106, 20 607 1106, +233 20 607 1106, 233… and 00233…; Ghana numbers must be
-  // 9 digits after 233 starting 2, 3 or 5, the same rule the server applies (api/_lib/sasusync/phone.js)
+  // 9 digits after 233 starting 2, 3 or 5, the same rule the server applies (api/_lib/messaging/phone.js)
   function toE164(raw) {
     let d = String(raw).replace(/\D/g, "").replace(/^00/, "");
     if (d.startsWith(S.country.d) && d.length > S.country.d.length + 7) d = d.slice(S.country.d.length);
@@ -181,7 +181,7 @@
     setBusy($("#phoneNext"), false, "Continue");
     if (ok) { S.phone = phone; prepCode(); show("code"); }
   });
-  // Phone codes go through SasuSync only when the server says so (flag off by default); otherwise the original path is untouched.
+  // Phone codes go through Zend only when the server says so (flag off by default); otherwise the original path is untouched.
   let phoneApi = false;
   fetch("/api/auth/phone/start").then((r) => r.json()).then((j) => { phoneApi = j && j.enabled === true; }).catch(() => {});
   async function sendCode(phone) {

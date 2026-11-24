@@ -2,8 +2,8 @@
 // A withdrawal is only requested after the account holder re-enters their password, so a stolen or left-open session can't
 // move money. The request itself is made as the user (their token), so the database applies the same role and balance rules
 // (receivers only; the amount is held while BAID X pays it out to their Mobile Money).
-const id = require("./_lib/sasusync/identity");
-const { audit, rpc, supa, maskPhone } = require("./_lib/sasusync/route");
+const id = require("./_lib/messaging/identity");
+const { audit, rpc, supa, maskPhone } = require("./_lib/messaging/route");
 
 const SAFE = /^(the minimum withdrawal|not enough available balance|choose a mobile money|enter a valid mobile|enter the name|withdrawals are not available)/i;
 module.exports = async (req, res) => {

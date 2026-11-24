@@ -1,10 +1,10 @@
 // GET  /api/auth/phone/start            -> { enabled }   (lets the app know whether to use phone codes)
-// POST /api/auth/phone/start { phone, purpose: "signup"|"reset" } -> sends a code through SasuSync.
-// Behind SASUSYNC_PHONE_AUTH (default OFF). BAID X never sees or stores the code; only the provider's otp_id is kept.
-const { cfg } = require("../sasusync/config");
-const { normalizeGhanaPhone, maskPhone } = require("../sasusync/phone");
-const { generateOtp } = require("../sasusync/otp");
-const { ip, audit, rpc, supa } = require("../sasusync/route");
+// POST /api/auth/phone/start { phone, purpose: "signup"|"reset" } -> sends a code through Zend.
+// Behind MESSAGING_PHONE_AUTH (default OFF). BAID X never sees or stores the code; only the provider's otp_id is kept.
+const { cfg } = require("../messaging/config");
+const { normalizeGhanaPhone, maskPhone } = require("../messaging/phone");
+const { generateOtp } = require("../messaging/otp");
+const { ip, audit, rpc, supa } = require("../messaging/route");
 
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
@@ -32,8 +32,9 @@ module.exports = async (req, res) => {
     if (purpose === "reset" && !userId) return res.status(200).json({ ok: true, expires_in: 300 }); // no enumeration: look identical, send nothing
 
     // Global daily ceiling on real OTP sends (each costs credits). Counted only here, after every cheap check, so it measures actual sends.
-    // Default 40/day (about 120 credits at 3 per code); the owner can change SASUSYNC_OTP_DAILY_CAP in Vercel.
-    const cap = Number.isInteger(Number(process.env.SASUSYNC_OTP_DAILY_CAP)) && Number(process.env.SASUSYNC_OTP_DAILY_CAP) > 0 ? Number(process.env.SASUSYNC_OTP_DAILY_CAP) : 40;
+    // Default 40/day; the owner can change MESSAGING_OTP_DAILY_CAP in Vercel.
+    const capEnv = process.env.MESSAGING_OTP_DAILY_CAP;
+    const cap = Number.isInteger(Number(capEnv)) && Number(capEnv) > 0 ? Number(capEnv) : 40;
     const day = await rpc("rl_hit", { p_key: "otp:start:all", p_window_s: 86400, p_max: cap });
     if (!day.ok) return res.status(503).json({ error: "Try again shortly." });
     if (day.json && day.json.allowed === false) { await audit("otp.daily_cap_reached", null, { cap }); return res.status(429).json({ error: "Phone codes are temporarily unavailable. Please try again later or sign up with email." }); }
@@ -43,7 +44,7 @@ module.exports = async (req, res) => {
     catch (e) {
       const k = e && e.kind;
       await audit("otp.start_failed", null, { kind: k, purpose, phone: maskPhone(phone) });
-      if (k === "RATE_LIMITED") return res.status(429).json({ error: "A code was already sent. Enter it, or wait for it to expire before asking again." }); // never auto-generate another
+      if (k === "RATE_LIMITED") return res.status(429).json({ error: "Too many codes are being sent right now. Please wait a minute and try again." }); // never auto-generate another
       if (k === "LIVE_DISABLED" || k === "NOT_CONFIGURED") return res.status(503).json({ error: "Phone sign-in isn't available yet." });
       return res.status(502).json({ error: "We couldn't send the code. Try again shortly." });
     }

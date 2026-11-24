@@ -1,14 +1,14 @@
-// POST /api/sms-scheduler — runs due SMS jobs: scheduled announcements and automated welcome messages.
+// POST /api/sms-scheduler — runs due messaging jobs: scheduled announcements and automated welcome messages.
 // Called by the database every minute (pg_cron) and right after a new account is created (same shared secret as push/sms-notify).
 // Each job is claimed atomically (SKIP LOCKED) so it can only run once, and every provider call is attempted ONCE (never resent).
+// Sent through Zend; nothing goes out until MESSAGING_LIVE is true (jobs then fail with LIVE_DISABLED, nothing is faked).
 const crypto = require("crypto");
-const { supa, rpc, audit, maskPhone } = require("./_lib/sasusync/route");
-const { cfg, configured, liveAllowed } = require("./_lib/sasusync/config");
-const { sendSms, smsParts } = require("./_lib/sasusync/sms");
-const { getBalance } = require("./_lib/sasusync/balance");
-const { normalizeGhanaPhone } = require("./_lib/sasusync/phone");
-const { renderTemplate } = require("./_lib/sasusync/templates");
-const { limits, plan, execute } = require("./_lib/sasusync/broadcast");
+const { supa, rpc, audit, maskPhone } = require("./_lib/messaging/route");
+const { configured, liveAllowed } = require("./_lib/messaging/config");
+const { sendMessage } = require("./_lib/messaging/messages");
+const { normalizeGhanaPhone } = require("./_lib/messaging/phone");
+const { renderTemplate } = require("./_lib/messaging/templates");
+const { CHANNELS, plan, execute } = require("./_lib/messaging/broadcast");
 
 const done = (id, status, result, error) => supa(`/rest/v1/sms_jobs?id=eq.${id}`, { method: "PATCH", body: { status, result: result || null, error: error || null, finished_at: new Date().toISOString() } });
 const posInt = (v, d) => (v !== undefined && v !== "" && Number.isInteger(Number(v)) && Number(v) > 0 ? Number(v) : d);
@@ -23,35 +23,35 @@ async function welcome(job) {
   if (ctx.opted_out) return done(job.id, "skipped", null, "OPTED_OUT");
   const phone = normalizeGhanaPhone(ctx.phone); if (!phone) return done(job.id, "skipped", null, "INVALID_NUMBER");
   if (!configured()) return done(job.id, "failed", null, "NOT_CONFIGURED");
-  if (cfg().mode === "live" && !liveAllowed()) return done(job.id, "failed", null, "LIVE_DISABLED");
-  const message = renderTemplate(auto.template, { name: ctx.name, role: ctx.role }), parts = smsParts(message);
-  const cap = await rpc("rl_hit", { p_key: "sms:auto:all", p_window_s: 86400, p_max: posInt(process.env.SASUSYNC_AUTO_DAILY_CAP, 100) });
+  if (!liveAllowed()) return done(job.id, "failed", null, "LIVE_DISABLED");
+  const message = renderTemplate(auto.template, { name: ctx.name, role: ctx.role });
+  const cap = await rpc("rl_hit", { p_key: "sms:auto:all", p_window_s: 86400, p_max: posInt(process.env.MESSAGING_AUTO_DAILY_CAP, 100) });
   if (cap.ok && cap.json && cap.json.allowed === false) return done(job.id, "skipped", null, "DAILY_CAP");
-  if (liveAllowed()) { try { if ((await getBalance()).smsSendable - parts < limits().reserve) return done(job.id, "failed", null, "INSUFFICIENT_CREDIT"); } catch (e) { return done(job.id, "failed", null, (e && e.kind) || "ERROR"); } }
   try {
-    const r = await sendSms({ to: phone, message }, { retries: 0 });
-    await supa("/rest/v1/notification_logs", { method: "POST", body: { user_id: uid, channel: "sms", provider: "sasusync", status: r.queued ? "queued" : "sent", provider_ref: r.jobId, meta: { automation: "welcome", role, mode: r.mode, to: maskPhone(phone), deducted: r.deducted } } });
-    return done(job.id, r.accepted ? "sent" : "failed", { job_id: r.jobId, mode: r.mode, deducted: r.deducted }, r.accepted ? null : "PROVIDER_REJECTED");
+    const r = await sendMessage({ to: phone, message, whatsapp: { kind: "announce", params: { message } } });
+    await supa("/rest/v1/notification_logs", { method: "POST", body: { user_id: uid, channel: "sms", provider: "zend", status: r.queued ? "queued" : "sent", provider_ref: r.jobId, meta: { automation: "welcome", role, channels: r.channels, to: maskPhone(phone) } } });
+    return done(job.id, "sent", { message_id: r.jobId, channels: r.channels }, null);
   } catch (e) { const k = (e && e.kind) || "ERROR"; return done(job.id, "failed", null, k + (k === "TIMEOUT" || k === "NETWORK" ? " (may have been sent)" : "")); }
 }
 
 async function scheduledBroadcast(job) {
   const p = job.payload || {}, actor = job.created_by || null; let res = null, inapp = null;
-  if (p.sms) {
-    if (!configured()) { await done(job.id, "failed", null, "NOT_CONFIGURED"); }
-    else if (cfg().mode === "live" && !liveAllowed()) { await done(job.id, "failed", null, "LIVE_DISABLED"); }
+  const channel = CHANNELS.includes(p.channel) ? p.channel : "sms";
+  if (p.sms) { // "sms" in the payload means "send outside the app": by SMS, WhatsApp or email (p.channel)
+    if (!configured()) res = { status: "failed", error: "NOT_CONFIGURED" };
+    else if (!liveAllowed()) res = { status: "failed", error: "LIVE_DISABLED" };
     else {
-      let pl; try { pl = await plan(p.roles || [], p.message, p.parts); } catch (e) { pl = { error: (e && e.kind) || "ERROR" }; }
+      let pl; try { pl = await plan(p.roles || [], p.message, p.parts, channel); } catch (e) { pl = { error: (e && e.kind) || "ERROR" }; }
       if (pl.error) res = { status: "failed", error: pl.error };
+      else if (!pl.preview.channel_ready) res = { status: "failed", error: "CHANNEL_NOT_SET_UP" };
       else if (!pl.aud.list.length) res = { status: "skipped", error: "NO_RECIPIENTS" };
       else if (!pl.preview.within_limit) res = { status: "failed", error: "OVER_LIMIT" };
-      else if (!pl.preview.enough_credit) res = { status: "failed", error: "INSUFFICIENT_CREDIT" };
-      else { const r = await execute({ roles: p.roles || [], message: p.message, parts: p.parts, list: pl.aud.list, requestId: job.id, actor }); res = r.duplicate ? { status: "failed", error: "DUPLICATE" } : { status: r.status, error: r.error, accepted: r.accepted, recipients: pl.aud.list.length, credits: r.credits }; }
+      else { const r = await execute({ roles: p.roles || [], message: p.message, parts: p.parts, list: pl.aud.list, requestId: job.id, actor, channel, subject: p.subject }); res = r.duplicate ? { status: "failed", error: "DUPLICATE" } : { status: r.status, error: r.error, accepted: r.accepted, recipients: pl.aud.list.length, channel }; }
     }
   }
   if (p.in_app) { const n = await rpc("sched_broadcast_inapp", { p_title: p.in_app.title, p_body: p.in_app.body, p_href: p.in_app.href || null, p_roles: p.roles || [], p_by: actor, p_channels: p.channels || ["in_app"] }); inapp = n.ok ? n.json : null; }
   const status = !p.sms ? (inapp !== null ? "sent" : "failed") : res ? res.status : "failed";
-  await audit("sms.scheduled_run", job.id, { status, roles: p.roles || [], accepted: res && res.accepted, error: res && res.error, in_app: inapp }, actor);
+  await audit("sms.scheduled_run", job.id, { status, roles: p.roles || [], channel, accepted: res && res.accepted, error: res && res.error, in_app: inapp }, actor);
   return done(job.id, ["sent", "partial", "failed", "skipped"].includes(status) ? status : "failed", { sms: res, in_app: inapp }, res && res.error ? res.error : null);
 }
 

@@ -152,8 +152,8 @@
     "api/sms-scheduler.js": {
       "maxDuration": 60
     },
-    "api/sasusync-admin.js": {
-      "maxDuration": 30
+    "api/messaging-admin.js": {
+      "maxDuration": 60
     }
   }
 }

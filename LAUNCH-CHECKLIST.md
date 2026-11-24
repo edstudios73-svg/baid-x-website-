@@ -51,3 +51,32 @@ East Legon, Accra (info@baidencreatives.org, +233 20 607 1106).
   adding money. Verification fees: GH₵50, 120, 250 (business GH₵250, 500). Boosts GH₵15 to GH₵500.
 - If any fee changes, update `terms.html` section 9, `scripts/build-seo.py` (FEE_ROWS and FAQs),
   the homepage FAQ and BAID Bot's facts (`supabase/functions/baid-bot/index.ts`), then redeploy.
+
+## Messaging through Zend (SMS, WhatsApp, email, sign-in codes)
+
+SasuSync has been replaced by Zend (https://tryzend.com). Zend has no test mode, so nothing is sent until
+`MESSAGING_LIVE` is `true`. Do these in order; every value goes in Vercel → baid-x-website → Settings →
+Environment Variables (Production), never in the code.
+
+- [ ] Zend dashboard: create an API key (with the `email:send` scope too) and add credit.
+- [ ] Vercel: `ZEND_API_KEY` = that key (mark it Sensitive).
+- [ ] Vercel: `MESSAGING_PHONE_AUTH` = `true` (keeps phone sign-up and sign-in on; it replaces
+      `SASUSYNC_PHONE_AUTH`, which is still read until you remove it).
+- [ ] Optional: `ZEND_SENDER_ID` = an approved sender name (leave empty to use Zend's default sender).
+- [ ] Optional: `ZEND_OTP_CHANNEL` = `whatsapp` to send sign-in codes on WhatsApp instead of SMS.
+- [ ] Zend dashboard → Settings → Webhooks → Add endpoint `https://www.baid-x.com/api/webhooks/zend`
+      (events: sent, delivered, failed, read). Copy the signing secret into Vercel as `ZEND_WEBHOOK_SECRET`.
+- [ ] WhatsApp (optional): create and get approved two templates, then add their ids:
+      `ZEND_WA_TEMPLATE_ANNOUNCE` (one variable named `message`) for announcements and welcome texts, and
+      `ZEND_WA_TEMPLATE_NOTIFY` (one variable named `title`) for account alerts. Anyone not on WhatsApp
+      gets the SMS instead.
+- [ ] Email (optional): Zend → Email → Domains, add `baid-x.com` and put the DKIM and SPF records in
+      Cloudflare. Then set `ZEND_EMAIL_FROM` = `BAID X <hello@baid-x.com>` (any address on that domain).
+- [ ] Redeploy, then set `MESSAGING_LIVE` = `true` and redeploy again.
+- [ ] Mission Control → Notifications → Delivery: the Zend card should say "API key works". Send one
+      test SMS (and WhatsApp / email if set up) to your own number or address.
+- [ ] Remove the old `SASUSYNC_*` variables from Vercel and the webhook in the SasuSync portal.
+- Limits you can change in Vercel: `MESSAGING_OTP_DAILY_CAP` (default 40 codes a day),
+  `MESSAGING_BROADCAST_MAX` (500 per SMS/WhatsApp announcement), `MESSAGING_EMAIL_BROADCAST_MAX` (300),
+  `MESSAGING_AUTO_DAILY_CAP` (100 welcome texts a day).
+- Zend sends only: it does not receive replies, so WhatsApp replies and incoming emails do not reach BAID X.

@@ -1,10 +1,12 @@
 // POST /api/sms-notify { notification_id }  — called by the database trigger (same shared secret as push) when
 // platform_settings.sms_notifications_enabled is true. Sends ONE transactional SMS if the user opted in (preferences),
-// has an OTP-verified phone, and the category allows it. Result is written to notification_logs. Sandbox unless live is approved.
-const { sendSms } = require("./_lib/sasusync/sms");
-const { liveAllowed } = require("./_lib/sasusync/config");
-const { maskPhone } = require("./_lib/sasusync/phone");
-const { supa, rpc } = require("./_lib/sasusync/route");
+// has an OTP-verified phone, and the category allows it. Sent through Zend: on WhatsApp first when the notify template is set up
+// (ZEND_WA_TEMPLATE_NOTIFY, variable {{title}}), otherwise or as a fallback by SMS. Nothing is sent until MESSAGING_LIVE is true.
+// Result is written to notification_logs.
+const { sendMessage } = require("./_lib/messaging/messages");
+const { liveAllowed } = require("./_lib/messaging/config");
+const { maskPhone } = require("./_lib/messaging/phone");
+const { supa, rpc } = require("./_lib/messaging/route");
 
 const TEMPLATES = { payments: "BAID X: {t}. Open BAID X to view.", wallet: "BAID X: {t}. Open BAID X to view.", account: "BAID X: {t}. Open BAID X to view.", jobs: "BAID X: {t}. Open BAID X to view.", projects: "BAID X: {t}. Open BAID X to view." };
 
@@ -16,6 +18,7 @@ module.exports = async (req, res) => {
     if (!sec || got.length !== sec.length || !require("crypto").timingSafeEqual(Buffer.from(got), Buffer.from(sec))) return res.status(401).end();
     const flag = (await supa("/rest/v1/platform_settings?key=eq.sms_notifications_enabled&select=value")).json?.[0]?.value;
     if (flag !== true) return res.status(200).json({ skipped: "disabled" });
+    if (!liveAllowed()) return res.status(200).json({ skipped: "not_live" });
 
     const id = String(req.body && req.body.notification_id || "");
     if (!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).end();
@@ -27,11 +30,12 @@ module.exports = async (req, res) => {
     const phone = ph.ok && typeof ph.json === "string" ? ph.json : null;
     if (!phone) return res.status(200).json({ skipped: "not_opted_in" });
 
-    const text = TEMPLATES[n.category].replace("{t}", String(n.title || "You have an update").slice(0, 90));
-    const log = { notification_id: id, user_id: n.user_id, channel: "sms", provider: "sasusync", meta: { mode: liveAllowed() ? "live" : "sandbox", to: maskPhone(phone) } };
+    const title = String(n.title || "You have an update").slice(0, 90);
+    const text = TEMPLATES[n.category].replace("{t}", title);
+    const log = { notification_id: id, user_id: n.user_id, channel: "sms", provider: "zend", meta: { mode: "live", to: maskPhone(phone) } };
     try {
-      const r = await sendSms({ to: phone, message: text });
-      await supa("/rest/v1/notification_logs", { method: "POST", body: { ...log, status: r.queued ? "queued" : "sent", provider_ref: r.jobId, meta: { ...log.meta, deducted: r.deducted, remaining: r.remaining, sandbox: r.mode === "sandbox" } } });
+      const r = await sendMessage({ to: phone, message: text, whatsapp: { kind: "notify", params: { title } } });
+      await supa("/rest/v1/notification_logs", { method: "POST", body: { ...log, status: r.queued ? "queued" : "sent", provider_ref: r.jobId, meta: { ...log.meta, channels: r.channels, estimated_cost: r.estimatedCost } } });
       return res.status(200).json({ ok: true });
     } catch (e) {
       await supa("/rest/v1/notification_logs", { method: "POST", body: { ...log, status: "failed", error: String(e && e.kind || "ERROR") } });

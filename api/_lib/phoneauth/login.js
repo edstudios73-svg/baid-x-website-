@@ -1,10 +1,10 @@
 // POST /api/auth/phone/login { phone, password } -> session. Phone + password sign-in WITHOUT Supabase's Phone provider:
 // the number is mapped to its account server-side (public.phone_identities), then the normal email/password grant is used.
-// Every failure looks the same (no account enumeration). Rate limited per number and per IP. Behind SASUSYNC_PHONE_AUTH.
-const { cfg } = require("../sasusync/config");
-const { normalizeGhanaPhone, maskPhone } = require("../sasusync/phone");
-const id = require("../sasusync/identity");
-const { ip, audit, rpc } = require("../sasusync/route");
+// Every failure looks the same (no account enumeration). Rate limited per number and per IP. Behind MESSAGING_PHONE_AUTH.
+const { cfg } = require("../messaging/config");
+const { normalizeGhanaPhone, maskPhone } = require("../messaging/phone");
+const id = require("../messaging/identity");
+const { ip, audit, rpc } = require("../messaging/route");
 
 const FAIL = { error: "That number or password isn't right." };
 module.exports = async (req, res) => {
